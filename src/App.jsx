@@ -1,3 +1,4 @@
+import japanMapImage from "./japan-map.png";
 import React, { useState } from "react";
 import "./style.css";
 
