@@ -1,253 +1,180 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import "./style.css";
 
-const dict = {
+const L = {
   ja: {
-    language: "譌･譛ｬ隱・,
-    switchLang: "English",
-    appSubtitle: "繝ｭ繝懊ャ繝医↓諞台ｾ昴＠縺ｦ縲∵律譛ｬ荳ｭ縺ｮ窶懷･ｽ縺坂昴ｒ謗｢縺励↓陦後￥驕髫斐す繝ｧ繝・ヴ繝ｳ繧ｰ繝｢繝ｼ繝ｫ",
-    mapTitle: "譌･譛ｬ繝槭ャ繝励°繧牙ｺ苓・繧帝∈謚・,
-    mapLead: "繧｢繝九Γ繝ｻ繝帙ン繝ｼ縺ｮ閨門慍繧帝∈縺ｳ縲√Ο繝懊ャ繝郁ｦ也せ縺ｧ蠎怜・謗｢邏｢縺ｧ縺阪∪縺吶・,
-    storesTitle: "豕ｨ逶ｮ蠎苓・",
-    selectStore: "蠎苓・繧定ｦ九ｋ",
-    recommended: "縺翫☆縺吶ａ",
-    feature: "迚ｹ蠕ｴ",
-    campaign: "髯仙ｮ壻ｼ∫判",
-    possess: "繝ｭ繝懊ャ繝医↓諞台ｾ昴☆繧・,
-    connectingTitle: "繝ｭ繝懊ャ繝医↓諞台ｾ昜ｸｭ...",
-    connectingLead: "譏蜒上・謫堺ｽ懊・繧ｫ繝ｼ繝医・蠎怜・繝・・繧ｿ繧貞酔譛溘＠縺ｦ縺・∪縺吶・,
-    mission: "繝溘ャ繧ｷ繝ｧ繝ｳ",
-    missionText: "蠎怜・繧呈爾邏｢縺励※XP繧堤佐蠕・,
-    xp: "邨碁ｨ灘､",
-    cart: "繧ｫ繝ｼ繝・,
-    items: "轤ｹ",
-    addToCart: "繧ｫ繝ｼ繝医↓霑ｽ蜉",
-    leaveRobot: "繝ｭ繝懊ャ繝医°繧蛾屬閼ｱ",
-    distance: "遘ｻ蜍戊ｷ晞屬",
-    gained: "迯ｲ蠕郵P",
-    moveTo: "遘ｻ蜍・,
-    scanTitle: "繧｢繧､繝・Β繧ｹ繧ｭ繝｣繝ｳ",
-    stock: "蝨ｨ蠎ｫ",
-    price: "萓｡譬ｼ",
-    mapNote: "蝨ｰ蝗ｳ縺ｯ螟夜Κ逕ｻ蜒上↓萓晏ｭ倥＠縺ｪ縺・・菴彜VG縺ｧ縺吶ょｾ後〒Natural Earth遲峨・public domain蝨ｰ蝗ｳ縺ｸ蟾ｮ譖ｿ蜿ｯ閭ｽ縲・,
-    tone: "繝医Φ繝槭リ",
-    tonePop: "繝昴ャ繝・,
-    toneCyber: "繧ｵ繧､繝舌・",
-    tonePremium: "繝励Ξ繝溘い繝",
+    lang: "\u65e5\u672c\u8a9e",
+    switch: "English",
+    title: "Remo Discovery Mall",
+    subtitle: "\u30ed\u30dc\u30c3\u30c8\u306b\u61d1\u4f9d\u3057\u3066\u3001\u65e5\u672c\u4e2d\u306e\u30a2\u30cb\u30e1\u30fb\u30db\u30d3\u30fc\u5e97\u3092\u9060\u9694\u63a2\u7d22\u3067\u304d\u308b\u30c7\u30e2\u30a2\u30d7\u30ea",
+    mapTitle: "\u65e5\u672c\u30de\u30c3\u30d7\u304b\u3089\u5e97\u8217\u3092\u9078\u629e",
+    mapLead: "\u5e97\u8217\u3092\u9078\u3093\u3067\u3001\u30ed\u30dc\u30c3\u30c8\u8996\u70b9\u3067\u5e97\u5185\u3092\u63a2\u7d22\u3057\u307e\u3059\u3002",
+    stores: "\u6ce8\u76ee\u5e97\u8217",
+    recommended: "\u304a\u3059\u3059\u3081",
+    feature: "\u7279\u5fb4",
+    campaign: "\u9650\u5b9a\u4f01\u753b",
+    possess: "\u30ed\u30dc\u30c3\u30c8\u306b\u61d1\u4f9d\u3059\u308b",
+    connecting: "\u30ed\u30dc\u30c3\u30c8\u306b\u61d1\u4f9d\u4e2d...",
+    connectingLead: "\u6620\u50cf\u30fb\u64cd\u4f5c\u30fb\u30ab\u30fc\u30c8\u30fb\u5e97\u5185\u30c7\u30fc\u30bf\u3092\u540c\u671f\u3057\u3066\u3044\u307e\u3059\u3002",
+    mission: "\u30df\u30c3\u30b7\u30e7\u30f3",
+    missionText: "\u79fb\u52d5\u8ddd\u96e2\u306b\u5fdc\u3058\u3066\u7d4c\u9a13\u5024\u3092\u7372\u5f97",
+    xp: "\u7d4c\u9a13\u5024",
+    cart: "\u30ab\u30fc\u30c8",
+    items: "\u70b9",
+    distance: "\u79fb\u52d5\u8ddd\u96e2",
+    add: "\u30ab\u30fc\u30c8\u306b\u8ffd\u52a0",
+    leave: "\u30ed\u30dc\u30c3\u30c8\u304b\u3089\u96e2\u8131",
+    move: "\u79fb\u52d5",
+    scan: "\u30a2\u30a4\u30c6\u30e0\u30b9\u30ad\u30e3\u30f3",
+    stock: "\u5728\u5eab",
+    price: "\u4fa1\u683c",
+    tone: "\u30c8\u30f3\u30de\u30ca",
+    pop: "\u30dd\u30c3\u30d7",
+    cyber: "\u30b5\u30a4\u30d0\u30fc",
+    premium: "\u30d7\u30ec\u30df\u30a2\u30e0"
   },
   en: {
-    language: "English",
-    switchLang: "譌･譛ｬ隱・,
-    appSubtitle: "A telepresence shopping mall where users possess robots and explore Japanese hobby stores remotely.",
+    lang: "English",
+    switch: "\u65e5\u672c\u8a9e",
+    title: "Remo Discovery Mall",
+    subtitle: "A demo app where users possess remote robots and explore Japanese anime / hobby shops.",
     mapTitle: "Choose a store from Japan map",
-    mapLead: "Select an anime / hobby destination and explore the shop from a robot point of view.",
-    storesTitle: "Featured Stores",
-    selectStore: "View Store",
+    mapLead: "Select a store and explore it from a robot point of view.",
+    stores: "Featured Stores",
     recommended: "Recommended",
     feature: "Feature",
     campaign: "Limited Campaign",
     possess: "Possess Robot",
-    connectingTitle: "Possessing Robot...",
-    connectingLead: "Synchronizing video, controls, cart, and live store data.",
+    connecting: "Possessing Robot...",
+    connectingLead: "Synchronizing video, controls, cart, and store data.",
     mission: "Mission",
-    missionText: "Explore the store and gain XP",
+    missionText: "Gain XP based on movement distance.",
     xp: "XP",
     cart: "Cart",
     items: "items",
-    addToCart: "Add to Cart",
-    leaveRobot: "Leave Robot",
     distance: "Distance",
-    gained: "XP gained",
-    moveTo: "Move to",
-    scanTitle: "Item Scan",
+    add: "Add to Cart",
+    leave: "Leave Robot",
+    move: "Move to",
+    scan: "Item Scan",
     stock: "Stock",
     price: "Price",
-    mapNote: "The current map is an original inline SVG to avoid external dependency. It can be replaced later with public-domain Natural Earth data.",
     tone: "Tone",
-    tonePop: "Pop",
-    toneCyber: "Cyber",
-    tonePremium: "Premium",
-  },
-};
-
-const tones = {
-  pop: {
-    labelKey: "tonePop",
-    bg: "theme-pop",
-  },
-  cyber: {
-    labelKey: "toneCyber",
-    bg: "theme-cyber",
-  },
-  premium: {
-    labelKey: "tonePremium",
-    bg: "theme-premium",
-  },
+    pop: "Pop",
+    cyber: "Cyber",
+    premium: "Premium"
+  }
 };
 
 const stores = [
   {
     id: "akihabara",
-    name: { ja: "遘玖痩蜴溘・繝薙・繝吶・繧ｹ", en: "Akihabara Hobby Base" },
-    area: { ja: "譚ｱ莠ｬ / 遘玖痩蜴・, en: "Tokyo / Akihabara" },
-    tag: { ja: "繧｢繝九Γ閨門慍", en: "Anime Holy Land" },
+    name: { ja: "\u79cb\u8449\u539f\u30db\u30d3\u30fc\u30d9\u30fc\u30b9", en: "Akihabara Hobby Base" },
+    area: { ja: "\u6771\u4eac / \u79cb\u8449\u539f", en: "Tokyo / Akihabara" },
+    tag: { ja: "\u30a2\u30cb\u30e1\u8056\u5730", en: "Anime Holy Land" },
     x: 70,
     y: 55,
     robot: "Remo-01",
-    feature: {
-      ja: "繝輔ぅ繧ｮ繝･繧｢縲√・繝ｩ繝｢繝・Ν縲√ヨ繝ｬ繧ｫ縲・剞螳壹げ繝・ぜ縺悟ｼｷ縺・覧濶ｦ蠎励・,
-      en: "A flagship store for figures, model kits, trading cards, and limited goods.",
-    },
-    campaign: {
-      ja: "騾ｱ譛ｫ髯仙ｮ・繝ｬ繧｢繧｢繧､繝・Β謗｢邏｢繧､繝吶Φ繝・,
-      en: "Weekend Rare Item Hunt",
-    },
-    picks: {
-      ja: ["髯仙ｮ壹ヵ繧｣繧ｮ繝･繧｢", "譁ｰ菴懊ぎ繝ｳ繝励Λ", "繝ｬ繧｢繝医Ξ繧ｫ"],
-      en: ["Limited Figure", "New Model Kit", "Rare Trading Card"],
-    },
+    feature: { ja: "\u30d5\u30a3\u30ae\u30e5\u30a2\u3001\u30d7\u30e9\u30e2\u30c7\u30eb\u3001\u30c8\u30ec\u30ab\u3001\u9650\u5b9a\u30b0\u30c3\u30ba\u304c\u5f37\u3044\u5e97\u8217\u3002", en: "A strong store for figures, model kits, trading cards, and limited goods." },
+    campaign: { ja: "\u9031\u672b\u9650\u5b9a\u30ec\u30a2\u30a2\u30a4\u30c6\u30e0\u63a2\u7d22", en: "Weekend Rare Item Hunt" },
+    picks: { ja: ["\u9650\u5b9a\u30d5\u30a3\u30ae\u30e5\u30a2", "\u65b0\u4f5c\u30d7\u30e9\u30e2\u30c7\u30eb", "\u30ec\u30a2\u30c8\u30ec\u30ab"], en: ["Limited Figure", "New Model Kit", "Rare Trading Card"] }
   },
   {
     id: "nakano",
-    name: { ja: "荳ｭ驥弱Ξ繝医Ο繝医う繧ｺ", en: "Nakano Retro Toys" },
-    area: { ja: "譚ｱ莠ｬ / 荳ｭ驥・, en: "Tokyo / Nakano" },
-    tag: { ja: "繝ｬ繝医Ο邇ｩ蜈ｷ", en: "Retro & Collector" },
+    name: { ja: "\u4e2d\u91ce\u30ec\u30c8\u30ed\u30c8\u30a4\u30ba", en: "Nakano Retro Toys" },
+    area: { ja: "\u6771\u4eac / \u4e2d\u91ce", en: "Tokyo / Nakano" },
+    tag: { ja: "\u30ec\u30c8\u30ed\u73a9\u5177", en: "Retro & Collector" },
     x: 68,
     y: 56,
     robot: "Remo-02",
-    feature: {
-      ja: "荳ｭ蜿､繧｢繝九Γ繧ｰ繝・ぜ縲√Χ繧｣繝ｳ繝・・繧ｸ邇ｩ蜈ｷ縲√さ繝ｬ繧ｯ繧ｿ繝ｼ蜷代￠蝠・刀縺瑚ｱ雁ｯ後・,
-      en: "Vintage toys, used anime goods, and collector items.",
-    },
-    campaign: {
-      ja: "繝ｬ繝医Ο縺雁ｮ晉匱謗倥え繧｣繝ｼ繧ｯ",
-      en: "Retro Treasure Week",
-    },
-    picks: {
-      ja: ["譏ｭ蜥後Ο繝懊ャ繝育自蜈ｷ", "譌ｧ菴懊い繝九Γ繧ｰ繝・ぜ", "繧ｳ繝ｬ繧ｯ繧ｿ繝ｼ繧ｫ繝ｼ繝・],
-      en: ["Vintage Robot Toy", "Old Anime Goods", "Collector Card"],
-    },
+    feature: { ja: "\u4e2d\u53e4\u30a2\u30cb\u30e1\u30b0\u30c3\u30ba\u3001\u30f4\u30a3\u30f3\u30c6\u30fc\u30b8\u73a9\u5177\u3001\u30b3\u30ec\u30af\u30bf\u30fc\u5546\u54c1\u304c\u8c4a\u5bcc\u3002", en: "Vintage toys, used anime goods, and collector items." },
+    campaign: { ja: "\u30ec\u30c8\u30ed\u304a\u5b9d\u767a\u6398\u30a6\u30a3\u30fc\u30af", en: "Retro Treasure Week" },
+    picks: { ja: ["\u662d\u548c\u30ed\u30dc\u30c3\u30c8\u73a9\u5177", "\u65e7\u4f5c\u30a2\u30cb\u30e1\u30b0\u30c3\u30ba", "\u30b3\u30ec\u30af\u30bf\u30fc\u30ab\u30fc\u30c9"], en: ["Vintage Robot Toy", "Old Anime Goods", "Collector Card"] }
   },
   {
     id: "nipponbashi",
-    name: { ja: "譌･譛ｬ讖九が繧ｿ繝ｭ繝ｼ繝牙ｺ・, en: "Nipponbashi Otaku Street" },
-    area: { ja: "螟ｧ髦ｪ / 譌･譛ｬ讖・, en: "Osaka / Nipponbashi" },
-    tag: { ja: "髢｢隘ｿ繧｢繝九Γ閨門慍", en: "Kansai Anime Area" },
+    name: { ja: "\u65e5\u672c\u6a4b\u30aa\u30bf\u30ed\u30fc\u30c9\u5e97", en: "Nipponbashi Otaku Street" },
+    area: { ja: "\u5927\u962a / \u65e5\u672c\u6a4b", en: "Osaka / Nipponbashi" },
+    tag: { ja: "\u95a2\u897f\u30a2\u30cb\u30e1\u8056\u5730", en: "Kansai Anime Area" },
     x: 48,
     y: 68,
     robot: "Remo-03",
-    feature: {
-      ja: "繧｢繝九Γ繧ｰ繝・ぜ縲√ヵ繧｣繧ｮ繝･繧｢縲√・繝ｩ繝｢繝・Ν縲・未隘ｿ髯仙ｮ壼刀縺ｫ蠑ｷ縺・ｺ苓・縲・,
-      en: "Anime goods, figures, model kits, and Kansai limited items.",
-    },
-    campaign: {
-      ja: "螟ｧ髦ｪ髯仙ｮ壹げ繝・ぜ繝輔ぉ繧｢",
-      en: "Osaka Limited Goods Fair",
-    },
-    picks: {
-      ja: ["螟ｧ髦ｪ髯仙ｮ壹ヵ繧｣繧ｮ繝･繧｢", "繧ｭ繝｣繝ｩ繧ｯ繧ｿ繝ｼ髮題ｲｨ", "讓｡蝙九く繝・ヨ"],
-      en: ["Osaka Limited Figure", "Character Goods", "Model Kit"],
-    },
+    feature: { ja: "\u95a2\u897f\u306e\u30a2\u30cb\u30e1\u30b0\u30c3\u30ba\u3001\u30d5\u30a3\u30ae\u30e5\u30a2\u3001\u30d7\u30e9\u30e2\u30c7\u30eb\u306b\u5f37\u3044\u5e97\u8217\u3002", en: "Anime goods, figures, model kits, and Kansai limited items." },
+    campaign: { ja: "\u5927\u962a\u9650\u5b9a\u30b0\u30c3\u30ba\u30d5\u30a7\u30a2", en: "Osaka Limited Goods Fair" },
+    picks: { ja: ["\u5927\u962a\u9650\u5b9a\u30d5\u30a3\u30ae\u30e5\u30a2", "\u30ad\u30e3\u30e9\u30af\u30bf\u30fc\u96d1\u8ca8", "\u6a21\u578b\u30ad\u30c3\u30c8"], en: ["Osaka Limited Figure", "Character Goods", "Model Kit"] }
   },
   {
     id: "hakata",
-    name: { ja: "蜊壼､壹・繝・・繧ｫ繝ｫ繝√Ε繝ｼ蠎・, en: "Hakata Pop Culture Shop" },
-    area: { ja: "遖丞ｲ｡ / 蜊壼､・, en: "Fukuoka / Hakata" },
-    tag: { ja: "荵晏ｷ槭い繝九Γ繧ｹ繝昴ャ繝・, en: "Kyushu Anime Spot" },
+    name: { ja: "\u535a\u591a\u30dd\u30c3\u30d7\u30ab\u30eb\u30c1\u30e3\u30fc\u5e97", en: "Hakata Pop Culture Shop" },
+    area: { ja: "\u798f\u5ca1 / \u535a\u591a", en: "Fukuoka / Hakata" },
+    tag: { ja: "\u4e5d\u5dde\u30a2\u30cb\u30e1\u30b9\u30dd\u30c3\u30c8", en: "Kyushu Anime Spot" },
     x: 24,
     y: 76,
     robot: "Remo-04",
-    feature: {
-      ja: "蝨ｰ蝓滄剞螳壹げ繝・ぜ縲√さ繝ｩ繝懷膚蜩√√♀蝨溽肇蝙九い繝九Γ髮題ｲｨ縺悟・螳溘・,
-      en: "Regional goods, collaboration items, and anime souvenirs.",
-    },
-    campaign: {
-      ja: "荵晏ｷ槭せ繝壹す繝｣繝ｫ繧ｻ繝ｬ繧ｯ繧ｷ繝ｧ繝ｳ",
-      en: "Kyushu Special Selection",
-    },
-    picks: {
-      ja: ["蝨ｰ蝓滄剞螳壹げ繝・ぜ", "縺泌ｽ灘慍繧ｳ繝ｩ繝・, "繝ｬ繧｢繧ｭ繝ｼ繝帙Ν繝繝ｼ"],
-      en: ["Regional Goods", "Local Collaboration", "Rare Keychain"],
-    },
-  },
+    feature: { ja: "\u5730\u57df\u9650\u5b9a\u30b0\u30c3\u30ba\u3001\u30b3\u30e9\u30dc\u5546\u54c1\u3001\u304a\u571f\u7523\u578b\u30a2\u30cb\u30e1\u96d1\u8ca8\u304c\u5145\u5b9f\u3002", en: "Regional goods, collaboration items, and anime souvenirs." },
+    campaign: { ja: "\u4e5d\u5dde\u30b9\u30da\u30b7\u30e3\u30eb\u30bb\u30ec\u30af\u30b7\u30e7\u30f3", en: "Kyushu Special Selection" },
+    picks: { ja: ["\u5730\u57df\u9650\u5b9a\u30b0\u30c3\u30ba", "\u3054\u5f53\u5730\u30b3\u30e9\u30dc", "\u30ec\u30a2\u30ad\u30fc\u30db\u30eb\u30c0\u30fc"], en: ["Regional Goods", "Local Collaboration", "Rare Keychain"] }
+  }
 ];
 
 const scenes = {
   entrance: {
-    name: { ja: "蜈･蜿｣", en: "Entrance" },
-    title: { ja: "蠎苓・蜈･蜿｣", en: "Store Entrance" },
-    image:
-      "https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=1600&q=80",
+    name: { ja: "\u5165\u53e3", en: "Entrance" },
+    title: { ja: "\u5e97\u8217\u5165\u53e3", en: "Store Entrance" },
+    image: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?auto=format&fit=crop&w=1600&q=80",
     distance: 0,
     rarity: "NORMAL",
-    description: {
-      ja: "繝ｭ繝懊ャ繝医′蠎苓・蜈･蜿｣縺ｫ蜈･繧翫∪縺励◆縲ょ推繧ｨ繝ｪ繧｢縺ｸ遘ｻ蜍輔〒縺阪∪縺吶・,
-      en: "The robot has entered the store. You can move to each area.",
-    },
-    next: ["figure", "cards", "showcase"],
+    description: { ja: "\u30ed\u30dc\u30c3\u30c8\u304c\u5e97\u8217\u5165\u53e3\u306b\u5165\u308a\u307e\u3057\u305f\u3002\u5404\u30a8\u30ea\u30a2\u3078\u79fb\u52d5\u3067\u304d\u307e\u3059\u3002", en: "The robot has entered the store. You can move to each area." },
+    next: ["figure", "cards", "showcase"]
   },
   figure: {
-    name: { ja: "繝輔ぅ繧ｮ繝･繧｢騾夊ｷｯ", en: "Figure Aisle" },
-    title: { ja: "繝輔ぅ繧ｮ繝･繧｢繧ｨ繝ｪ繧｢", en: "Figure Area" },
-    image:
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1600&q=80",
+    name: { ja: "\u30d5\u30a3\u30ae\u30e5\u30a2\u901a\u8def", en: "Figure Aisle" },
+    title: { ja: "\u30d5\u30a3\u30ae\u30e5\u30a2\u30a8\u30ea\u30a2", en: "Figure Area" },
+    image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1600&q=80",
     distance: 12,
     rarity: "RARE",
-    description: {
-      ja: "譽壹↓螟壽焚縺ｮ繝輔ぅ繧ｮ繝･繧｢縺御ｸｦ繧薙〒縺・∪縺吶ゅ♀縺吶☆繧∝膚蜩√′繧ｹ繧ｭ繝｣繝ｳ蜿ｯ閭ｽ縺ｧ縺吶・,
-      en: "Many figures are displayed on shelves. Recommended items can be scanned.",
-    },
-    next: ["entrance", "showcase", "limited"],
+    description: { ja: "\u68da\u306b\u591a\u6570\u306e\u30d5\u30a3\u30ae\u30e5\u30a2\u304c\u4e26\u3093\u3067\u3044\u307e\u3059\u3002\u304a\u3059\u3059\u3081\u5546\u54c1\u304c\u30b9\u30ad\u30e3\u30f3\u53ef\u80fd\u3067\u3059\u3002", en: "Many figures are displayed on shelves. Recommended items can be scanned." },
+    next: ["entrance", "showcase", "limited"]
   },
   cards: {
-    name: { ja: "繝医Ξ繧ｫ繧ｨ繝ｪ繧｢", en: "Trading Cards" },
-    title: { ja: "繝医Ξ繝ｼ繝・ぅ繝ｳ繧ｰ繧ｫ繝ｼ繝峨お繝ｪ繧｢", en: "Trading Card Area" },
-    image:
-      "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1600&q=80",
+    name: { ja: "\u30c8\u30ec\u30ab\u30a8\u30ea\u30a2", en: "Trading Cards" },
+    title: { ja: "\u30c8\u30ec\u30fc\u30c7\u30a3\u30f3\u30b0\u30ab\u30fc\u30c9\u30a8\u30ea\u30a2", en: "Trading Card Area" },
+    image: "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1600&q=80",
     distance: 9,
     rarity: "NORMAL",
-    description: {
-      ja: "繧ｫ繝ｼ繝峨ヱ繝・け縺ｨ繧ｷ繝ｳ繧ｰ繝ｫ繧ｫ繝ｼ繝峨′荳ｦ繧薙〒縺・∪縺吶る剞螳壼惠蠎ｫ繧ゅ≠繧翫∪縺吶・,
-      en: "Card packs and single cards are displayed. Some are limited stock.",
-    },
-    next: ["entrance", "limited"],
+    description: { ja: "\u30ab\u30fc\u30c9\u30d1\u30c3\u30af\u3068\u30b7\u30f3\u30b0\u30eb\u30ab\u30fc\u30c9\u304c\u4e26\u3093\u3067\u3044\u307e\u3059\u3002\u9650\u5b9a\u5728\u5eab\u3082\u3042\u308a\u307e\u3059\u3002", en: "Card packs and single cards are displayed. Some are limited stock." },
+    next: ["entrance", "limited"]
   },
   showcase: {
-    name: { ja: "繧ｷ繝ｧ繝ｼ繧ｱ繝ｼ繧ｹ", en: "Showcase" },
-    title: { ja: "繝励Ξ繝溘い繝繧ｷ繝ｧ繝ｼ繧ｱ繝ｼ繧ｹ", en: "Premium Showcase" },
-    image:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
+    name: { ja: "\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9", en: "Showcase" },
+    title: { ja: "\u30d7\u30ec\u30df\u30a2\u30e0\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9", en: "Premium Showcase" },
+    image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1600&q=80",
     distance: 15,
     rarity: "LEGENDARY",
-    description: {
-      ja: "鬮倬｡榊膚蜩√′繧ｷ繝ｧ繝ｼ繧ｱ繝ｼ繧ｹ縺ｫ螻慕､ｺ縺輔ｌ縺ｦ縺・∪縺吶ゅせ繧ｿ繝・ヵ蜻ｼ縺ｳ蜃ｺ縺怜ｰ守ｷ壹ｒ諠ｳ螳壹＠縺ｦ縺・∪縺吶・,
-      en: "Premium items are displayed in the showcase. Staff-call flow can be added here.",
-    },
-    next: ["entrance", "figure", "limited"],
+    description: { ja: "\u9ad8\u984d\u5546\u54c1\u304c\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9\u306b\u5c55\u793a\u3055\u308c\u3066\u3044\u307e\u3059\u3002", en: "Premium items are displayed in the showcase." },
+    next: ["entrance", "figure", "limited"]
   },
   limited: {
-    name: { ja: "髯仙ｮ壼刀繧ｳ繝ｼ繝翫・", en: "Limited Goods" },
-    title: { ja: "髯仙ｮ壼刀繧ｳ繝ｼ繝翫・", en: "Limited Goods Corner" },
-    image:
-      "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1600&q=80",
+    name: { ja: "\u9650\u5b9a\u54c1\u30b3\u30fc\u30ca\u30fc", en: "Limited Goods" },
+    title: { ja: "\u9650\u5b9a\u54c1\u30b3\u30fc\u30ca\u30fc", en: "Limited Goods Corner" },
+    image: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1600&q=80",
     distance: 18,
     rarity: "LEGENDARY",
-    description: {
-      ja: "髯仙ｮ壹・繧ｭ繝｣繝ｳ繝壹・繝ｳ蝠・刀縺碁寔縺ｾ繧九お繝ｪ繧｢縺ｧ縺吶らｧｻ蜍戊ｷ晞屬縺碁聞縺・◆繧々P繧ょ､壹ａ縺ｫ蜈･繧翫∪縺吶・,
-      en: "Limited and campaign items are here. Longer movement gives more XP.",
-    },
-    next: ["figure", "cards", "showcase"],
-  },
+    description: { ja: "\u9650\u5b9a\u30fb\u30ad\u30e3\u30f3\u30da\u30fc\u30f3\u5546\u54c1\u304c\u96c6\u307e\u308b\u30a8\u30ea\u30a2\u3067\u3059\u3002", en: "Limited and campaign items are here." },
+    next: ["figure", "cards", "showcase"]
+  }
 };
 
-function t(lang, key) {
-  return dict[lang][key] || key;
-}
+const tones = {
+  pop: "theme-pop",
+  cyber: "theme-cyber",
+  premium: "theme-premium"
+};
 
-function getLocalized(value, lang) {
-  if (!value) return "";
-  if (typeof value === "string") return value;
-  return value[lang] || value.en || value.ja || "";
+function localize(v, lang) {
+  if (!v) return "";
+  if (typeof v === "string") return v;
+  return v[lang] || v.en || v.ja || "";
 }
 
 function App() {
@@ -260,41 +187,38 @@ function App() {
   const [xp, setXp] = useState(1200);
   const [meters, setMeters] = useState(0);
   const [lastGain, setLastGain] = useState(0);
-
+  const T = L[lang];
   const scene = scenes[sceneId];
-
-  const moveToScene = (nextId) => {
-    const nextScene = scenes[nextId];
-    const gain = Math.max(20, nextScene.distance * 12);
-    setSceneId(nextId);
-    setMeters((prev) => prev + nextScene.distance);
-    setXp((prev) => prev + gain);
-    setLastGain(gain);
-  };
 
   const startPossession = () => {
     setMode("connecting");
     setTimeout(() => {
       setSceneId("entrance");
-      setLastGain(0);
       setMode("robot");
-    }, 1600);
+    }, 1400);
   };
 
-  const addToCart = (item) => {
-    setCart((prev) => [...prev, item]);
-    setXp((prev) => prev + 80);
+  const moveTo = (nextId) => {
+    const next = scenes[nextId];
+    const gain = Math.max(20, next.distance * 12);
+    setSceneId(nextId);
+    setMeters((m) => m + next.distance);
+    setXp((x) => x + gain);
+    setLastGain(gain);
+  };
+
+  const addToCart = () => {
+    setCart((c) => [...c, localize(scene.name, lang)]);
+    setXp((x) => x + 80);
     setLastGain(80);
   };
 
   if (mode === "connecting") {
     return (
-      <div className={"connectScreen " + tones[tone].bg}>
-        <div className="connectRing">
-          <div className="robotEye">笳・笳・/div>
-        </div>
-        <h1>{t(lang, "connectingTitle")}</h1>
-        <p>{t(lang, "connectingLead")}</p>
+      <div className={"connectScreen " + tones[tone]}>
+        <div className="connectRing"><div className="robotEye">● ●</div></div>
+        <h1>{T.connecting}</h1>
+        <p>{T.connectingLead}</p>
         <div className="loadingBar"><span /></div>
       </div>
     );
@@ -302,88 +226,68 @@ function App() {
 
   if (mode === "robot") {
     return (
-      <div className={"robotScreen " + tones[tone].bg}>
-        <img className="realStoreImage" src={scene.image} alt={getLocalized(scene.title, lang)} />
+      <div className={"robotScreen " + tones[tone]}>
+        <img className="realStoreImage" src={scene.image} alt={localize(scene.title, lang)} />
         <div className="imageShade" />
-
         <div className="hud topHud">
-          <span className="rec">笳・REC</span>
+          <span className="rec">● REC</span>
           <span>LIVE FEED</span>
           <span>{selectedStore?.robot}</span>
           <span>BAT 78%</span>
           <span>LATENCY 32ms</span>
-          <button type="button" className="miniBtn" onClick={() => setLang(lang === "ja" ? "en" : "ja")}>
-            {t(lang, "switchLang")}
-          </button>
+          <button type="button" className="miniBtn" onClick={() => setLang(lang === "ja" ? "en" : "ja")}>{T.switch}</button>
         </div>
-
         <div className="sceneTitle">
           <span className={"rarity " + scene.rarity.toLowerCase()}>{scene.rarity}</span>
-          <h1>{getLocalized(scene.title, lang)}</h1>
-          <p>{getLocalized(scene.description, lang)}</p>
+          <h1>{localize(scene.title, lang)}</h1>
+          <p>{localize(scene.description, lang)}</p>
         </div>
-
         <div className="hud sideHud">
-          <h3>{t(lang, "mission")}</h3>
-          <p>{t(lang, "missionText")}</p>
+          <h3>{T.mission}</h3>
+          <p>{T.missionText}</p>
           <div className="progress"><span style={{ width: Math.min(100, (meters / 60) * 100) + "%" }} /></div>
-          <h3>{t(lang, "xp")}</h3>
+          <h3>{T.xp}</h3>
           <p>Lv.7 / {xp} XP</p>
-          <h3>{t(lang, "distance")}</h3>
+          <h3>{T.distance}</h3>
           <p>{meters} m</p>
-          <h3>{t(lang, "cart")}</h3>
-          <p>{cart.length} {t(lang, "items")}</p>
+          <h3>{T.cart}</h3>
+          <p>{cart.length} {T.items}</p>
           {lastGain > 0 && <p className="gain">+{lastGain} XP</p>}
         </div>
-
         <div className="scanCard">
           <div className={"rare " + scene.rarity.toLowerCase()}>{scene.rarity}</div>
-          <h2>{t(lang, "scanTitle")}</h2>
-          <p>{getLocalized(scene.name, lang)} Special Item</p>
-          <p>{t(lang, "stock")}: 1 / {t(lang, "price")}: ﾂ･7,920</p>
-          <button type="button" onClick={() => addToCart(getLocalized(scene.name, lang) + " Special Item")}>
-            {t(lang, "addToCart")}
-          </button>
+          <h2>{T.scan}</h2>
+          <p>{localize(scene.name, lang)} Special Item</p>
+          <p>{T.stock}: 1 / {T.price}: ¥7,920</p>
+          <button type="button" onClick={addToCart}>{T.add}</button>
         </div>
-
         <div className="controls">
           {scene.next.map((nextId) => (
-            <button type="button" key={nextId} onClick={() => moveToScene(nextId)}>
-              {t(lang, "moveTo")} {getLocalized(scenes[nextId].name, lang)}
+            <button type="button" key={nextId} onClick={() => moveTo(nextId)}>
+              {T.move} {localize(scenes[nextId].name, lang)}
               <span>+{Math.max(20, scenes[nextId].distance * 12)} XP</span>
             </button>
           ))}
-          <button type="button" className="exit" onClick={() => setMode("map")}>
-            {t(lang, "leaveRobot")}
-          </button>
+          <button type="button" className="exit" onClick={() => setMode("map")}>{T.leave}</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={"app " + tones[tone].bg}>
+    <div className={"app " + tones[tone]}>
       <header className="hero">
         <div>
           <p className="eyebrow">Telepresence Shopping Prototype</p>
-          <h1>Remo Discovery Mall</h1>
-          <p className="lead">{t(lang, "appSubtitle")}</p>
+          <h1>{T.title}</h1>
+          <p className="lead">{T.subtitle}</p>
         </div>
         <div className="toolbar">
-          <button type="button" onClick={() => setLang(lang === "ja" ? "en" : "ja")}>
-            {t(lang, "switchLang")}
-          </button>
+          <button type="button" onClick={() => setLang(lang === "ja" ? "en" : "ja")}>{T.switch}</button>
           <div className="toneButtons">
-            {Object.entries(tones).map(([key, value]) => (
-              <button
-                type="button"
-                key={key}
-                className={tone === key ? "active" : ""}
-                onClick={() => setTone(key)}
-              >
-                {t(lang, value.labelKey)}
-              </button>
-            ))}
+            <button type="button" className={tone === "pop" ? "active" : ""} onClick={() => setTone("pop")}>{T.pop}</button>
+            <button type="button" className={tone === "cyber" ? "active" : ""} onClick={() => setTone("cyber")}>{T.cyber}</button>
+            <button type="button" className={tone === "premium" ? "active" : ""} onClick={() => setTone("premium")}>{T.premium}</button>
           </div>
         </div>
       </header>
@@ -392,40 +296,26 @@ function App() {
         <section className="mapPanel">
           <div className="mapHeader">
             <div>
-              <h2>{t(lang, "mapTitle")}</h2>
-              <p>{t(lang, "mapLead")}</p>
+              <h2>{T.mapTitle}</h2>
+              <p>{T.mapLead}</p>
             </div>
-            <small>{t(lang, "mapNote")}</small>
           </div>
-
-          <div className="japanMap" aria-label="Japan map">
+          <div className="japanMap">
             <JapanMapSvg />
             {stores.map((store) => (
-              <button
-                type="button"
-                key={store.id}
-                className="pin"
-                style={{ left: store.x + "%", top: store.y + "%" }}
-                onClick={() => setSelectedStore(store)}
-              >
-                笘・                <span>{getLocalized(store.area, lang)}</span>
+              <button type="button" key={store.id} className="pin" style={{ left: store.x + "%", top: store.y + "%" }} onClick={() => setSelectedStore(store)}>
+                ★<span>{localize(store.area, lang)}</span>
               </button>
             ))}
           </div>
         </section>
-
         <section className="storeList">
-          <h2>{t(lang, "storesTitle")}</h2>
+          <h2>{T.stores}</h2>
           {stores.map((store) => (
-            <button
-              type="button"
-              key={store.id}
-              className="storeCard"
-              onClick={() => setSelectedStore(store)}
-            >
-              <strong>{getLocalized(store.name, lang)}</strong>
-              <span>{getLocalized(store.area, lang)}</span>
-              <em>{getLocalized(store.tag, lang)}</em>
+            <button type="button" key={store.id} className="storeCard" onClick={() => setSelectedStore(store)}>
+              <strong>{localize(store.name, lang)}</strong>
+              <span>{localize(store.area, lang)}</span>
+              <em>{localize(store.tag, lang)}</em>
             </button>
           ))}
         </section>
@@ -434,37 +324,24 @@ function App() {
       {selectedStore && (
         <div className="modalBackdrop" onClick={() => setSelectedStore(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="close" onClick={() => setSelectedStore(null)}>
-              ﾃ・            </button>
+            <button type="button" className="close" onClick={() => setSelectedStore(null)}>×</button>
             <div className="modalHero">
-              <div className="shopIcon">､・/div>
+              <div className="shopIcon">🤖</div>
               <div>
-                <p className="eyebrow">{getLocalized(selectedStore.tag, lang)}</p>
-                <h2>{getLocalized(selectedStore.name, lang)}</h2>
-                <p>{getLocalized(selectedStore.area, lang)}</p>
+                <p className="eyebrow">{localize(selectedStore.tag, lang)}</p>
+                <h2>{localize(selectedStore.name, lang)}</h2>
+                <p>{localize(selectedStore.area, lang)}</p>
               </div>
             </div>
-
             <div className="modalGrid">
               <div>
-                <h3>{t(lang, "recommended")}</h3>
-                {getLocalized(selectedStore.picks, lang).map((pick) => (
-                  <p className="pill" key={pick}>{pick}</p>
-                ))}
+                <h3>{T.recommended}</h3>
+                {localize(selectedStore.picks, lang).map((pick) => <p className="pill" key={pick}>{pick}</p>)}
               </div>
-              <div>
-                <h3>{t(lang, "feature")}</h3>
-                <p>{getLocalized(selectedStore.feature, lang)}</p>
-              </div>
-              <div>
-                <h3>{t(lang, "campaign")}</h3>
-                <p>{getLocalized(selectedStore.campaign, lang)}</p>
-              </div>
+              <div><h3>{T.feature}</h3><p>{localize(selectedStore.feature, lang)}</p></div>
+              <div><h3>{T.campaign}</h3><p>{localize(selectedStore.campaign, lang)}</p></div>
             </div>
-
-            <button type="button" className="possess" onClick={startPossession}>
-              {t(lang, "possess")}
-            </button>
+            <button type="button" className="possess" onClick={startPossession}>{T.possess}</button>
           </div>
         </div>
       )}
