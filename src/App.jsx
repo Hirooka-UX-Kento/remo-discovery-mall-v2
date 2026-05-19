@@ -224,7 +224,7 @@ export default function App() {
   if (screen === "sync") {
     return (
       <div className={"syncScreen " + theme}>
-        <div className="syncOrb"><span>笳・笳・/span></div>
+        <div className="syncOrb"><span>隨ｳ繝ｻ隨ｳ繝ｻ/span></div>
         <h1>{tr(lang, "connecting")}</h1>
         <p>AUTH_OK / ROBOT_LINKED / LIVE_FEED_READY</p>
       </div>
@@ -261,7 +261,7 @@ export default function App() {
             <p>{tr(lang, "heroSub")}</p>
             <small>{tr(lang, "tap")}</small>
           </div>
-          <button className="areaButton">笘ｰ AREA</button>
+          <button className="areaButton">隨假ｽｰ AREA</button>
           <div className="mapStage">
             <JapanMap />
             {stores.map((store) => (
@@ -271,7 +271,7 @@ export default function App() {
                 style={{ left: store.x + "%", top: store.y + "%" }}
                 onClick={() => setSelected(store)}
               >
-                <span className="pinCore">､・/span>
+                <span className="pinCore">﨟橸ｽ､繝ｻ/span>
                 <span className="pinLabel">
                   <b>{local(store.short, lang)}</b>
                   <em>{local(store.tag, lang)}</em>
@@ -297,7 +297,7 @@ export default function App() {
       </main>
       <footer className="benefits">
         {[tr(lang, "nav1"), tr(lang, "nav2"), tr(lang, "nav3"), tr(lang, "nav4")].map((label, i) => (
-          <div className="benefit" key={label}><span>{["､・,"將","氏","XP"][i]}</span><b>{label}</b></div>
+          <div className="benefit" key={label}><span>{["﨟橸ｽ､繝ｻ,"﨟槫ｰ・,"﨟樊ｰ・,"XP"][i]}</span><b>{label}</b></div>
         ))}
       </footer>
     </div>
@@ -309,17 +309,17 @@ function Header({ lang, theme, setLang, setTheme }) {
     <>
       <header className="topHeader">
         <div className="brand">
-          <div className="logo">笳鞘酪</div>
+          <div className="logo">隨ｳ髷倬・</div>
           <div>
             <h1>{tr(lang, "title")}</h1>
             <p>{tr(lang, "subtitle")}</p>
           </div>
         </div>
         <nav>
-          <span>､・{tr(lang, "nav1")}</span>
-          <span>將 {tr(lang, "nav2")}</span>
-          <span>氏 {tr(lang, "nav3")}</span>
-          <span>遵 {tr(lang, "nav4")}</span>
+          <span>﨟橸ｽ､繝ｻ{tr(lang, "nav1")}</span>
+          <span>﨟槫ｰ・{tr(lang, "nav2")}</span>
+          <span>﨟樊ｰ・{tr(lang, "nav3")}</span>
+          <span>﨟樣・ {tr(lang, "nav4")}</span>
         </nav>
       </header>
       <div className="switches">
@@ -341,17 +341,17 @@ function StoreDetail({ lang, store, startRobot }) {
         <img src={store.image} alt={local(store.name, lang)} />
         <div>
           <h2>{local(store.name, lang)}</h2>
-          <p>桃 {local(store.area, lang)}縲笙｡ {store.likes}</p>
+          <p>﨟樊｡・{local(store.area, lang)}邵ｲﾂ隨呻ｽ｡ {store.likes}</p>
           <div className="detailGrid">
             <div>
               <h3>{tr(lang, "rec")}</h3>
               <div className="picks">
-                {local(store.picks, lang).map((p, i) => <span key={p}>{["試","､・,"ワ","ｧｸ"][i]}<small>{p}</small></span>)}
+                {local(store.picks, lang).map((p, i) => <span key={p}>{["﨟櫁ｩｦ","﨟橸ｽ､繝ｻ,"﨟槭Ρ","﨟橸ｽｧ・ｸ"][i]}<small>{p}</small></span>)}
               </div>
             </div>
             <div>
               <h3>{tr(lang, "feature")}</h3>
-              <ul>{local(store.features, lang).map((f) => <li key={f}>笨・{f}</li>)}</ul>
+              <ul>{local(store.features, lang).map((f) => <li key={f}>隨ｨ繝ｻ{f}</li>)}</ul>
             </div>
             <div>
               <h3>{tr(lang, "campaign")}</h3>
@@ -361,7 +361,7 @@ function StoreDetail({ lang, store, startRobot }) {
         </div>
       </div>
       <button className="possess" onClick={startRobot}>
-        <span>､・/span>
+        <span>﨟橸ｽ､繝ｻ/span>
         <b>{tr(lang, "possess")}</b>
         <small>{tr(lang, "possessSub")}</small>
       </button>
@@ -376,12 +376,12 @@ function RobotDemo({ lang }) {
       <div className="sectionTitle">{tr(lang, "step3")}</div>
       <div className="miniView">
         <img src={scenes.figure.image} alt="robot view" />
-        <span className="hud h1">笳・REC<br />LIVE FEED</span>
+        <span className="hud h1">隨ｳ繝ｻREC<br />LIVE FEED</span>
         <span className="hud h2">BATTERY<br />78%</span>
         <span className="hud h3">{tr(lang, "mission")}<br />+150XP</span>
         <span className="marker m1">LEGENDARY</span>
         <span className="marker m2">RARE</span>
-        <div className="miniPad">竊・{tr(lang, "left")}縲笆ｲ {tr(lang, "forward")}縲{tr(lang, "right")} 竊・/div>
+        <div className="miniPad">遶翫・{tr(lang, "left")}邵ｲﾂ隨・ｽｲ {tr(lang, "forward")}邵ｲﾂ{tr(lang, "right")} 遶翫・/div>
       </div>
     </div>
   );
@@ -393,7 +393,7 @@ function RobotView({ lang, theme, setLang, selected, scene, xp, meters, cart, mo
       <img className="robotPhoto" src={scene.image} alt={local(scene.title, lang)} />
       <div className="robotShade" />
       <div className="robotTop">
-        <span className="rec">笳・REC</span><span>LIVE FEED</span><span>{selected.robot}</span><span>BATTERY 78%</span><span>28ms</span>
+        <span className="rec">隨ｳ繝ｻREC</span><span>LIVE FEED</span><span>{selected.robot}</span><span>BATTERY 78%</span><span>28ms</span>
         <button onClick={() => setLang(lang === "ja" ? "en" : "ja")}>{tr(lang, "lang")}</button>
       </div>
       <div className="robotTitle">
@@ -401,9 +401,9 @@ function RobotView({ lang, theme, setLang, selected, scene, xp, meters, cart, mo
         <h1>{local(scene.title, lang)}</h1>
         <p>{tr(lang, "distance")}: {meters}m / XP {xp}</p>
       </div>
-      <aside className="leftHud"><b>FLOOR MAP</b><div className="floor">笆ｲ</div><p>{local(selected.name, lang)}</p></aside>
+      <aside className="leftHud"><b>FLOOR MAP</b><div className="floor">隨・ｽｲ</div><p>{local(selected.name, lang)}</p></aside>
       <aside className="rightHud"><h3>{tr(lang, "cart")} {cart}</h3><h3>{tr(lang, "mission")}</h3><p>Rare item scan (0/1)</p><p>XP {xp}/3000</p></aside>
-      <div className="scanBox"><b>{scene.rarity}</b><h2>{tr(lang, "itemScan")}</h2><p>MG Gundam Exia</p><p>ﾂ･7,920 / Stock 1</p><button onClick={addCart}>{tr(lang, "addCart")}</button></div>
+      <div className="scanBox"><b>{scene.rarity}</b><h2>{tr(lang, "itemScan")}</h2><p>MG Gundam Exia</p><p>・ゑｽ･7,920 / Stock 1</p><button onClick={addCart}>{tr(lang, "addCart")}</button></div>
       <span className="rMark legendary">LEGENDARY</span><span className="rMark rare">RARE</span><span className="rMark normal">NORMAL</span>
       <div className="movePad">
         {scene.next.map((id, i) => (
