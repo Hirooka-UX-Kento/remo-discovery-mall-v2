@@ -32,7 +32,7 @@ const EXPLORE_URL =
 const copy = {
   ja: {
     langToggle: "English",
-    title: "Re Discovery Mall",
+    title: "Remote Discovery Mall",
     subtitle: "地図から実店舗を選び、商品を見て、ロボットに憑依して棚まで歩く。",
     stores: "登録店舗",
     openStore: "店舗の商品を見る",
@@ -92,11 +92,13 @@ const copy = {
     comingSoon: "準備中",
     hwUnavailable: "ハード連携が必要なため現在未提供",
     warpTo: "ワープで隣接店舗ツインへ",
-    openWorldOn: "オープンワールド接続中"
+    openWorldOn: "オープンワールド接続中",
+    trialExplore: "お試し店舗探索（無料）",
+    trialNote: "このアプリ内で体験・外部に移動しません"
   },
   en: {
     langToggle: "日本語",
-    title: "Re Discovery Mall",
+    title: "Remote Discovery Mall",
     subtitle: "Pick a real store from the map, browse items, possess a robot, and walk to the shelf.",
     stores: "Registered stores",
     openStore: "Browse this store",
@@ -156,7 +158,9 @@ const copy = {
     comingSoon: "Coming Soon",
     hwUnavailable: "Not available yet — requires hardware integration",
     warpTo: "Warp to a connected store twin",
-    openWorldOn: "Open-world linked"
+    openWorldOn: "Open-world linked",
+    trialExplore: "Try store exploration (free)",
+    trialNote: "Runs inside this app — no external redirect"
   }
 };
 
@@ -283,6 +287,7 @@ export default function RemoDiscoveryMall() {
   const [scanned, setScanned] = useState([]);
   const [missionEnd, setMissionEnd] = useState("");
   const [popups, setPopups] = useState([]);
+  const [possessMode, setPossessMode] = useState("external"); // "external"=外部探索アプリへ / "trial"=アプリ内お試し
 
   const node = useMemo(() => nodes.find((item) => item.id === nodeId) || nodes[0], [nodeId]);
   const shelfProducts = useMemo(() => node.products.map(productById).filter(Boolean), [node]);
@@ -301,12 +306,13 @@ export default function RemoDiscoveryMall() {
 
   useEffect(() => {
     if (screen !== "sync") return undefined;
-    // トンネル演出を見せてから外部の探索アプリへ遷移する。
+    // トンネル演出を見せてから、外部探索アプリへ遷移 or アプリ内お試し探索へ。
     const timer = window.setTimeout(() => {
-      window.location.href = EXPLORE_URL;
+      if (possessMode === "trial") setScreen("robot");
+      else window.location.href = EXPLORE_URL;
     }, 2200);
     return () => window.clearTimeout(timer);
-  }, [screen]);
+  }, [screen, possessMode]);
 
   useEffect(() => {
     if (screen === "robot" && hp <= 0) {
@@ -371,7 +377,8 @@ export default function RemoDiscoveryMall() {
     pushPopup(`${text(lang, "request")}: ${local(product.name, lang)}`);
   }
 
-  function startPossession() {
+  function startPossession(mode = "external") {
+    setPossessMode(mode);
     setMissionEnd("");
     setNodeId("entrance");
     setHeading(0);
@@ -462,7 +469,8 @@ export default function RemoDiscoveryMall() {
             pushPopup(`${local(product.name, lang)} / ${product.rarity}`);
           }}
           onRequest={requestPurchase}
-          onPossess={startPossession}
+          onPossess={() => startPossession("external")}
+          onTrial={() => startPossession("trial")}
         />
         <CartDrawer
           lang={lang}
@@ -569,9 +577,12 @@ function HomeScreen({ lang, stores, selectedStore, onSelect, onOpenStore }) {
     <main className="rdmHome">
       <section className="rdmHero">
         <div className="rdmHeroCopy">
-          <p className="rdmEyebrow">REMOTE STORE DISCOVERY</p>
-          <h1 className="rdmMegaTitle">{text(lang, "title")}</h1>
-          <p>{text(lang, "subtitle")}</p>
+          <p className="rdmEyebrow">Telepresence Shopping · Japan</p>
+          <h1 className="rdmMegaTitle">
+            <span className="lead">{text(lang, "title").split(" ")[0]}</span>
+            <span className="main">{text(lang, "title").split(" ").slice(1).join(" ")}</span>
+          </h1>
+          <p className="rdmHeroLead">{text(lang, "subtitle")}</p>
           <div className="rdmHeroBadges">
             <span>360° ROBOT</span>
             <span>QR AR</span>
@@ -675,40 +686,12 @@ function HomeScreen({ lang, stores, selectedStore, onSelect, onOpenStore }) {
             </button>
           ))}
         </div>
-        <ExperienceFeatures lang={lang} />
       </section>
     </main>
   );
 }
 
-function ExperienceFeatures({ lang }) {
-  const { userFeatures } = useFeatures();
-  const { active, comingSoon } = userFeatures();
-  if (active.length === 0 && comingSoon.length === 0) return null;
-  return (
-    <section className="rdmExpFeatures">
-      <h3>{text(lang, "expFeatures")}</h3>
-      <div className="rdmExpGrid">
-        {active.map((f) => (
-          <div className="rdmExpChip" key={f.key}>
-            <strong>{local(f.userFacingLabel || f.name, lang)}</strong>
-            <span>{local(f.userFacingDescription || f.description, lang)}</span>
-            <i className="rdmExpState on">{text(lang, "featActive")}</i>
-          </div>
-        ))}
-        {comingSoon.map((f) => (
-          <div className="rdmExpChip soon" key={f.key}>
-            <strong>{local(f.userFacingLabel || f.name, lang)}</strong>
-            <span>{text(lang, "hwUnavailable")}</span>
-            <i className="rdmExpState soon">{text(lang, "comingSoon")}</i>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function StoreScreen({ lang, store, products, selectedProduct, requestLog, missionEnd, freeProgress, onBack, onProduct, onRequest, onPossess }) {
+function StoreScreen({ lang, store, products, selectedProduct, requestLog, missionEnd, freeProgress, onBack, onProduct, onRequest, onPossess, onTrial }) {
   const groups = [
     ["recommended", text(lang, "recommended")],
     ["limited", text(lang, "limited")],
@@ -762,7 +745,7 @@ function StoreScreen({ lang, store, products, selectedProduct, requestLog, missi
           </div>
           <button onClick={() => onRequest(selectedProduct)}>{text(lang, "request")}</button>
         </div>
-        <PossessionOffer lang={lang} store={store} freeProgress={freeProgress} onPossess={onPossess} />
+        <PossessionOffer lang={lang} store={store} freeProgress={freeProgress} onPossess={onPossess} onTrial={onTrial} />
         <div className="rdmRequestLog">
           <strong>Request log</strong>
           {requestLog.length === 0 ? <p>{text(lang, "requestEmpty")}</p> : requestLog.map((item) => <p key={item}>{item}</p>)}
@@ -772,9 +755,10 @@ function StoreScreen({ lang, store, products, selectedProduct, requestLog, missi
   );
 }
 
-function PossessionOffer({ lang, store, freeProgress, onPossess }) {
+function PossessionOffer({ lang, store, freeProgress, onPossess, onTrial }) {
   const { isFunctional } = useFeatures();
   const showMission = isFunctional("mission_system");
+  const showTrial = isFunctional("free_trial_area");
   return (
     <div className="rdmPossessMenu">
       <p className="rdmEyebrow">{store.access}</p>
@@ -800,6 +784,12 @@ function PossessionOffer({ lang, store, freeProgress, onPossess }) {
         <li>{text(lang, "merit3")}</li>
       </ul>
       <button onClick={onPossess}>{text(lang, "possess")}</button>
+      {showTrial && (
+        <button type="button" className="rdmTrialButton" onClick={onTrial}>
+          {text(lang, "trialExplore")}
+          <small>{text(lang, "trialNote")}</small>
+        </button>
+      )}
     </div>
   );
 }

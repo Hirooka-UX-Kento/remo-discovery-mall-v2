@@ -199,15 +199,32 @@ ul { margin: 0; padding: 0; list-style: none; }
   gap: clamp(20px, 3vw, 40px);
   align-items: stretch;
 }
-.rdmHeroCopy { align-self: center; display: flex; flex-direction: column; gap: 16px; }
+.rdmHeroCopy { align-self: center; display: flex; flex-direction: column; gap: 18px; }
 .rdmMegaTitle {
-  font-size: clamp(40px, 5.4vw, 76px);
+  display: flex;
+  flex-direction: column;
   font-weight: 900;
-  letter-spacing: -.03em;
-  line-height: .98;
-  color: var(--rdm-text);
+  letter-spacing: -.045em;
+  line-height: .84;
+  margin: -2px 0;
 }
-.rdmHeroCopy > p { font-size: clamp(15px, 1.4vw, 18px); line-height: 1.65; color: var(--rdm-muted); max-width: 30ch; }
+.rdmMegaTitle .lead {
+  font-size: clamp(22px, 3vw, 40px);
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: linear-gradient(100deg, var(--rdm-accent), var(--rdm-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: .12em;
+}
+.rdmMegaTitle .main {
+  font-size: clamp(56px, 9vw, 132px);
+  color: var(--rdm-text);
+  text-wrap: balance;
+}
+.rdmHeroLead { font-size: clamp(15px, 1.4vw, 19px); line-height: 1.65; color: var(--rdm-muted); max-width: 34ch; }
 .rdmHeroBadges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .rdmHeroBadges span {
   padding: 7px 13px; border-radius: var(--r-pill);
@@ -219,7 +236,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .rdmMapPanel {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1672 / 941;
   border-radius: var(--r-xl);
   overflow: hidden;
   border: 1px solid var(--rdm-line);
@@ -402,6 +419,17 @@ ul { margin: 0; padding: 0; list-style: none; }
   background: linear-gradient(var(--rdm-accent), var(--rdm-accent-2));
 }
 .rdmPossessMenu > button { margin-top: 8px; padding: 14px; font-size: 15px; }
+.rdmPossessMenu > button.rdmTrialButton {
+  margin-top: 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 11px;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, .38);
+  box-shadow: none;
+}
+.rdmPossessMenu > button.rdmTrialButton:hover { background: rgba(255, 255, 255, .08); transform: translateY(-1px); box-shadow: none; }
+.rdmPossessMenu > button.rdmTrialButton small { font-weight: 600; font-size: 10.5px; opacity: .72; }
 
 .rdmFreeMeter { display: flex; flex-direction: column; gap: 6px; font-size: 11px; font-weight: 700; }
 .rdmFreeMeter > span { color: rgba(255,255,255,.7); letter-spacing: .03em; }
@@ -702,7 +730,6 @@ ul { margin: 0; padding: 0; list-style: none; }
    ===================================================================== */
 @media (max-width: 980px) {
   .rdmHero { grid-template-columns: 1fr; }
-  .rdmMapPanel { aspect-ratio: 16 / 11; }
   .rdmStorePage { grid-template-columns: 1fr; grid-template-areas: "hero" "side" "products"; }
   .rdmStoreSide { position: static; }
   .rdmArPanel, .rdmHpPanel, .rdmMiniMap { width: 168px; }
