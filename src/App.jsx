@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import "./style.css";
 import RemoDiscoveryMall from "./components/RemoDiscoveryMall.jsx";
 import AdminPanel from "./components/AdminPanel.jsx";
+import NeoApp from "./NeoApp.jsx";
 import { FeatureProvider } from "./features/FeatureContext.jsx";
+import { GameProvider } from "./game.jsx";
 
 function useHashRoute() {
   const read = () => window.location.hash.replace(/^#\/?/, "").toLowerCase();
@@ -19,7 +21,13 @@ export default function App() {
   const route = useHashRoute();
   return (
     <FeatureProvider>
-      {route === "admin" ? <AdminPanel /> : <RemoDiscoveryMall />}
+      {route === "admin" ? (
+        <AdminPanel />
+      ) : route === "neo" ? (
+        <GameProvider><NeoApp /></GameProvider>
+      ) : (
+        <RemoDiscoveryMall />
+      )}
     </FeatureProvider>
   );
 }

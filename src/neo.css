@@ -1,0 +1,356 @@
+/* =====================================================================
+   Remolink Discovery Mall — NEO (neon / cyber) build. Namespaced under .neo
+   so it never touches the legacy app's styles.
+   ===================================================================== */
+.neo {
+  --bg: #05070f;
+  --bg-2: #0a0f1c;
+  --panel: rgba(11, 17, 30, .72);
+  --card: rgba(15, 22, 38, .82);
+  --line: color-mix(in srgb, var(--acc), transparent 66%);
+  --text: #e7f4ff;
+  --muted: #8aa0bb;
+  --acc: #19e0ff;
+  --acc-2: #ff48d0;
+  --on: #02121a;
+  --font: "M PLUS 1 Code", "Hiragino Kaku Gothic ProN", ui-monospace, monospace;
+  --r: 14px;
+  --r-lg: 22px;
+  --pill: 999px;
+
+  min-height: 100vh;
+  color: var(--text);
+  font-family: var(--font);
+  background:
+    radial-gradient(1200px 600px at 82% -10%, color-mix(in srgb, var(--acc-2), transparent 86%), transparent 60%),
+    radial-gradient(900px 500px at -8% 4%, color-mix(in srgb, var(--acc), transparent 86%), transparent 60%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+  position: relative;
+  overflow-x: hidden;
+}
+.neo * { box-sizing: border-box; }
+.neo::before { /* grid */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .5;
+  background:
+    linear-gradient(color-mix(in srgb, var(--acc), transparent 90%) 1px, transparent 1px) 0 0 / 100% 44px,
+    linear-gradient(90deg, color-mix(in srgb, var(--acc), transparent 92%) 1px, transparent 1px) 0 0 / 44px 100%;
+  mask: radial-gradient(circle at 50% 30%, #000, transparent 78%);
+}
+.neo::after { /* scanlines */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: .35;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+.neo > * { position: relative; z-index: 1; }
+
+/* ---------- tone palettes (dark cyber base, neon accents + fonts) ---------- */
+.neo.tone-cyber   { --acc:#19e0ff; --acc-2:#ff48d0; --font:"M PLUS 1 Code", ui-monospace, monospace; }
+.neo.tone-game    { --acc:#5bff9b; --acc-2:#ffe24a; --font:"DotGothic16","Courier New",monospace; }
+.neo.tone-night   { --acc:#8b7bff; --acc-2:#22d3ee; --font:"Zen Kaku Gothic New", sans-serif; }
+.neo.tone-pink    { --acc:#ff5fb0; --acc-2:#ff9ec7; --font:"Zen Maru Gothic", sans-serif; }
+.neo.tone-mint    { --acc:#2ff0c0; --acc-2:#7df0ff; --font:"Zen Kaku Gothic New", sans-serif; }
+.neo.tone-premium { --acc:#e6c061; --acc-2:#b98a3a; --text:#f4ecda; --font:"Shippori Mincho", serif; }
+.neo.tone-wonder  { --acc:#ffb020; --acc-2:#ff6ad5; --font:"Mochiy Pop P One", sans-serif; }
+.neo.tone-retro   { --acc:#ff7a3c; --acc-2:#ffd23c; --font:"Yusei Magic", sans-serif; }
+.neo.tone-festival{ --acc:#ff3b5c; --acc-2:#ffd23c; --font:"Reggae One", sans-serif; }
+.neo.tone-simple  { --acc:#cfe0f0; --acc-2:#7f93ad; --text:#eef4fb; --font:"Inter","Noto Sans JP",sans-serif; }
+
+.neo h1,.neo h2,.neo h3 { margin: 0; line-height: 1.1; }
+.neo p { margin: 0; }
+.neo ul { margin: 0; padding: 0; list-style: none; }
+.neo img { display: block; }
+.neo button { font-family: inherit; cursor: pointer; color: inherit; }
+.neo .eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: var(--acc); }
+.neo .mono { font-family: "M PLUS 1 Code", ui-monospace, monospace; }
+
+/* glass panel */
+.neoPanel {
+  position: relative; border-radius: var(--r-lg);
+  background: var(--panel); border: 1px solid var(--line);
+  box-shadow: 0 18px 50px rgba(2,6,14,.5), inset 0 0 0 1px rgba(255,255,255,.02);
+  backdrop-filter: blur(12px); overflow: hidden;
+}
+.neoPanel::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--acc), var(--acc-2), transparent); opacity: .9; }
+.neoPanelTitle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.neoPanelTitle::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); box-shadow: 0 0 10px var(--acc); }
+
+/* buttons */
+.neoBtn {
+  border: 1px solid var(--line); border-radius: var(--pill);
+  padding: 11px 18px; font-weight: 800; font-size: 13px; letter-spacing: .02em;
+  color: var(--text); background: color-mix(in srgb, var(--acc), transparent 92%);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.neoBtn:hover { transform: translateY(-1px); border-color: var(--acc); box-shadow: 0 0 18px color-mix(in srgb, var(--acc), transparent 60%); }
+.neoBtn.solid { color: var(--on); border: 0; background: linear-gradient(110deg, var(--acc), var(--acc-2)); box-shadow: 0 0 22px color-mix(in srgb, var(--acc), transparent 55%); }
+.neoBtn.block { width: 100%; justify-content: center; }
+.neoBtn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* =====================================================================
+   Header
+   ===================================================================== */
+.neoTop {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 16px 22px; flex-wrap: wrap;
+  padding: 12px clamp(14px, 3vw, 30px);
+  background: color-mix(in srgb, var(--bg), transparent 18%);
+  border-bottom: 1px solid var(--line); backdrop-filter: blur(14px);
+}
+.neoBrand { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; }
+.neoLogo {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: 18px; font-weight: 900; color: var(--on);
+  background: linear-gradient(135deg, var(--acc), var(--acc-2)); box-shadow: 0 0 22px color-mix(in srgb, var(--acc), transparent 50%);
+}
+.neoBrand b { font-size: 16px; letter-spacing: .02em; }
+.neoBrand span { display: block; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.neoXp { min-width: 200px; flex: 0 1 280px; }
+.neoXp .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; margin-bottom: 5px; }
+.neoXp .rank { font-weight: 900; letter-spacing: .1em; color: var(--acc); }
+.neoXp .pts { color: var(--muted); }
+.neoXp .track { height: 8px; border-radius: var(--pill); background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid var(--line); }
+.neoXp .fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--acc), var(--acc-2)); box-shadow: 0 0 12px color-mix(in srgb, var(--acc), transparent 40%); transition: width .4s ease; }
+.neoActions { display: flex; align-items: center; gap: 9px; }
+.neoSel {
+  appearance: none; font: inherit; font-size: 12px; font-weight: 700; color: var(--text);
+  padding: 9px 30px 9px 13px; border-radius: var(--pill); border: 1px solid var(--line);
+  background: linear-gradient(45deg, transparent 50%, var(--acc) 50%) calc(100% - 14px) 52% / 7px 7px no-repeat, var(--card);
+  cursor: pointer;
+}
+.neoCartBtn { position: relative; display: inline-flex; align-items: center; gap: 7px; }
+.neoCartBtn i { display: inline-grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--pill); font-style: normal; font-size: 11px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
+.neoIcon { width: 40px; height: 40px; border-radius: var(--pill); display: inline-grid; place-items: center; font-size: 16px; text-decoration: none; color: var(--muted); border: 1px solid var(--line); }
+.neoIcon:hover { color: var(--text); border-color: var(--acc); }
+
+/* =====================================================================
+   Home
+   ===================================================================== */
+.neoHome { max-width: 1280px; margin: 0 auto; padding: clamp(20px,3vw,40px) clamp(14px,3vw,30px) 60px; }
+.neoHero { margin-bottom: 26px; }
+.neoTitle { display: flex; flex-direction: column; font-weight: 900; letter-spacing: -.04em; line-height: .82; margin: 8px 0 14px; }
+.neoTitle .lead { font-size: clamp(20px,2.6vw,34px); letter-spacing: .12em; text-transform: uppercase; background: linear-gradient(100deg, var(--acc), var(--acc-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.neoTitle .main { font-size: clamp(48px,8vw,108px); text-shadow: 0 0 40px color-mix(in srgb, var(--acc), transparent 70%); }
+.neoHero > p { color: var(--muted); font-size: clamp(14px,1.3vw,17px); max-width: 46ch; line-height: 1.6; }
+.neoChips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.neoChips span { font-size: 11px; font-weight: 800; letter-spacing: .06em; padding: 6px 12px; border-radius: var(--pill); color: var(--acc); border: 1px solid var(--line); background: color-mix(in srgb, var(--acc), transparent 90%); }
+
+.neoTabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.neoTab { padding: 9px 18px; border-radius: var(--pill); font-weight: 800; font-size: 13px; color: var(--muted); background: transparent; border: 1px solid var(--line); }
+.neoTab.on { color: var(--on); background: linear-gradient(110deg, var(--acc), var(--acc-2)); border-color: transparent; }
+
+.neoBoard { display: grid; grid-template-columns: 1.4fr .9fr; gap: 18px; align-items: start; }
+.neoColR { display: grid; gap: 18px; }
+
+/* map */
+.neoMap { position: relative; aspect-ratio: 1672 / 941; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(2,6,14,.5); background: #081224; }
+.neoMap > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .92; }
+.neoMap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(3,7,16,.55)); }
+.neoEdges { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.neoEdges line { stroke: color-mix(in srgb, var(--acc-2), transparent 55%); stroke-width: 1.3; vector-effect: non-scaling-stroke; stroke-dasharray: 5 6; }
+.neoEdges line.on { stroke: var(--acc-2); stroke-width: 2.2; animation: neoDash 1s linear infinite; filter: drop-shadow(0 0 4px var(--acc-2)); }
+@keyframes neoDash { to { stroke-dashoffset: -22; } }
+.neoPin { position: absolute; transform: translate(-50%,-50%); width: 16px; height: 16px; padding: 0; border: 0; background: transparent; z-index: 2; }
+.neoPin span { display: block; width: 13px; height: 13px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc), transparent 60%), 0 0 12px var(--acc); }
+.neoPin::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--acc); opacity: .5; animation: neoPing 1.9s ease-out infinite; }
+.neoPin.active span { background: var(--acc-2); box-shadow: 0 0 0 5px color-mix(in srgb, var(--acc-2), transparent 55%), 0 0 16px var(--acc-2); }
+.neoPin.portal span { background: var(--acc-2); animation: neoPortal 1.4s ease-in-out infinite; }
+.neoPin b { position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); white-space: nowrap; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; font-style: normal; color: #fff; background: rgba(6,12,22,.92); border: 1px solid var(--line); opacity: 0; transition: opacity .14s; }
+.neoPin.active b, .neoPin.portal b, .neoPin:hover b { opacity: 1; }
+@keyframes neoPing { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes neoPortal { 0%,100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+.neoWarp { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: repeating-conic-gradient(from 0deg, transparent 0 3deg, color-mix(in srgb, var(--acc-2), transparent 76%) 3deg 3.7deg); -webkit-mask: radial-gradient(circle at 50% 50%, transparent 3%, #000 56%); mask: radial-gradient(circle at 50% 50%, transparent 3%, #000 56%); animation: neoWarpA .75s ease-out; }
+@keyframes neoWarpA { 0% { opacity: 0; transform: scale(.5) rotate(0); } 40% { opacity: .95; } 100% { opacity: 0; transform: scale(2.3) rotate(10deg); } }
+
+/* selected store + store rail */
+.neoSelected { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding: 14px; }
+.neoSelected img { width: 100%; height: 92px; object-fit: cover; border-radius: var(--r); }
+.neoSelected h2 { font-size: 20px; margin: 2px 0 4px; }
+.neoSelected p { font-size: 12px; color: var(--muted); }
+.neoSelected .twin { margin-top: 8px; font-size: 11px; color: var(--acc); }
+.neoStores { padding: 16px; }
+.neoStoresGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; max-height: 360px; overflow: auto; }
+.neoStore { position: relative; text-align: left; padding: 0 0 12px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .14s, border-color .14s; }
+.neoStore:hover, .neoStore.active { transform: translateY(-3px); border-color: var(--acc); }
+.neoStore img { width: 100%; height: 84px; object-fit: cover; }
+.neoStore i { position: absolute; top: 8px; left: 8px; font-style: normal; font-size: 9px; font-weight: 900; letter-spacing: .08em; padding: 3px 8px; border-radius: var(--pill); color: var(--text); background: rgba(6,12,22,.7); }
+.neoStore.hot i { color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
+.neoStore b { display: block; margin: 9px 11px 0; font-size: 12.5px; }
+.neoStore small { display: block; margin: 3px 11px 0; font-size: 11px; color: var(--muted); }
+
+/* missions / leaderboard */
+.neoMission { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.neoMission:last-child { border-bottom: 0; }
+.neoMission .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.neoMission .ttl { font-size: 13px; font-weight: 700; }
+.neoMission .tag { font-size: 9px; font-weight: 900; letter-spacing: .08em; color: var(--muted); }
+.neoMission .track { height: 6px; border-radius: var(--pill); background: rgba(255,255,255,.08); overflow: hidden; }
+.neoMission .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--acc), var(--acc-2)); }
+.neoMission .foot { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+.neoMission .claim { border: 0; border-radius: var(--pill); padding: 5px 12px; font-size: 11px; font-weight: 800; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
+.neoMission .claim:disabled { opacity: .35; background: rgba(255,255,255,.1); color: var(--muted); }
+
+.neoLeader .row { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.neoLeader .row:last-child { border-bottom: 0; }
+.neoLeader .row .n { color: var(--muted); font-weight: 900; }
+.neoLeader .row .x { color: var(--acc); font-weight: 800; font-size: 12px; }
+.neoLeader .row.you { color: var(--acc); }
+.neoLeader .row.you .n { color: var(--acc-2); }
+
+/* =====================================================================
+   Store / Shop
+   ===================================================================== */
+.neoShop { max-width: 1280px; margin: 0 auto; padding: clamp(16px,2.5vw,30px) clamp(14px,3vw,30px) 60px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+.neoShopHero { grid-column: 1 / -1; position: relative; min-height: 200px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); color: #fff; }
+.neoShopHero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.neoShopHero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,8,16,.1), rgba(4,8,16,.82)); }
+.neoShopHero .body { position: absolute; left: 24px; bottom: 22px; right: 20px; z-index: 2; }
+.neoShopHero h1 { font-size: clamp(26px,3vw,40px); margin: 4px 0; text-shadow: 0 2px 18px rgba(0,0,0,.5); }
+.neoBack { position: absolute; top: 14px; left: 14px; z-index: 3; }
+.neoProds { display: grid; gap: 22px; }
+.neoProdSec h3 { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
+.neoProdSec h3::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: linear-gradient(var(--acc), var(--acc-2)); }
+.neoProdGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.neoProd { position: relative; text-align: left; padding: 0 0 11px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .14s, border-color .14s; }
+.neoProd:hover { transform: translateY(-3px); }
+.neoProd.active { border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc), transparent 60%); }
+.neoProd img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.neoProd .rar { position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: var(--pill); color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
+.neoProd b { display: block; margin: 9px 11px 0; font-size: 12.5px; }
+.neoProd small { display: block; margin: 4px 11px 0; font-size: 11px; color: var(--muted); }
+.neoSide { display: grid; gap: 16px; position: sticky; top: 80px; }
+.neoFocus { padding: 16px; }
+.neoFocus img { width: 100%; height: 180px; object-fit: cover; border-radius: var(--r); margin-bottom: 10px; }
+.neoFocus h2 { font-size: 18px; margin-bottom: 6px; }
+.neoFocus p { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.neoFocus .price { display: flex; justify-content: space-between; align-items: baseline; margin: 10px 0; }
+.neoFocus .price b { font-size: 24px; }
+.neoFocus .price span { font-size: 12px; color: var(--muted); }
+.neoPossess { padding: 18px; }
+.neoPossess h2 { font-size: 18px; margin: 4px 0 8px; }
+.neoPossess .big { font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+.neoPossess ul { display: grid; gap: 5px; margin: 8px 0; }
+.neoPossess li { position: relative; padding-left: 18px; font-size: 12px; color: var(--muted); }
+.neoPossess li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(var(--acc), var(--acc-2)); }
+.neoPossess .neoBtn { margin-top: 8px; }
+.neoReqlog { padding: 14px 16px; }
+.neoReqlog p { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* =====================================================================
+   Explore (in-app trial) — HUD
+   ===================================================================== */
+.neoEx { position: relative; min-height: 100vh; overflow: hidden; color: #eaf6ff; background: #04070f; }
+.neoFeed { position: absolute; inset: 0; background-size: cover; background-position: center; transition: background-position .4s ease; }
+.neoExShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3,7,14,.7), transparent 24%, transparent 76%, rgba(3,7,14,.7)), linear-gradient(180deg, rgba(3,7,14,.55), transparent 32% 68%, rgba(3,7,14,.66)), repeating-linear-gradient(0deg, rgba(25,224,255,.05) 0 1px, transparent 1px 20px); }
+.neoGlass { background: rgba(7,14,26,.62); border: 1px solid color-mix(in srgb, var(--acc), transparent 50%); backdrop-filter: blur(12px); }
+.neoExTop { position: absolute; z-index: 12; left: 14px; right: 14px; top: 14px; display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: var(--r); font-size: 12px; font-weight: 700; }
+.neoExTop .rec { color: #ff5b7a; font-weight: 900; letter-spacing: .1em; }
+.neoExTop .sp { margin-left: auto; }
+.neoExStat { position: absolute; z-index: 12; left: 14px; top: 66px; width: 210px; padding: 12px 14px; border-radius: var(--r); }
+.neoExStat .b { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; margin-bottom: 7px; }
+.neoBar { height: 7px; border-radius: var(--pill); background: rgba(255,255,255,.12); overflow: hidden; }
+.neoBar i { display: block; height: 100%; background: linear-gradient(90deg, var(--acc), var(--acc-2)); }
+.neoMini { position: absolute; z-index: 12; left: 14px; bottom: 128px; width: 176px; padding: 13px; border-radius: var(--r); }
+.neoMini > div { position: relative; height: 110px; margin-top: 9px; border-radius: 10px; background: linear-gradient(rgba(25,224,255,.12) 1px, transparent 1px) 0 0/100% 22px, linear-gradient(90deg, rgba(25,224,255,.12) 1px, transparent 1px) 0 0/22px 100%, rgba(25,224,255,.04); border: 1px solid color-mix(in srgb, var(--acc), transparent 70%); }
+.neoMini span { position: absolute; transform: translate(-50%,-50%); width: 22px; height: 22px; display: grid; place-items: center; font-size: 10px; font-weight: 900; border-radius: 6px; color: var(--text); background: rgba(8,16,30,.85); border: 1px solid color-mix(in srgb, var(--acc), transparent 60%); }
+.neoMini span.on { color: var(--on); background: var(--acc); border-color: var(--acc); }
+.neoAr { position: absolute; z-index: 12; right: 14px; bottom: 128px; width: 280px; padding: 16px; border-radius: var(--r); display: grid; gap: 10px; }
+.neoAr h2 { font-size: 15px; }
+.neoAr dl { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0; }
+.neoAr dl > div { text-align: center; background: color-mix(in srgb, var(--acc), transparent 90%); border-radius: 8px; padding: 7px; }
+.neoAr dt { font-size: 9px; letter-spacing: .06em; color: var(--muted); }
+.neoAr dd { margin: 3px 0 0; font-size: 13px; font-weight: 800; }
+.neoShelf { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%); width: 92px; padding: 0; border: 0; background: transparent; z-index: 8; }
+.neoShelf img { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,.7); box-shadow: 0 10px 26px rgba(0,0,0,.5); transition: transform .14s; }
+.neoShelf:hover img { transform: scale(1.07); }
+.neoShelf.active img { border-color: var(--acc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc), transparent 45%); }
+.neoShelf span { display: inline-block; margin-top: 5px; font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: var(--pill); background: rgba(8,16,30,.8); border: 1px solid color-mix(in srgb, var(--acc), transparent 55%); }
+.neoLook, .neoMove { position: absolute; z-index: 14; left: 50%; transform: translateX(-50%); display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; }
+.neoLook { bottom: 80px; }
+.neoMove { bottom: 20px; width: min(820px, 94vw); }
+.neoLook button, .neoMove button { min-width: 110px; padding: 10px 16px; border-radius: var(--r); font-weight: 800; font-size: 12px; color: #eaf6ff; background: rgba(7,14,26,.62); border: 1px solid color-mix(in srgb, var(--acc), transparent 50%); backdrop-filter: blur(10px); }
+.neoLook button.on { color: var(--on); background: var(--acc); }
+.neoMove button small { display: block; font-size: 9px; opacity: .7; }
+.neoMove .exit { background: rgba(40,12,20,.6); border-color: rgba(255,91,122,.4); }
+.neoTreasureBtn { position: absolute; z-index: 13; right: 14px; top: 66px; padding: 11px 16px; border-radius: var(--pill); font-weight: 900; font-size: 13px; color: var(--on); background: linear-gradient(120deg, var(--acc-2), var(--acc)); box-shadow: 0 0 22px color-mix(in srgb, var(--acc-2), transparent 50%); border: 0; animation: neoGlow 1.6s ease-in-out infinite; }
+@keyframes neoGlow { 0%,100% { box-shadow: 0 0 18px color-mix(in srgb, var(--acc-2), transparent 55%); } 50% { box-shadow: 0 0 30px color-mix(in srgb, var(--acc-2), transparent 25%); } }
+
+/* =====================================================================
+   Sugoroku board
+   ===================================================================== */
+.neoSugo { max-width: 1100px; margin: 0 auto; padding: clamp(18px,3vw,40px) clamp(14px,3vw,30px) 60px; }
+.neoSugoHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.neoBoardWrap { padding: 22px; }
+.neoTiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.neoTile { position: relative; aspect-ratio: 1; border-radius: var(--r); display: grid; place-items: center; text-align: center; padding: 8px; font-size: 11px; font-weight: 800; color: var(--text); background: var(--card); border: 1px solid var(--line); }
+.neoTile small { display: block; font-size: 9px; color: var(--muted); }
+.neoTile.k-start { border-color: var(--acc); }
+.neoTile.k-goal { border-color: var(--acc-2); }
+.neoTile.k-xp { background: color-mix(in srgb, var(--acc), transparent 88%); }
+.neoTile.k-warp { background: color-mix(in srgb, var(--acc-2), transparent 86%); }
+.neoTile.here { box-shadow: 0 0 0 2px var(--acc), 0 0 24px color-mix(in srgb, var(--acc), transparent 40%); }
+.neoTile .tok { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, var(--acc), var(--acc-2)); box-shadow: 0 0 10px var(--acc); }
+.neoDice { display: inline-grid; place-items: center; min-width: 70px; height: 56px; border-radius: var(--r); font-size: 26px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); border: 0; box-shadow: 0 0 24px color-mix(in srgb, var(--acc), transparent 50%); }
+.neoDice:disabled { opacity: .5; }
+
+/* =====================================================================
+   Possession tunnel
+   ===================================================================== */
+.neoSync { position: relative; min-height: 100vh; overflow: hidden; display: grid; place-items: center; text-align: center; color: #fff; background: radial-gradient(circle at 50% 50%, #102046, #05070f 70%); perspective: 520px; }
+.neoSync img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; }
+.neoTunnel { position: absolute; inset: 0; transform-style: preserve-3d; }
+.neoTunnel span { position: absolute; left: 50%; top: 50%; width: 70vmax; height: 70vmax; margin: -35vmax 0 0 -35vmax; border-radius: 44%; border: 2px solid color-mix(in srgb, var(--acc), transparent 35%); box-shadow: 0 0 60px color-mix(in srgb, var(--acc), transparent 70%); opacity: 0; animation: neoTunnelZ 1.9s linear infinite; animation-delay: calc(var(--i) * -.211s); }
+@keyframes neoTunnelZ { 0% { transform: translateZ(-900px) scale(.04); opacity: 0; } 14% { opacity: .95; } 100% { transform: translateZ(420px) scale(2.6); opacity: 0; } }
+.neoSpeed { position: absolute; inset: -25%; background: repeating-conic-gradient(from 0deg, transparent 0 2.6deg, color-mix(in srgb, var(--acc-2), transparent 84%) 2.6deg 3.1deg); -webkit-mask: radial-gradient(circle at 50% 50%, transparent 6%, #000 52%); mask: radial-gradient(circle at 50% 50%, transparent 6%, #000 52%); animation: neoSpeedZ 1.15s linear infinite; }
+@keyframes neoSpeedZ { 0% { transform: scale(.55); opacity: 0; } 35% { opacity: .85; } 100% { transform: scale(2.6) rotate(7deg); opacity: 0; } }
+.neoSyncCore { position: relative; z-index: 5; }
+.neoSyncCore span { font-size: 12px; font-weight: 800; letter-spacing: .3em; color: var(--acc); }
+.neoSyncCore h1 { font-size: clamp(34px,6vw,68px); margin: 8px 0; text-shadow: 0 0 40px color-mix(in srgb, var(--acc), transparent 60%); }
+.neoSyncCore p { font-size: 12px; color: rgba(255,255,255,.66); }
+
+/* =====================================================================
+   Cart drawer + toasts
+   ===================================================================== */
+.neoCartOv { position: fixed; inset: 0; z-index: 300; display: flex; justify-content: flex-end; background: rgba(4,8,16,.55); backdrop-filter: blur(3px); }
+.neoCart { width: min(420px, 100vw); height: 100%; display: flex; flex-direction: column; background: var(--bg-2); border-left: 1px solid var(--line); box-shadow: -20px 0 60px rgba(0,0,0,.5); animation: neoSlide .26s ease-out; }
+@keyframes neoSlide { from { transform: translateX(28px); opacity: .4; } to { transform: none; opacity: 1; } }
+.neoCart header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.neoCart header b { font-size: 18px; }
+.neoCart .close { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 20px; }
+.neoCart .list { flex: 1; overflow: auto; padding: 14px 16px; display: grid; gap: 11px; align-content: start; }
+.neoCart .empty { flex: 1; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 40px; }
+.neoLine { display: grid; grid-template-columns: 56px 1fr auto; gap: 11px; padding: 11px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); }
+.neoLine img { width: 56px; height: 56px; object-fit: cover; border-radius: 9px; }
+.neoLine .info b { font-size: 12.5px; }
+.neoLine .info small { display: block; color: var(--muted); font-size: 11px; }
+.neoLine .info .pr { font-weight: 900; font-size: 12px; margin-top: 2px; }
+.neoQty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--pill); overflow: hidden; }
+.neoQty button { width: 28px; height: 28px; border: 0; background: var(--card); color: var(--text); font-size: 15px; font-weight: 900; }
+.neoQty span { min-width: 26px; text-align: center; font-weight: 900; font-size: 12px; }
+.neoCart footer { padding: 16px 20px 20px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.neoCart .total { display: flex; justify-content: space-between; align-items: baseline; }
+.neoCart .total b { font-size: 24px; }
+.neoCart .total span { color: var(--muted); }
+.rmlink { border: 0; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; }
+
+.neoToasts { position: fixed; z-index: 400; right: 16px; bottom: 16px; display: grid; gap: 8px; width: min(320px, calc(100vw - 32px)); pointer-events: none; }
+.neoToast { padding: 11px 15px; border-radius: var(--r); font-size: 13px; font-weight: 700; color: var(--text); background: var(--panel); border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(0,0,0,.4); backdrop-filter: blur(12px); animation: neoToastIn .25s ease-out; }
+.neoToast.xp { border-color: var(--acc); }
+.neoToast.ok { border-color: var(--acc-2); }
+@keyframes neoToastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* responsive */
+@media (max-width: 940px) {
+  .neoBoard { grid-template-columns: 1fr; }
+  .neoShop { grid-template-columns: 1fr; }
+  .neoSide { position: static; }
+  .neoAr { width: 200px; }
+  .neoMini { display: none; }
+  .neoTiles { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 560px) {
+  .neoCart { width: 100vw; }
+  .neoXp { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .neo *, .neo *::before, .neo *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
