@@ -32,7 +32,7 @@ const EXPLORE_URL =
 const copy = {
   ja: {
     langToggle: "English",
-    title: "Remote Discovery Mall",
+    title: "Remolink Discovery Mall",
     subtitle: "地図から実店舗を選び、商品を見て、ロボットに憑依して棚まで歩く。",
     stores: "登録店舗",
     openStore: "店舗の商品を見る",
@@ -98,7 +98,7 @@ const copy = {
   },
   en: {
     langToggle: "日本語",
-    title: "Remote Discovery Mall",
+    title: "Remolink Discovery Mall",
     subtitle: "Pick a real store from the map, browse items, possess a robot, and walk to the shelf.",
     stores: "Registered stores",
     openStore: "Browse this store",

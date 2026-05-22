@@ -34,51 +34,61 @@
   --rdm-bg: #0e1117; --rdm-text: #eef1f6; --rdm-muted: #94a0b0;
   --rdm-card: #171c26; --rdm-card-2: #1f2632; --rdm-panel: rgba(18,23,32,.82);
   --rdm-line: rgba(255,255,255,.09); --rdm-accent: #5b8cff; --rdm-accent-2: #22d3ee; --rdm-on-accent: #06101f;
+  --rdm-font: "DotGothic16", "Courier New", monospace;
 }
 .rdmTone-pink {
   --rdm-bg: #fff5f9; --rdm-text: #3a2230; --rdm-muted: #9c7385;
   --rdm-card: #ffffff; --rdm-card-2: #fff0f6; --rdm-panel: rgba(255,250,252,.82);
   --rdm-line: rgba(214,51,108,.14); --rdm-accent: #ff5fa2; --rdm-accent-2: #ff9ec7; --rdm-on-accent: #ffffff;
+  --rdm-font: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
 }
 .rdmTone-mint {
   --rdm-bg: #f1fbf6; --rdm-text: #103129; --rdm-muted: #5d8377;
   --rdm-card: #ffffff; --rdm-card-2: #e9f8f1; --rdm-panel: rgba(247,255,251,.82);
   --rdm-line: rgba(16,120,90,.14); --rdm-accent: #0fae7e; --rdm-accent-2: #5fd6b0; --rdm-on-accent: #04241b;
+  --rdm-font: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
 }
 .rdmTone-cyber {
   --rdm-bg: #060913; --rdm-text: #e8fbff; --rdm-muted: #8aa3b5;
   --rdm-card: #0e1626; --rdm-card-2: #14203a; --rdm-panel: rgba(10,18,34,.8);
   --rdm-line: rgba(24,215,230,.18); --rdm-accent: #18d7e6; --rdm-accent-2: #b06bff; --rdm-on-accent: #02121a;
+  --rdm-font: "M PLUS 1 Code", "Hiragino Kaku Gothic ProN", ui-monospace, monospace;
 }
 .rdmTone-simple {
   --rdm-bg: #f6f6f4; --rdm-text: #1b1b1d; --rdm-muted: #6b6b70;
   --rdm-card: #ffffff; --rdm-card-2: #f0f0ee; --rdm-panel: rgba(255,255,255,.85);
   --rdm-line: rgba(0,0,0,.1); --rdm-accent: #1b1b1d; --rdm-accent-2: #555558; --rdm-on-accent: #ffffff;
+  --rdm-font: "Inter", "Noto Sans JP", system-ui, sans-serif;
 }
 .rdmTone-wonder {
   --rdm-bg: #fff9ec; --rdm-text: #3a2c12; --rdm-muted: #8b7748;
   --rdm-card: #fffdf7; --rdm-card-2: #fff3d6; --rdm-panel: rgba(255,251,240,.84);
   --rdm-line: rgba(214,150,30,.18); --rdm-accent: #ef9a0b; --rdm-accent-2: #fbbf24; --rdm-on-accent: #2a1c00;
+  --rdm-font: "Mochiy Pop P One", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
 }
 .rdmTone-premium {
   --rdm-bg: #14110c; --rdm-text: #f3ecdd; --rdm-muted: #b3a489;
   --rdm-card: #1d1913; --rdm-card-2: #26201780; --rdm-panel: rgba(26,22,16,.82);
   --rdm-line: rgba(214,184,120,.18); --rdm-accent: #c9a35a; --rdm-accent-2: #e6cf94; --rdm-on-accent: #18120a;
+  --rdm-font: "Shippori Mincho", "Hiragino Mincho ProN", serif;
 }
 .rdmTone-retro {
   --rdm-bg: #f7ecd9; --rdm-text: #3f2a1b; --rdm-muted: #8a6a4d;
   --rdm-card: #fff7e9; --rdm-card-2: #f6e7cd; --rdm-panel: rgba(255,248,234,.85);
   --rdm-line: rgba(180,90,40,.18); --rdm-accent: #d2683b; --rdm-accent-2: #e8a04f; --rdm-on-accent: #ffffff;
+  --rdm-font: "Yusei Magic", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
 }
 .rdmTone-night {
   --rdm-bg: #0a0e1f; --rdm-text: #eef1ff; --rdm-muted: #97a0c0;
   --rdm-card: #131831; --rdm-card-2: #1b2244; --rdm-panel: rgba(15,20,42,.82);
   --rdm-line: rgba(124,124,255,.18); --rdm-accent: #7c6cff; --rdm-accent-2: #38bdf8; --rdm-on-accent: #ffffff;
+  --rdm-font: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
 }
 .rdmTone-festival {
   --rdm-bg: #fff6f0; --rdm-text: #341712; --rdm-muted: #946057;
   --rdm-card: #ffffff; --rdm-card-2: #fff0e8; --rdm-panel: rgba(255,250,245,.85);
   --rdm-line: rgba(225,29,72,.16); --rdm-accent: #e11d48; --rdm-accent-2: #f59e0b; --rdm-on-accent: #ffffff;
+  --rdm-font: "Reggae One", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
 }
 
 /* ---------- base ---------- */
@@ -99,6 +109,7 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 .rdmShell {
   min-height: 100vh;
+  font-family: var(--rdm-font);
   background:
     radial-gradient(900px 500px at 88% -8%, color-mix(in srgb, var(--rdm-accent), transparent 88%), transparent),
     radial-gradient(700px 420px at -6% 0%, color-mix(in srgb, var(--rdm-accent-2), transparent 90%), transparent),
