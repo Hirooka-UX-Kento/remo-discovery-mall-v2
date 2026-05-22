@@ -25,6 +25,10 @@ const PRODUCT_IMAGES = {
   pin: asset("assets/generated/products/pin.png")
 };
 
+// 憑依後に遷移する外部「探索アプリ」のURL。差し替えるならここを変更。
+const EXPLORE_URL =
+  "https://appbuilder.remolink.com/titles/01GE42X26S240JHM74R0Q3QE2S/apps/01KS7ZAPQM3H86D1C999A36WB0/builder?page=webUI&pageId=4686dc3a-6d9c-4ce7-9948-0351ce467a76&viewId=1738e0f5-d0a8-4886-9dca-5f9b7831abda&webUiTab=views";
+
 const copy = {
   ja: {
     langToggle: "English",
@@ -275,7 +279,10 @@ export default function RemoDiscoveryMall() {
 
   useEffect(() => {
     if (screen !== "sync") return undefined;
-    const timer = window.setTimeout(() => setScreen("robot"), 1900);
+    // トンネル演出を見せてから外部の探索アプリへ遷移する。
+    const timer = window.setTimeout(() => {
+      window.location.href = EXPLORE_URL;
+    }, 2200);
     return () => window.clearTimeout(timer);
   }, [screen]);
 
