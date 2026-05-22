@@ -1,5 +1,28 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./style.css";
+import RemoDiscoveryMall from "./components/RemoDiscoveryMall.jsx";
+import AdminPanel from "./components/AdminPanel.jsx";
+import { FeatureProvider } from "./features/FeatureContext.jsx";
+
+function useHashRoute() {
+  const read = () => window.location.hash.replace(/^#\/?/, "").toLowerCase();
+  const [route, setRoute] = useState(read);
+  useEffect(() => {
+    const onHash = () => setRoute(read());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  return route;
+}
+
+export default function App() {
+  const route = useHashRoute();
+  return (
+    <FeatureProvider>
+      {route === "admin" ? <AdminPanel /> : <RemoDiscoveryMall />}
+    </FeatureProvider>
+  );
+}
 
 const I18N = {
   ja: {
@@ -27,6 +50,13 @@ const I18N = {
     cart: "\u30ab\u30fc\u30c8",
     itemScan: "\u30a2\u30a4\u30c6\u30e0\u30b9\u30ad\u30e3\u30f3",
     addCart: "\u30ab\u30fc\u30c8\u306b\u8ffd\u52a0",
+    scanQr: "\u68da\u306eQR\u3092\u30b9\u30ad\u30e3\u30f3",
+    requestPurchase: "\u8cfc\u5165\u30ea\u30af\u30a8\u30b9\u30c8",
+    arInfo: "AR\u5546\u54c1\u60c5\u5831",
+    shelf: "\u68da",
+    stock: "\u5728\u5eab",
+    zoom: "\u753b\u50cf\u30ba\u30fc\u30e0",
+    close: "\u9589\u3058\u308b",
     forward: "\u524d\u9032",
     left: "\u5de6\u3092\u898b\u308b",
     right: "\u53f3\u3092\u898b\u308b",
@@ -62,6 +92,13 @@ const I18N = {
     cart: "Cart",
     itemScan: "Item Scan",
     addCart: "Add to cart",
+    scanQr: "Scan shelf QR",
+    requestPurchase: "Purchase request",
+    arInfo: "AR item info",
+    shelf: "Shelf",
+    stock: "Stock",
+    zoom: "Image zoom",
+    close: "Close",
     forward: "Forward",
     left: "Look left",
     right: "Look right",
@@ -179,12 +216,93 @@ const stores = [
   }
 ];
 
+const robotProducts = {
+  exia: {
+    id: "exia",
+    name: { ja: "MG \u30ac\u30f3\u30c0\u30e0\u30a8\u30af\u30b7\u30a2", en: "MG Gundam Exia" },
+    price: "\u00a57,920",
+    stock: 1,
+    rarity: "LEGENDARY",
+    shelf: "A-03",
+    qr: "RDM-A03-EXIA",
+    side: "left",
+    x: 33,
+    y: 48,
+    color: "#69e7ff",
+    note: { ja: "\u9650\u5b9a\u518d\u5165\u8377\u3002\u5916\u7bb1\u72b6\u614bA\u3002", en: "Limited restock. Box grade A." }
+  },
+  miku: {
+    id: "miku",
+    name: { ja: "\u96ea\u30df\u30af \u30a2\u30af\u30ea\u30eb\u30b9\u30bf\u30f3\u30c9", en: "Snow Miku Acrylic Stand" },
+    price: "\u00a51,980",
+    stock: 4,
+    rarity: "RARE",
+    shelf: "A-05",
+    qr: "RDM-A05-MIKU",
+    side: "right",
+    x: 68,
+    y: 43,
+    color: "#ff66c7",
+    note: { ja: "\u68da\u4e0a\u6bb5\u306e\u5730\u57df\u9650\u5b9a\u30a2\u30a4\u30c6\u30e0\u3002", en: "Regional limited item on the upper shelf." }
+  },
+  cards: {
+    id: "cards",
+    name: { ja: "\u30ec\u30a2\u30ab\u30fc\u30c9\u30d1\u30c3\u30af 1998", en: "Rare Card Pack 1998" },
+    price: "\u00a54,400",
+    stock: 2,
+    rarity: "RARE",
+    shelf: "B-02",
+    qr: "RDM-B02-CARD",
+    side: "front",
+    x: 50,
+    y: 45,
+    color: "#ffe16a",
+    note: { ja: "\u30b1\u30fc\u30b9\u5185\u306e\u30b9\u30bf\u30c3\u30d5\u78ba\u8a8d\u5fc5\u8981\u5546\u54c1\u3002", en: "Staff confirmation required from the showcase." }
+  },
+  retro: {
+    id: "retro",
+    name: { ja: "\u662d\u548c\u30ed\u30dc\u30c3\u30c8\u30bd\u30d5\u30d3", en: "Showa Robot Sofubi" },
+    price: "\u00a511,800",
+    stock: 1,
+    rarity: "LEGENDARY",
+    shelf: "C-01",
+    qr: "RDM-C01-ROBO",
+    side: "left",
+    x: 38,
+    y: 39,
+    color: "#9cff7a",
+    note: { ja: "\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9\u4e2d\u592e\u3002\u30ba\u30fc\u30e0\u63a8\u5968\u3002", en: "Centered in the showcase. Zoom recommended." }
+  },
+  limitedBadge: {
+    id: "limitedBadge",
+    name: { ja: "\u5e97\u8217\u9650\u5b9a\u30db\u30ed\u30d0\u30c3\u30b8", en: "Store Limited Holo Badge" },
+    price: "\u00a51,320",
+    stock: 7,
+    rarity: "NORMAL",
+    shelf: "L-04",
+    qr: "RDM-L04-BADGE",
+    side: "right",
+    x: 64,
+    y: 51,
+    color: "#b48cff",
+    note: { ja: "\u4eca\u65e5\u306e\u6765\u5e97\u8a18\u5ff5\u30e9\u30a4\u30f3\u3002", en: "Today-only visit commemorative line." }
+  }
+};
+
+const floorNodes = [
+  { id: "entrance", x: 18, y: 78, label: "IN" },
+  { id: "figure", x: 38, y: 54, label: "A" },
+  { id: "cards", x: 50, y: 72, label: "B" },
+  { id: "showcase", x: 66, y: 42, label: "C" },
+  { id: "limited", x: 78, y: 22, label: "L" }
+];
+
 const scenes = {
-  entrance: { title: { ja: "\u5e97\u8217\u5165\u53e3", en: "Entrance" }, image: stores[0].image, rarity: "NORMAL", distance: 0, next: ["figure", "cards", "showcase"] },
-  figure: { title: { ja: "\u30d5\u30a3\u30ae\u30e5\u30a2\u901a\u8def", en: "Figure Aisle" }, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=80", rarity: "RARE", distance: 12, next: ["entrance", "showcase", "limited"] },
-  cards: { title: { ja: "\u30c8\u30ec\u30ab\u30a8\u30ea\u30a2", en: "Trading Card Area" }, image: "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1800&q=80", rarity: "NORMAL", distance: 9, next: ["entrance", "limited"] },
-  showcase: { title: { ja: "\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9", en: "Showcase" }, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1800&q=80", rarity: "LEGENDARY", distance: 15, next: ["entrance", "figure", "limited"] },
-  limited: { title: { ja: "\u9650\u5b9a\u54c1\u30b3\u30fc\u30ca\u30fc", en: "Limited Goods" }, image: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1800&q=80", rarity: "LEGENDARY", distance: 18, next: ["figure", "cards", "showcase"] }
+  entrance: { title: { ja: "\u5e97\u8217\u5165\u53e3", en: "Entrance" }, image: stores[0].image, rarity: "NORMAL", distance: 0, next: ["figure", "cards", "showcase"], aisle: "GATE-00", productIds: ["exia", "cards"] },
+  figure: { title: { ja: "\u30d5\u30a3\u30ae\u30e5\u30a2\u901a\u8def", en: "Figure Aisle" }, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1800&q=80", rarity: "RARE", distance: 12, next: ["entrance", "showcase", "limited"], aisle: "AISLE-A", productIds: ["exia", "miku", "retro"] },
+  cards: { title: { ja: "\u30c8\u30ec\u30ab\u30a8\u30ea\u30a2", en: "Trading Card Area" }, image: "https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=1800&q=80", rarity: "NORMAL", distance: 9, next: ["entrance", "limited"], aisle: "AISLE-B", productIds: ["cards", "limitedBadge"] },
+  showcase: { title: { ja: "\u30b7\u30e7\u30fc\u30b1\u30fc\u30b9", en: "Showcase" }, image: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1800&q=80", rarity: "LEGENDARY", distance: 15, next: ["entrance", "figure", "limited"], aisle: "CASE-C", productIds: ["retro", "exia"] },
+  limited: { title: { ja: "\u9650\u5b9a\u54c1\u30b3\u30fc\u30ca\u30fc", en: "Limited Goods" }, image: "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1800&q=80", rarity: "LEGENDARY", distance: 18, next: ["figure", "cards", "showcase"], aisle: "LIMITED-L", productIds: ["limitedBadge", "miku", "cards"] }
 };
 
 function tr(lang, key) {
@@ -197,7 +315,7 @@ function local(value, lang) {
   return value[lang] || value.en || value.ja || "";
 }
 
-export default function App() {
+function LegacyApp() {
   const [lang, setLang] = useState("ja");
   const [theme, setTheme] = useState("pop");
   const [selected, setSelected] = useState(stores[0]);
@@ -238,11 +356,13 @@ export default function App() {
         theme={theme}
         setLang={setLang}
         selected={selected}
+        sceneId={sceneId}
         scene={scene}
         xp={xp}
         meters={meters}
         cart={cart}
         move={move}
+        scanItem={() => setXp((v) => v + 90)}
         addCart={() => { setCart((v) => v + 1); setXp((v) => v + 150); }}
         leave={() => setScreen("home")}
       />
@@ -387,7 +507,7 @@ function RobotDemo({ lang }) {
   );
 }
 
-function RobotView({ lang, theme, setLang, selected, scene, xp, meters, cart, move, addCart, leave }) {
+function LegacyRobotView({ lang, theme, setLang, selected, scene, xp, meters, cart, move, addCart, leave }) {
   return (
     <div className={"robotView " + theme}>
       <img className="robotPhoto" src={scene.image} alt={local(scene.title, lang)} />
@@ -405,6 +525,136 @@ function RobotView({ lang, theme, setLang, selected, scene, xp, meters, cart, mo
       <aside className="rightHud"><h3>{tr(lang, "cart")} {cart}</h3><h3>{tr(lang, "mission")}</h3><p>Rare item scan (0/1)</p><p>XP {xp}/3000</p></aside>
       <div className="scanBox"><b>{scene.rarity}</b><h2>{tr(lang, "itemScan")}</h2><p>MG Gundam Exia</p><p>¥7,920 / Stock 1</p><button onClick={addCart}>{tr(lang, "addCart")}</button></div>
       <span className="rMark legendary">LEGENDARY</span><span className="rMark rare">RARE</span><span className="rMark normal">NORMAL</span>
+      <div className="movePad">
+        {scene.next.map((id, i) => (
+          <button key={id} onClick={() => move(id)}>{[tr(lang, "forward"), tr(lang, "left"), tr(lang, "right")][i] || tr(lang, "back")}<small>+{Math.max(30, scenes[id].distance * 12)}XP</small></button>
+        ))}
+        <button className="leave" onClick={leave}>{tr(lang, "leave")}</button>
+      </div>
+    </div>
+  );
+}
+
+function RobotView({ lang, theme, setLang, selected, sceneId, scene, xp, meters, cart, move, scanItem, addCart, leave }) {
+  const products = (scene.productIds || []).map((id) => robotProducts[id]).filter(Boolean);
+  const [focusIndex, setFocusIndex] = useState(0);
+  const [viewMode, setViewMode] = useState("front");
+  const [scannedIds, setScannedIds] = useState([]);
+  const [zoomItem, setZoomItem] = useState(null);
+  const activeItem = products[focusIndex % Math.max(products.length, 1)];
+  const scanned = activeItem ? scannedIds.includes(activeItem.id) : false;
+  const sceneScannedCount = products.filter((item) => scannedIds.includes(item.id)).length;
+
+  function focusProduct(item, index) {
+    setFocusIndex(index);
+    setViewMode(item.side || "front");
+  }
+
+  function handleScan() {
+    if (!activeItem || scanned) return;
+    setScannedIds((ids) => ids.includes(activeItem.id) ? ids : [...ids, activeItem.id]);
+    scanItem(activeItem);
+  }
+
+  return (
+    <div className={"robotView " + theme + " view-" + viewMode}>
+      <img className="robotPhoto" src={scene.image} alt={local(scene.title, lang)} />
+      <div className="robotShade" />
+      <div className="robotTop">
+        <span className="rec">REC</span>
+        <span>LIVE FEED</span>
+        <span>{selected.robot}</span>
+        <span>BATTERY 78%</span>
+        <span>{scene.aisle}</span>
+        <span>28ms</span>
+        <button onClick={() => setLang(lang === "ja" ? "en" : "ja")}>{tr(lang, "lang")}</button>
+      </div>
+      <div className="robotTitle">
+        <span>{scene.rarity}</span>
+        <h1>{local(scene.title, lang)}</h1>
+        <p>{tr(lang, "distance")}: {meters}m / XP {xp}</p>
+      </div>
+      <div className="cameraReticle"><span /><i /></div>
+      <div className="shelfLayer" aria-label="QR shelf targets">
+        <div className="shelfDepth left" />
+        <div className="shelfDepth right" />
+        {products.map((item, index) => (
+          <button
+            className={"shelfProduct " + (activeItem?.id === item.id ? "active" : "")}
+            key={item.id}
+            style={{ left: item.x + "%", top: item.y + "%", "--itemColor": item.color }}
+            onClick={() => focusProduct(item, index)}
+          >
+            <span className="productBox" />
+            <span className="qrTag"><i />QR</span>
+          </button>
+        ))}
+      </div>
+      <aside className="leftHud">
+        <b>FLOOR MAP</b>
+        <div className="floor">
+          {floorNodes.map((node) => (
+            <span
+              key={node.id}
+              className={"floorNode " + (node.id === sceneId ? "active" : "")}
+              style={{ left: node.x + "%", top: node.y + "%" }}
+            >
+              {node.label}
+            </span>
+          ))}
+        </div>
+        <p>{local(selected.name, lang)}</p>
+      </aside>
+      <aside className="rightHud">
+        <h3>{tr(lang, "cart")} {cart}</h3>
+        <h3>{tr(lang, "mission")}</h3>
+        <p>QR scans {sceneScannedCount}/{products.length}</p>
+        <p>XP {xp}/3000</p>
+        {activeItem && <p>{tr(lang, "shelf")} {activeItem.shelf} / {activeItem.rarity}</p>}
+      </aside>
+      {activeItem && (
+        <div className={"scanBox arPanel " + (scanned ? "scanned" : "")}>
+          <b>{scanned ? tr(lang, "arInfo") : "QR TARGET LOCK"}</b>
+          <h2>{scanned ? local(activeItem.name, lang) : tr(lang, "itemScan")}</h2>
+          <p>{tr(lang, "shelf")} {activeItem.shelf} / {activeItem.qr}</p>
+          {scanned ? (
+            <>
+              <div className="arItemRow">
+                <button className="arThumb" style={{ "--itemColor": activeItem.color }} onClick={() => setZoomItem(activeItem)}>
+                  <span />
+                </button>
+                <div>
+                  <strong>{activeItem.price}</strong>
+                  <small>{tr(lang, "stock")} {activeItem.stock}</small>
+                  <small>{local(activeItem.note, lang)}</small>
+                </div>
+              </div>
+              <div className="arActions">
+                <button onClick={() => setZoomItem(activeItem)}>{tr(lang, "zoom")}</button>
+                <button onClick={addCart}>{tr(lang, "requestPurchase")}</button>
+              </div>
+            </>
+          ) : (
+            <button onClick={handleScan}>{tr(lang, "scanQr")}</button>
+          )}
+        </div>
+      )}
+      <div className="lookControls">
+        <button className={viewMode === "left" ? "active" : ""} onClick={() => setViewMode("left")}>{tr(lang, "left")}</button>
+        <button className={viewMode === "front" ? "active" : ""} onClick={() => setViewMode("front")}>CENTER</button>
+        <button className={viewMode === "right" ? "active" : ""} onClick={() => setViewMode("right")}>{tr(lang, "right")}</button>
+      </div>
+      <span className="rMark legendary">LEGENDARY</span><span className="rMark rare">RARE</span><span className="rMark normal">NORMAL</span>
+      {zoomItem && (
+        <div className="zoomOverlay" onClick={() => setZoomItem(null)}>
+          <div className="zoomCard" onClick={(event) => event.stopPropagation()}>
+            <button className="zoomClose" onClick={() => setZoomItem(null)}>{tr(lang, "close")}</button>
+            <div className="zoomProduct" style={{ "--itemColor": zoomItem.color }}><span /></div>
+            <h2>{local(zoomItem.name, lang)}</h2>
+            <p>{zoomItem.price} / {tr(lang, "stock")} {zoomItem.stock} / {tr(lang, "shelf")} {zoomItem.shelf}</p>
+          </div>
+        </div>
+      )}
       <div className="movePad">
         {scene.next.map((id, i) => (
           <button key={id} onClick={() => move(id)}>{[tr(lang, "forward"), tr(lang, "left"), tr(lang, "right")][i] || tr(lang, "back")}<small>+{Math.max(30, scenes[id].distance * 12)}XP</small></button>
