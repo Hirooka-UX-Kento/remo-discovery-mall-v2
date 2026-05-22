@@ -29,16 +29,16 @@ export const TONES = [
 ];
 
 export const STORES = [
-  ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 50, 40],
-  ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 43, 58],
-  ["osaka", "Nipponbashi Remote Arcade", "大阪 / 日本橋", "Osaka / Nipponbashi", "トレカ・コレクタブル", "Trading cards, collectibles", "スタッフ確認の限定品", "Staff-confirm showcase", 41, 64],
-  ["sapporo", "Sapporo Snow Pop Base", "北海道 / 札幌", "Hokkaido / Sapporo", "雪まつりグッズ", "Snow festival goods", "北限定アクリルセット", "Northern limited acrylic", 64, 14],
-  ["kanazawa", "Kanazawa Craft Toy Vault", "石川 / 金沢", "Ishikawa / Kanazawa", "工芸トイ・職人チャーム", "Craft toys, artisan charms", "金箔カプセルチャーム", "Gold-leaf capsule charm", 44, 47],
-  ["fukuoka", "Hakata Pop Relay", "福岡 / 博多", "Fukuoka / Hakata", "ローカルコラボグッズ", "Local collab goods", "九州プレイヤー協力棚", "Kyushu co-op shelf", 22, 74],
-  ["okinawa", "Naha Culture Station", "沖縄 / 那覇", "Okinawa / Naha", "島ポップ土産", "Island pop souvenirs", "南国カラーバッジ", "Tropical color badge", 12, 90],
-  ["nagoya", "Nagoya Mecha Market", "愛知 / 名古屋", "Aichi / Nagoya", "ロボ・ガレキ", "Robots, garage kits", "メカ試作コーナー", "Mecha prototype corner", 52, 56],
-  ["sendai", "Sendai Retro Capsule", "宮城 / 仙台", "Miyagi / Sendai", "レトロトイ・カプセル", "Retro toys, capsules", "アーカイブカプセル壁", "Archive capsule wall", 60, 30],
-  ["hiroshima", "Hiroshima Peace Hobby Port", "広島 / 本通", "Hiroshima / Hondori", "ミニチュア・カード", "Miniatures, cards", "港限定ミニチュア", "Port-only miniature", 33, 66]
+  ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 62, 52],
+  ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 46, 60],
+  ["osaka", "Nipponbashi Remote Arcade", "大阪 / 日本橋", "Osaka / Nipponbashi", "トレカ・コレクタブル", "Trading cards, collectibles", "スタッフ確認の限定品", "Staff-confirm showcase", 43, 63],
+  ["sapporo", "Sapporo Snow Pop Base", "北海道 / 札幌", "Hokkaido / Sapporo", "雪まつりグッズ", "Snow festival goods", "北限定アクリルセット", "Northern limited acrylic", 75, 23],
+  ["kanazawa", "Kanazawa Craft Toy Vault", "石川 / 金沢", "Ishikawa / Kanazawa", "工芸トイ・職人チャーム", "Craft toys, artisan charms", "金箔カプセルチャーム", "Gold-leaf capsule charm", 49, 48],
+  ["fukuoka", "Hakata Pop Relay", "福岡 / 博多", "Fukuoka / Hakata", "ローカルコラボグッズ", "Local collab goods", "九州プレイヤー協力棚", "Kyushu co-op shelf", 21, 71],
+  ["okinawa", "Naha Culture Station", "沖縄 / 那覇", "Okinawa / Naha", "島ポップ土産", "Island pop souvenirs", "南国カラーバッジ", "Tropical color badge", 85, 81],
+  ["nagoya", "Nagoya Mecha Market", "愛知 / 名古屋", "Aichi / Nagoya", "ロボ・ガレキ", "Robots, garage kits", "メカ試作コーナー", "Mecha prototype corner", 53, 58],
+  ["sendai", "Sendai Retro Capsule", "宮城 / 仙台", "Miyagi / Sendai", "レトロトイ・カプセル", "Retro toys, capsules", "アーカイブカプセル壁", "Archive capsule wall", 66, 41],
+  ["hiroshima", "Hiroshima Peace Hobby Port", "広島 / 本通", "Hiroshima / Hondori", "ミニチュア・カード", "Miniatures, cards", "港限定ミニチュア", "Port-only miniature", 32, 65]
 ].map(([id, name, areaJa, areaEn, catJa, catEn, limJa, limEn, x, y], i) => ({
   id,
   name,
