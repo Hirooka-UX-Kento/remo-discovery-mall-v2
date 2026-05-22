@@ -52,12 +52,13 @@ const RAW = [
   ["save_point", "セーブポイント", 1, "探索中の地点を保存し、次回そこから再開できる機能", "available", "Phase2", false],
   ["remote_command", "遠隔指令", 1, "「あの棚に行く」「次のポイントへ移動」など大まかな指令で操作できる機能", "available", "MVP", true],
   ["multi_user_control", "複数人連携操作", 1, "移動、カメラ、マップ確認、ギミック操作などを複数人で分担する機能", "available", "Phase2", false],
-  ["sugoroku_warp_exploration", "すごろく型ワープ探索", 1, "店舗内や複数拠点をすごろく盤のように進み、マスごとにイベントや報酬が発生するボードゲーム型探索機能", "available", "MVP", true, { dependencies: ["sugoroku_world_theme"], adminNote: "No22。ボードゲーム型・ゲーム進行感。No25とは別機能として管理する" }],
-  ["anime_goods_open_world", "世界一大きなアニメグッズ店・オープンワールド", 1, "複数店舗や複数拠点を、ひとつの巨大なアニメグッズ都市として自由に探索できるオープンワールド型機能", "available", "MVP", true, { dependencies: ["open_world_city_theme"], adminNote: "No25。街歩き型・巨大世界の没入感。No22とは別機能として管理する" }],
+  ["sugoroku_warp_exploration", "すごろく型ワープ探索", 1, "店舗ツインのネットワークをすごろく盤のように進み、マス（店舗ノード）ごとにイベントや報酬・ワープが発生するボードゲーム型探索機能", "available", "MVP", true, { dependencies: ["sugoroku_world_theme", "digital_twin_overlay"], adminNote: "No22。ボードゲーム型・ゲーム進行感。離散ノード移動。No25とは別機能として管理する" }],
+  ["anime_goods_open_world", "世界一大きなアニメグッズ店・オープンワールド", 1, "複数店舗のデジタルツインを地続きの巨大なアニメグッズ都市として自由探索し、店舗の端（ポータル）を越えると隣接店舗のツインへ移動できるオープンワールド型機能", "available", "MVP", true, { dependencies: ["open_world_city_theme", "digital_twin_overlay"], adminNote: "No25。街歩き型・連続探索・巨大世界の没入感。No22とは別機能として管理する" }],
 
   // 3. 探索UX・没入体験
   ["contextual_bgm", "場面別BGM", 2, "エリア、状況、イベントに応じてBGMを切り替える機能", "available", "Phase2", false],
-  ["digital_twin_overlay", "デジタルツイン", 2, "現地映像に在庫情報、商品情報、人気ポイント、AR情報などを重ねる機能", "available", "MVP", true],
+  ["digital_twin_overlay", "デジタルツイン（点群3D）", 2, "店舗内装をスキャンした3D点群（デジタルツイン）を重畳し、その空間内で自分（ロボット）の現在地を表示する機能。すごろく/オープンワールドの探索基盤になる", "available", "MVP", true],
+  ["ar_info_overlay", "AR情報重畳", 2, "現地映像やデジタルツインに、在庫情報・商品情報・人気ポイントなどのAR情報を重ねて表示する機能", "available", "MVP", true],
   ["time_travel_view", "タイムトラベル演出", 2, "ライブ映像から過去の記録、未来演出、仮想空間表現へ切り替える機能", "available", "Phase2", false],
 
   // 4. ゲーム化・継続利用
@@ -75,8 +76,8 @@ const RAW = [
 
   // 6. 世界観・コンテンツ演出
   ["mascot_character", "マスコットキャラクター", 5, "サービス紹介、操作説明、おすすめスポット案内を行うキャラクター機能", "available", "Phase2", false],
-  ["sugoroku_world_theme", "すごろく世界観", 5, "マス目、サイコロ、イベントカード、ワープマスを使ったボードゲーム風の世界観表示", "available", "MVP", true],
-  ["open_world_city_theme", "オープンワールド都市世界観", 5, "複数拠点を巨大なアニメグッズ都市として見せる街マップ、店舗入口、ワープゲート演出", "available", "MVP", true],
+  ["sugoroku_world_theme", "すごろく世界観", 5, "ツイン・ネットワークを離散的に見せる、マス目・サイコロ・イベントカード・ワープマスのボードゲーム風UI/世界観", "available", "MVP", true],
+  ["open_world_city_theme", "オープンワールド都市世界観", 5, "複数店舗のツインを連続した巨大都市として見せる街マップ。店舗ノードをポータル（辺）でつなぎ、端を越えると隣接店舗ツインへ移動するワープゲート演出", "available", "MVP", true],
 
   // 7. ハードウェア・デバイス連携 (項目のみ・実機連携なし)
   ["immersive_display_hmd", "没入型ディスプレイ / HMD対応", 6, "HMDや大画面表示に対応し、現地にいるような没入型ビューを提供する機能", "hardware_required", "Future", false, { requiresHardware: true, adminNote: "現時点では項目のみ。HMD連携、表示遅延、酔い対策の検証が必要" }],

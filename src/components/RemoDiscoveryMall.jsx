@@ -90,7 +90,9 @@ const copy = {
     expFeatures: "体験機能",
     featActive: "提供中",
     comingSoon: "準備中",
-    hwUnavailable: "ハード連携が必要なため現在未提供"
+    hwUnavailable: "ハード連携が必要なため現在未提供",
+    warpTo: "ワープで隣接店舗ツインへ",
+    openWorldOn: "オープンワールド接続中"
   },
   en: {
     langToggle: "日本語",
@@ -152,7 +154,9 @@ const copy = {
     expFeatures: "Experience features",
     featActive: "Active",
     comingSoon: "Coming Soon",
-    hwUnavailable: "Not available yet — requires hardware integration"
+    hwUnavailable: "Not available yet — requires hardware integration",
+    warpTo: "Warp to a connected store twin",
+    openWorldOn: "Open-world linked"
   }
 };
 
@@ -192,6 +196,24 @@ const stores = [
   hot: index === 0 || index === 3 || index === 7,
   players: 2 + (index % 5)
 }));
+
+// オープンワールド：店舗ツインをつなぐポータル（辺）のグラフ。
+// 端を越えると隣接店舗のツインへワープする、という関係を表す。
+const STORE_LINKS = [
+  ["sapporo", "sendai"],
+  ["sendai", "akiba"],
+  ["akiba", "nagoya"],
+  ["akiba", "kanazawa"],
+  ["nagoya", "kyoto"],
+  ["kanazawa", "kyoto"],
+  ["kyoto", "osaka"],
+  ["osaka", "hiroshima"],
+  ["hiroshima", "fukuoka"],
+  ["fukuoka", "okinawa"]
+];
+const storeById = (id) => stores.find((s) => s.id === id);
+const neighborsOf = (id) =>
+  STORE_LINKS.filter((pair) => pair.includes(id)).map((pair) => (pair[0] === id ? pair[1] : pair[0]));
 
 const products = [
   ["model-kit", "Premium Model Kit RX-Loop", "7,920", "LIMITED", "A-03", 1, 28, "limited"],
@@ -520,14 +542,28 @@ function AppHeader({ lang, tone, cartCount, onLang, onTone, onOpenCart }) {
 }
 
 function HomeScreen({ lang, stores, selectedStore, onSelect, onOpenStore }) {
+  const { isFunctional } = useFeatures();
+  const openWorld = isFunctional("open_world_city_theme");
   const [hoveredId, setHoveredId] = useState(null);
+  const [warping, setWarping] = useState(false);
   const cardRefs = useRef({});
   const linkedId = hoveredId || selectedStore.id;
+  const neighborIds = openWorld ? neighborsOf(selectedStore.id) : [];
 
   useEffect(() => {
     const el = cardRefs.current[selectedStore.id];
     if (el) el.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
   }, [selectedStore]);
+
+  function warpTo(store) {
+    if (warping || !store) return;
+    setWarping(true);
+    setHoveredId(store.id);
+    window.setTimeout(() => {
+      onSelect(store);
+      setWarping(false);
+    }, 750);
+  }
 
   return (
     <main className="rdmHome">
@@ -542,18 +578,38 @@ function HomeScreen({ lang, stores, selectedStore, onSelect, onOpenStore }) {
             <span>LIVE SHELF</span>
           </div>
         </div>
-        <div className="rdmMapPanel">
+        <div className={"rdmMapPanel" + (openWorld ? " openWorld" : "")}>
           <img src={asset("japan-map.png")} alt="Japan map" />
+          {openWorld && (
+            <svg className="rdmMapEdges" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              {STORE_LINKS.map(([a, b]) => {
+                const sa = storeById(a);
+                const sb = storeById(b);
+                if (!sa || !sb) return null;
+                const active = selectedStore.id === a || selectedStore.id === b;
+                return (
+                  <line
+                    key={a + "-" + b}
+                    className={active ? "active" : ""}
+                    x1={parseFloat(sa.pin.left)} y1={parseFloat(sa.pin.top)}
+                    x2={parseFloat(sb.pin.left)} y2={parseFloat(sb.pin.top)}
+                  />
+                );
+              })}
+            </svg>
+          )}
+          {warping && <div className="rdmMapWarp" aria-hidden="true" />}
           {stores.map((store) => (
             <button
               className={
                 "rdmMapPin" +
                 (store.id === selectedStore.id ? " active" : "") +
-                (store.id === linkedId ? " linked" : "")
+                (store.id === linkedId ? " linked" : "") +
+                (neighborIds.includes(store.id) ? " portal" : "")
               }
               key={store.id}
               style={store.pin}
-              onClick={() => onSelect(store)}
+              onClick={() => (neighborIds.includes(store.id) ? warpTo(store) : onSelect(store))}
               onMouseEnter={() => setHoveredId(store.id)}
               onMouseLeave={() => setHoveredId(null)}
               onFocus={() => setHoveredId(store.id)}
@@ -579,6 +635,22 @@ function HomeScreen({ lang, stores, selectedStore, onSelect, onOpenStore }) {
             <button onClick={() => onOpenStore(selectedStore)}>{text(lang, "openStore")}</button>
           </div>
         </div>
+        {openWorld && neighborIds.length > 0 && (
+          <div className="rdmPortals">
+            <span className="rdmEyebrow">⟿ {text(lang, "warpTo")}</span>
+            <div className="rdmPortalChips">
+              {neighborIds.map((nid) => {
+                const s = storeById(nid);
+                if (!s) return null;
+                return (
+                  <button key={nid} className="rdmPortalChip" onClick={() => warpTo(s)}>
+                    {local(s.name, lang)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <h3>{text(lang, "stores")} {stores.length}</h3>
         <div className="rdmStoreList">
           {stores.map((store) => (
@@ -760,7 +832,8 @@ function SyncScreen({ lang, store }) {
 
 function RobotScreen({ lang, store, node, nodes, heading, hp, cartCount, shelfProducts, activeProduct, scanned, freeProgress, onRotate, onMove, onScan, onRequest, onExit }) {
   const { isFunctional } = useFeatures();
-  const showTwin = isFunctional("digital_twin_overlay");
+  const showTwin = isFunctional("digital_twin_overlay"); // 点群ツイン＝自己位置/フロアマップ
+  const showAr = isFunctional("ar_info_overlay"); // 商品AR情報の重畳
   const showMission = isFunctional("mission_system");
   const isScanned = scanned.includes(activeProduct.id);
   const backgroundPosition = `${(heading / (headings.length - 1)) * 100}% center`;
@@ -798,20 +871,22 @@ function RobotScreen({ lang, store, node, nodes, heading, hp, cartCount, shelfPr
           </button>
         ))}
       </section>
-      <aside className="rdmMiniMap">
-        <strong>{text(lang, "floor")}</strong>
-        <div>
-          {nodes.map((floorNode) => (
-            <span className={floorNode.id === node.id ? "active" : ""} key={floorNode.id} style={floorNode.position}>
-              {floorNode.label.slice(0, 1)}
-            </span>
-          ))}
-        </div>
-      </aside>
+      {showTwin && (
+        <aside className="rdmMiniMap">
+          <strong>{text(lang, "floor")}</strong>
+          <div>
+            {nodes.map((floorNode) => (
+              <span className={floorNode.id === node.id ? "active" : ""} key={floorNode.id} style={floorNode.position}>
+                {floorNode.label.slice(0, 1)}
+              </span>
+            ))}
+          </div>
+        </aside>
+      )}
       <aside className="rdmArPanel">
         <p className="rdmEyebrow">{isScanned ? text(lang, "scanned") : "QR TARGET"}</p>
         <h2>{local(activeProduct.name, lang)}</h2>
-        {showTwin && (
+        {showAr && (
           <dl>
             <div><dt>{text(lang, "shelf")}</dt><dd>{activeProduct.shelf}</dd></div>
             <div><dt>Rarity</dt><dd>{activeProduct.rarity}</dd></div>
