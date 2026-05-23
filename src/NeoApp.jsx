@@ -9,7 +9,7 @@ import {
 
 const T = {
   ja: {
-    eyebrow: "Telepresence Hunt · The Infinite Store", sub: "あなたはHunter。Gridに憑依(DIVE)し、世界一でかい店を巡ってご当地レアを集めろ。",
+    eyebrow: "新感覚リモートEC · ANIME GOODS", sub: "全国のアニメグッズ店舗を、自宅から自由に“回って”買える新感覚のEC。ロボットを遠隔操作して店内を探索しよう。",
     map: "MAP", sugoroku: "すごろく", collection: "図鑑", openStore: "店舗を見る", back: "← 地図へ", twin: "ツインスキャン",
     recommended: "おすすめ", limited: "限定", popular: "人気", request: "購入リクエスト", reqEmpty: "リクエストはまだありません",
     possessTitle: "ロボットに憑依（DIVE）", price: "¥1,500 / 10分", possess: "⚡ DIVEして探索（外部Grid）",
@@ -17,11 +17,13 @@ const T = {
     sync: "GRID 同期中", scan: "棚QRをスキャン", scanned: "スキャン済み", forward: "前進", left: "左45°", right: "右45°", exit: "DIVE終了",
     floor: "店内MAP", shelf: "棚", stock: "在庫", treasure: "レアをさがす", missions: "クエスト", leaderboard: "Hunterランキング", you: "YOU",
     claim: "受取", claimed: "受取済", cart: "カート", total: "合計", checkout: "購入を確定", empty: "カートは空です",
-    roll: "サイコロを振る", warpTo: "隣接ツインへワープ", rank: "ランク", hp: "ENERGY",
-    collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "発見場所", getRare: "GET!"
+    roll: "サイコロを振る", warpTo: "隣接店舗へ移動", rank: "ランク", hp: "ENERGY",
+    collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "取扱店舗", getRare: "GET!",
+    fwd: "前進", back: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
+    up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動"
   },
   en: {
-    eyebrow: "Telepresence Hunt · The Infinite Store", sub: "You are a Hunter. DIVE into the Grid and collect regional rares across the world's biggest store.",
+    eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
     map: "MAP", sugoroku: "Sugoroku", collection: "Collection", openStore: "View store", back: "← Map", twin: "Twin scan",
     recommended: "Recommended", limited: "Limited", popular: "Popular", request: "Purchase request", reqEmpty: "No requests yet",
     possessTitle: "DIVE into the robot", price: "¥1,500 / 10min", possess: "⚡ DIVE & explore (external Grid)",
@@ -29,8 +31,10 @@ const T = {
     sync: "GRID SYNC", scan: "Scan shelf QR", scanned: "Scanned", forward: "Forward", left: "Turn L", right: "Turn R", exit: "End DIVE",
     floor: "Floor map", shelf: "Shelf", stock: "Stock", treasure: "Hunt rares", missions: "Quests", leaderboard: "Hunter ranking", you: "YOU",
     claim: "Claim", claimed: "Claimed", cart: "Cart", total: "Total", checkout: "Checkout", empty: "Your cart is empty",
-    roll: "Roll dice", warpTo: "Warp to twin", rank: "Rank", hp: "ENERGY",
-    collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Found at", getRare: "GET!"
+    roll: "Roll dice", warpTo: "Move to store", rank: "Rank", hp: "ENERGY",
+    collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Sold at", getRare: "GET!",
+    fwd: "Fwd", back: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
+    up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store"
   }
 };
 
@@ -405,33 +409,43 @@ function TwinFloor({ node, onMove, mini }) {
   );
 }
 
-function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onMove, onRotate, onRequest, onExit, onWarp }) {
+function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
+  const [yaw, setYaw] = useState(0);     // 0-7 turn
+  const [pitch, setPitch] = useState(0); // -2..2 tilt
+  const [elev, setElev] = useState(0);   // 0..2 elevation
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
-  const bgPos = `${(heading / (HEADINGS.length - 1)) * 100}% center`;
+  const leftStore = neighbors[0] ? storeById(neighbors[0]) : null;
+  const rightStore = neighbors[1] ? storeById(neighbors[1]) : null;
+  const bgX = (yaw / 8) * 100;
+  const bgY = Math.max(0, Math.min(100, 50 + pitch * 9 - elev * 7));
+  const feedStyle = { backgroundImage: `url(${store.pano})`, backgroundPosition: `${bgX}% ${bgY}%`, backgroundSize: "150% auto" };
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id);
     g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
   }
-  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); setYaw(0); setPitch(0); setElev(0); }, 1500); }
+  const fwd = () => onMove(node.next[0]);
+  const back = () => onMove(node.next[node.next.length > 1 ? 1 : 0]);
 
   if (warping) {
     return (
       <div className="neoSync">
         <div className="neoTunnel">{Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ "--i": i }} />)}</div>
         <div className="neoSpeed" />
-        <div className="neoSyncCore"><span>TWIN WARP</span><h1>{warpTarget?.name}</h1><p>SYNCING DIGITAL TWIN…</p></div>
+        <div className="neoSyncCore"><span>STORE TRANSFER</span><h1>{warpTarget?.name}</h1><p>SYNCING DIGITAL TWIN…</p></div>
       </div>
     );
   }
 
   return (
     <div className="neoEx">
-      <div className="neoFeed" style={{ backgroundImage: `url(${store.pano})`, backgroundPosition: bgPos }} />
+      <div className="neoFeed" style={feedStyle} />
       <div className="neoExShade" />
 
       <header className="neoExTop neoGlass">
@@ -441,11 +455,23 @@ function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onM
         <span>🛒 {g.cartCount}</span>
       </header>
 
+      {/* store-to-store traversal導線: move sideways to neighbour stores */}
+      {f.openWorld && (leftStore || rightStore) && (
+        <div className="neoStoreNav">
+          {leftStore && <button className="g l" onClick={() => warp(leftStore.id)}>◀<span>{leftStore.name}</span></button>}
+          <span className="now">{store.name}</span>
+          {rightStore && <button className="g r" onClick={() => warp(rightStore.id)}><span>{rightStore.name}</span>▶</button>}
+        </div>
+      )}
+
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
+
+      {/* street-view forward step */}
+      <button className="neoFwd" onClick={fwd} title={t.fwd}>↑</button>
 
       {shelf.map((p, i) => (
         <button key={p.id} className={"neoShelf" + (p.id === product.id ? " active" : "")}
-          style={{ "--x": `${24 + i * 18}%`, "--y": `${38 + ((i + heading) % 3) * 12}%` }} onClick={() => onScan(p)}>
+          style={{ "--x": `${24 + i * 18}%`, "--y": `${38 + ((i + yaw) % 3) * 12}%` }} onClick={() => onScan(p)}>
           <img src={p.image} alt="" /><span>QR</span>
         </button>
       ))}
@@ -482,15 +508,32 @@ function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onM
           : <button className="neoBtn solid block" onClick={() => onScan(product)}>{t.scan}</button>}
       </aside>
 
-      <nav className="neoLook">
-        <button onClick={() => onRotate(-1)}>{t.left}</button>
-        <button className="on">{HEADINGS[heading]}</button>
-        <button onClick={() => onRotate(1)}>{t.right}</button>
-      </nav>
-      <nav className="neoMove">
-        {node.next.map((id) => { const n = nodeById(id); return <button key={id} onClick={() => onMove(id)}>{local(n.label, lang)}<small>ENERGY -13</small></button>; })}
-        <button className="exit" onClick={() => setTimeout(onExit, 0)}>{t.exit}</button>
-      </nav>
+      {/* game-controller style controls */}
+      <div className="neoCtl">
+        <div className="neoPad" aria-label={t.move}>
+          <button className="up" onClick={fwd} title={t.fwd}>▲</button>
+          <button className="left" onClick={() => setYaw((v) => (v + 7) % 8)} title={t.turnL}>◀</button>
+          <button className="ctr" disabled>{HEADINGS[yaw]}</button>
+          <button className="right" onClick={() => setYaw((v) => (v + 1) % 8)} title={t.turnR}>▶</button>
+          <button className="down" onClick={back} title={t.back}>▼</button>
+        </div>
+        <div className="neoDest">
+          {node.next.map((id) => { const n = nodeById(id); return <button key={id} onClick={() => onMove(id)}>➜ {local(n.label, lang)}</button>; })}
+          <button className="exit" onClick={() => setTimeout(onExit, 0)}>{t.exit}</button>
+        </div>
+        <div className="neoRpad">
+          <div className="neoCluster">
+            <button onClick={() => setPitch((v) => clamp(v + 1, -2, 2))} title={t.tiltUp}>▲</button>
+            <span className="lbl">{t.look}</span>
+            <button onClick={() => setPitch((v) => clamp(v - 1, -2, 2))} title={t.tiltDn}>▼</button>
+          </div>
+          <div className="neoCluster">
+            <button onClick={() => setElev((v) => clamp(v + 1, 0, 2))} title={t.up}>⤒</button>
+            <span className="lbl">{t.lift}</span>
+            <button onClick={() => setElev((v) => clamp(v - 1, 0, 2))} title={t.down}>⤓</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -311,6 +311,36 @@
 .neoTwinMini .twinGates .lbl { font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--muted); }
 .neoTwinMini .twinGates .gate { text-align: left; border: 1px solid color-mix(in srgb, var(--acc-2), transparent 50%); background: color-mix(in srgb, var(--acc-2), transparent 88%); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; font-weight: 700; }
 .neoTwinMini .twinGates .gate:hover { border-color: var(--acc-2); }
+
+/* store-to-store traversal導線 (move sideways to neighbour stores) */
+.neoStoreNav { position: absolute; z-index: 13; left: 50%; top: 62px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; }
+.neoStoreNav .now { font-size: 12px; font-weight: 800; color: var(--text); padding: 6px 12px; border-radius: var(--pill); background: rgba(7,14,26,.6); border: 1px solid var(--line); backdrop-filter: blur(8px); }
+.neoStoreNav .g { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 900; color: var(--acc-2); padding: 6px 12px; border-radius: var(--pill); background: rgba(7,14,26,.6); border: 1px solid color-mix(in srgb, var(--acc-2), transparent 45%); backdrop-filter: blur(8px); }
+.neoStoreNav .g span { font-size: 12px; font-weight: 700; color: var(--text); }
+.neoStoreNav .g:hover { border-color: var(--acc-2); box-shadow: 0 0 16px color-mix(in srgb, var(--acc-2), transparent 60%); }
+
+/* street-view forward step */
+.neoFwd { position: absolute; z-index: 9; left: 50%; top: 60%; transform: translateX(-50%); width: 62px; height: 62px; border-radius: 50%; border: 2px solid var(--acc); background: rgba(7,14,26,.4); color: var(--acc); font-size: 26px; font-weight: 900; backdrop-filter: blur(6px); animation: neoGlow 1.8s ease-in-out infinite; }
+.neoFwd:hover { background: rgba(7,14,26,.7); }
+
+/* game-controller controls */
+.neoCtl { position: absolute; z-index: 14; left: 0; right: 0; bottom: 18px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px; pointer-events: none; }
+.neoCtl > * { pointer-events: auto; }
+.neoPad { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 6px; }
+.neoPad button { border: 1px solid var(--line); background: rgba(7,14,26,.62); color: var(--text); border-radius: 12px; font-size: 16px; font-weight: 900; backdrop-filter: blur(8px); }
+.neoPad button:hover { border-color: var(--acc); }
+.neoPad .up { grid-area: 1 / 2; } .neoPad .left { grid-area: 2 / 1; } .neoPad .ctr { grid-area: 2 / 2; color: var(--acc); font-size: 11px; background: transparent; border-style: dashed; }
+.neoPad .right { grid-area: 2 / 3; } .neoPad .down { grid-area: 3 / 2; }
+.neoDest { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 560px; }
+.neoDest button { border: 1px solid color-mix(in srgb, var(--acc), transparent 50%); background: rgba(7,14,26,.62); color: var(--text); border-radius: 12px; padding: 9px 14px; font-size: 12px; font-weight: 800; backdrop-filter: blur(8px); }
+.neoDest button:hover { border-color: var(--acc); }
+.neoDest .exit { border-color: rgba(255,91,122,.4); background: rgba(40,12,20,.6); }
+.neoRpad { display: flex; gap: 10px; }
+.neoCluster { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.neoCluster button { width: 46px; height: 38px; border: 1px solid var(--line); background: rgba(7,14,26,.62); color: var(--text); border-radius: 11px; font-size: 16px; font-weight: 900; backdrop-filter: blur(8px); }
+.neoCluster button:hover { border-color: var(--acc); }
+.neoCluster .lbl { font-size: 9px; letter-spacing: .06em; color: var(--muted); }
+@media (max-width: 940px) { .neoStoreNav .g span { display: none; } .neoDest { max-width: 200px; } }
 .neoTwinMini .holder { height: 144px; perspective: 640px; display: grid; place-items: center; margin-top: 8px; }
 .twinStage.mini { width: 144px; aspect-ratio: 1; transform: rotateX(56deg) rotateZ(-3deg); animation: none; }
 .twinStage.mini .twinShelf { box-shadow: none; opacity: .8; }
