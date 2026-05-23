@@ -148,6 +148,7 @@ function Header({ t, g, f, onCart }) {
       <div className="neoBrand">
         <div className="neoLogo">R</div>
         <div><b>Remolink Discovery Mall</b><span>Remote · Digital Twin · Japan</span></div>
+        <span className="neoLivePill"><i />LIVE</span>
       </div>
       {f.rank && (
         <div className="neoXp">
