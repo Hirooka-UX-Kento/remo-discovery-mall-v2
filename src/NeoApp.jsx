@@ -65,7 +65,14 @@ export default function NeoApp() {
   const [product, setProduct] = useState(PRODUCTS[0]);
   const [possessMode, setPossessMode] = useState("external");
   const [cartOpen, setCartOpen] = useState(false);
+  const [welcome, setWelcome] = useState(false);
+  const [tutorial, setTutorial] = useState(false);
   const [reqlog, setReqlog] = useState([]);
+
+  useEffect(() => {
+    try { if (!localStorage.getItem("rdm_tut_done")) setTutorial(true); } catch { /* ignore */ }
+  }, []);
+  function closeTutorial() { setTutorial(false); try { localStorage.setItem("rdm_tut_done", "1"); } catch { /* ignore */ } }
 
   // explore state
   const [nodeId, setNodeId] = useState("entrance");
@@ -86,7 +93,10 @@ export default function NeoApp() {
     if (screen === "explore" && hp <= 0) setScreen("shop");
   }, [hp, screen]);
 
-  function openStore(s) { setStore(s); setProduct(PRODUCTS[0]); setScreen("shop"); }
+  function openStore(s) {
+    setStore(s); setProduct(PRODUCTS[0]); setScreen("shop");
+    try { if (!sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
+  }
   function startTrial() { setPossessMode("trial"); setHp(78); setNodeId("entrance"); setHeading(0); setScreen("sync"); }
   function startPossess() { setPossessMode("external"); setScreen("sync"); }
   function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
@@ -98,7 +108,7 @@ export default function NeoApp() {
   const themeClass = `neo tone-${f.theme ? tone : "cyber"}`;
 
   const header = (
-    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} />
+    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} />
   );
 
   let body;
@@ -137,12 +147,19 @@ export default function NeoApp() {
       {header}
       {body}
       {cartOpen && <Cart t={t} lang={lang} g={g} onClose={() => setCartOpen(false)} />}
+      {welcome && (
+        <WelcomeModal t={t} lang={lang} g={g} f={f} store={store}
+          onClose={() => setWelcome(false)}
+          onPossess={() => { setWelcome(false); startPossess(); }}
+          onTrial={() => { setWelcome(false); startTrial(); }} />
+      )}
+      {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
       <Toasts toasts={g.toasts} />
     </div>
   );
 }
 
-function Header({ t, g, f, onCart }) {
+function Header({ t, g, f, onCart, onTutorial }) {
   return (
     <header className="neoTop">
       <div className="neoBrand">
@@ -157,6 +174,7 @@ function Header({ t, g, f, onCart }) {
         </div>
       )}
       <div className="neoActions">
+        <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
         <button className="neoBtn" onClick={() => g.setLang(g.lang === "ja" ? "en" : "ja")}>{g.lang === "ja" ? "EN" : "日本語"}</button>
         {f.theme && (
@@ -188,7 +206,6 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
         <p className="eyebrow">{t.eyebrow}</p>
         <h1 className="neoTitle"><span className="lead">Remolink</span><span className="main">Discovery Mall</span></h1>
         <p>{t.sub}</p>
-        <div className="neoChips"><span>360° ROBOT</span><span>DIGITAL TWIN</span><span>QR · AR</span>{f.openWorld && <span>OPEN WORLD</span>}</div>
       </section>
 
       {(f.sugoroku || f.collection) && (
@@ -243,18 +260,6 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
             </div>
           )}
 
-          {f.loginBonus && (
-            <div className="neoPanel" style={{ padding: 16 }}>
-              <div className="neoPanelTitle">{lang === "ja" ? "ログインボーナス" : "Login bonus"} · {lang === "ja" ? "連続3日目" : "Day 3"}</div>
-              <div className="neoLoginRow">
-                {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-                  <div key={d} className={"day" + (d < 3 ? " done" : "") + (d === 3 ? " today" : "") + (d === 7 ? " big" : "")}>
-                    <b>{d === 7 ? "SSR" : d <= 3 ? "✓" : "◈"}</b><small>{d}{lang === "ja" ? "日" : "d"}</small>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
           {f.guild && (
             <div className="neoPanel" style={{ padding: 16 }}>
               <div className="neoPanelTitle">{lang === "ja" ? "ギルド" : "Guild"}</div>
@@ -382,18 +387,25 @@ function Sync({ t, store }) {
   );
 }
 
-const TWIN_SHELVES = [
-  { l: 6, t: 5, w: 88, h: 7 }, { l: 4, t: 14, w: 7, h: 64 }, { l: 89, t: 14, w: 7, h: 64 }, { l: 18, t: 83, w: 32, h: 6 },
-  { l: 18, t: 24, w: 12, h: 18 }, { l: 40, t: 24, w: 12, h: 18 }, { l: 62, t: 24, w: 12, h: 18 },
-  { l: 18, t: 52, w: 12, h: 18 }, { l: 40, t: 52, w: 12, h: 18 }, { l: 62, t: 52, w: 12, h: 18 }
+// Per-store floor layouts → each store's digital twin looks different.
+const TWIN_LAYOUTS = [
+  [ { l: 6, t: 5, w: 88, h: 7 }, { l: 4, t: 14, w: 7, h: 64 }, { l: 89, t: 14, w: 7, h: 64 }, { l: 18, t: 83, w: 32, h: 6 },
+    { l: 18, t: 24, w: 12, h: 18 }, { l: 40, t: 24, w: 12, h: 18 }, { l: 62, t: 24, w: 12, h: 18 },
+    { l: 18, t: 52, w: 12, h: 18 }, { l: 40, t: 52, w: 12, h: 18 }, { l: 62, t: 52, w: 12, h: 18 } ],
+  [ { l: 6, t: 5, w: 88, h: 8 }, { l: 4, t: 16, w: 8, h: 70 }, { l: 88, t: 16, w: 8, h: 70 },
+    { l: 24, t: 26, w: 24, h: 13 }, { l: 56, t: 26, w: 16, h: 13 },
+    { l: 24, t: 54, w: 16, h: 16 }, { l: 50, t: 54, w: 24, h: 16 }, { l: 40, t: 82, w: 20, h: 6 } ],
+  [ { l: 5, t: 6, w: 90, h: 6 }, { l: 5, t: 88, w: 90, h: 6 }, { l: 4, t: 18, w: 6, h: 64 },
+    { l: 16, t: 22, w: 62, h: 9 }, { l: 16, t: 40, w: 62, h: 9 }, { l: 16, t: 58, w: 62, h: 9 }, { l: 82, t: 22, w: 9, h: 50 } ]
 ];
-function offCalc(base, delta) { return `calc(${base} ${delta >= 0 ? "+" : "-"} ${Math.abs(delta)}%)`; }
+const shelvesForStore = (storeId) => TWIN_LAYOUTS[Math.max(0, STORES.findIndex((s) => s.id === storeId)) % TWIN_LAYOUTS.length];
+const EXIT_POS = [{ l: "50%", t: "1%" }, { l: "1%", t: "50%" }, { l: "99%", t: "50%" }, { l: "50%", t: "99%" }];
 
-function TwinFloor({ node, onMove, mini }) {
+function TwinFloor({ node, onMove, mini, shelves = TWIN_LAYOUTS[0], exits = 0 }) {
   return (
     <div className={"twinStage" + (mini ? " mini" : "")}>
       <div className="twinFloor" />
-      {TWIN_SHELVES.map((s, i) => (
+      {shelves.map((s, i) => (
         <div key={i} className="twinShelf" style={{ left: s.l + "%", top: s.t + "%", width: s.w + "%", height: s.h + "%" }} />
       ))}
       <svg className="twinPaths" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -404,6 +416,9 @@ function TwinFloor({ node, onMove, mini }) {
       </svg>
       {NODES.map((n) => (
         <button key={n.id} className={"twinNode" + (n.id === node.id ? " here" : "")} style={{ left: n.pos.left, top: n.pos.top }} onClick={() => onMove && onMove(n.id)} />
+      ))}
+      {Array.from({ length: Math.min(exits, 4) }).map((_, i) => (
+        <span key={"x" + i} className="twinExit" style={{ left: EXIT_POS[i].l, top: EXIT_POS[i].t }} />
       ))}
       <div className="twinSelf" style={{ left: node.pos.left, top: node.pos.top }} />
     </div>
@@ -481,7 +496,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       {f.twin ? (
         <aside className="neoTwinMini neoGlass">
           <div className="neoPanelTitle">{t.floor} · DIGITAL TWIN</div>
-          <div className="holder"><TwinFloor node={node} onMove={onMove} mini /></div>
+          <div className="holder"><TwinFloor node={node} onMove={onMove} mini shelves={shelvesForStore(store.id)} exits={neighbors.length} /></div>
           {f.openWorld && neighbors.length > 0 && (
             <div className="twinGates">
               <span className="lbl">⟿ {t.warpTo}</span>
@@ -632,6 +647,82 @@ function Cart({ t, lang, g, onClose }) {
           <button className="neoBtn solid block" disabled={g.cartItems.length === 0} onClick={g.checkout}>{t.checkout}</button>
         </footer>
       </aside>
+    </div>
+  );
+}
+
+function WelcomeModal({ t, lang, g, f, store, onClose, onPossess, onTrial }) {
+  const [claimed, setClaimed] = useState(false);
+  const rec = PRODUCTS.find((p) => p.group === "limited") || PRODUCTS[0];
+  return (
+    <div className="neoModalOv" onClick={onClose}>
+      <div className="neoWelcome" onClick={(e) => e.stopPropagation()}>
+        <button className="close" onClick={onClose}>×</button>
+        <p className="eyebrow">{store.name}</p>
+        <h2>{lang === "ja" ? "ようこそ、ダイバーさん！" : "Welcome, Diver!"}</h2>
+        {f.loginBonus && (
+          <div className="wlBlock">
+            <div className="neoPanelTitle">{lang === "ja" ? "ログインボーナス" : "Login bonus"} · {lang === "ja" ? "連続3日目" : "Day 3"}</div>
+            <div className="neoLoginRow">
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <div key={d} className={"day" + (d < 3 ? " done" : "") + (d === 3 ? " today" : "") + (d === 7 ? " big" : "")}>
+                  <b>{d === 7 ? "SSR" : d <= 3 ? "✓" : "◈"}</b><small>{d}{lang === "ja" ? "日" : "d"}</small>
+                </div>
+              ))}
+            </div>
+            <button className="neoBtn solid block" disabled={claimed} onClick={() => { setClaimed(true); g.gainXp(120, lang === "ja" ? "ログインボーナス" : "Login bonus"); }}>
+              {claimed ? (lang === "ja" ? "受け取り済み ✓" : "Claimed ✓") : (lang === "ja" ? "今日の報酬を受け取る (+120XP)" : "Claim today's reward (+120XP)")}
+            </button>
+          </div>
+        )}
+        <div className="wlBlock">
+          <div className="neoPanelTitle">{lang === "ja" ? "本日のおすすめ" : "Today's pick"}</div>
+          <div className="wlRec">
+            <img src={rec.image} alt="" />
+            <div><b>{rec.name}</b><small>{rec.price} · {rec.rarity}</small></div>
+          </div>
+        </div>
+        <div className="wlCta">
+          <button className="neoBtn solid block" onClick={onPossess}>⚡ {lang === "ja" ? "憑依して店内を探索" : "DIVE & explore"}</button>
+          {f.trial && <button className="neoBtn block" onClick={onTrial}>{t.trial}</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TutorialModal({ lang, f, onClose }) {
+  const L = (ja, en) => (lang === "ja" ? ja : en);
+  const steps = [
+    { ic: "🛰️", t: L("Remolink へようこそ", "Welcome to Remolink"), b: L("全国のアニメグッズ店舗を、自宅から自由に“回って”買える新感覚のEC。", "A new EC where you remotely visit anime-goods stores across Japan from home.") },
+    { ic: "🗺️", t: L("店舗を選ぶ", "Pick a store"), b: L("地図のピンや店舗カードから、行きたいお店を選びます。", "Choose a store from the map pins or store cards.") },
+    { ic: "⚡", t: L("憑依(DIVE)して探索", "DIVE & explore"), b: L("店内のロボットに憑依し、コントローラーで前後左右・視点・昇降を操作して店内を探索。", "Possess a store robot and pilot it — move, turn, tilt and lift to explore the aisles.") },
+    f.collection && { ic: "📘", t: L("レアを発見→図鑑", "Discover → Collection"), b: L("棚をスキャンしてレアを発見、図鑑に登録してコンプを目指そう。", "Scan shelves to find rares and complete your Collection.") },
+    f.missions && { ic: "✅", t: L("クエストでXP→ランクUP", "Quests → Rank up"), b: L("デイリー等のクエストを達成してXPを稼ぎ、ランクを上げよう。", "Clear daily quests to earn XP and rank up.") },
+    f.ranking && { ic: "👑", t: L("ランキング", "Ranking"), b: L("発見数やXPで他のダイバーとランキングを競えます。", "Compete with other divers on the leaderboard.") },
+    f.guild && { ic: "🛡️", t: L("ギルド", "Guild"), b: L("仲間とギルドを組み、協力ミッションでさらに楽しく。", "Team up in a guild and take on co-op missions.") },
+    f.openWorld && { ic: "🌀", t: L("ワープで世界一でかい店へ", "Warp the infinite store"), b: L("店舗の端からワープすると隣の店へ。全店が地続きの“世界一でかい店”。", "Warp from a store edge to the next — all stores connect into one giant store.") }
+  ].filter(Boolean);
+  const [i, setI] = useState(0);
+  const step = steps[Math.min(i, steps.length - 1)];
+  const last = i >= steps.length - 1;
+  return (
+    <div className="neoModalOv" onClick={onClose}>
+      <div className="neoTut" onClick={(e) => e.stopPropagation()}>
+        <button className="close" onClick={onClose}>×</button>
+        <div className="ic">{step.ic}</div>
+        <p className="eyebrow">{L("チュートリアル", "Tutorial")} {i + 1}/{steps.length}</p>
+        <h2>{step.t}</h2>
+        <p className="body">{step.b}</p>
+        <div className="dots">{steps.map((_, k) => <span key={k} className={k === i ? "on" : ""} />)}</div>
+        <div className="nav">
+          {i > 0 ? <button className="neoBtn" onClick={() => setI(i - 1)}>{L("戻る", "Back")}</button> : <span />}
+          {last
+            ? <button className="neoBtn solid" onClick={onClose}>{L("はじめる", "Start")}</button>
+            : <button className="neoBtn solid" onClick={() => setI(i + 1)}>{L("次へ", "Next")}</button>}
+        </div>
+        <button className="skip" onClick={onClose}>{L("スキップ", "Skip")}</button>
+      </div>
     </div>
   );
 }
