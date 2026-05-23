@@ -647,6 +647,52 @@
 .loginClause b { display: block; font-size: 13px; color: var(--acc); margin-bottom: 3px; }
 .loginClause p { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
 
+/* ===== Mascot guide robot "Remo" ===== */
+.mascotImg, .mascotSvg { display: block; filter: drop-shadow(0 10px 26px rgba(0,0,0,.45)); animation: neoBreathe 3.4s ease-in-out infinite; }
+.mascotSvg { overflow: visible; }
+.mascotSvg [fill^="url(#meye"], .mascotSvg path[stroke^="url(#meye"] { filter: drop-shadow(0 0 6px #3fa9ff); }
+
+/* ===== Store entry gate (browse vs explore) ===== */
+.neoGate { max-width: 1080px; margin: 0 auto; padding: 16px clamp(12px,3vw,26px) 64px; display: grid; gap: 18px; }
+.neoGate .neoBack { justify-self: start; }
+.gateHero { display: flex; align-items: center; gap: clamp(16px,4vw,40px); padding: 22px clamp(16px,3vw,32px); flex-wrap: wrap; }
+.gateMascot { position: relative; flex: none; }
+.gateBubble { position: absolute; top: 4px; right: -8px; transform: translateX(40%); background: var(--card); border: 1px solid var(--line); color: var(--text); font-size: 12px; font-weight: 800; padding: 7px 12px; border-radius: 12px 12px 12px 2px; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+.gateIntro { flex: 1 1 260px; }
+.gateIntro h1 { font-size: clamp(24px,4vw,40px); margin: 4px 0 8px; }
+.gateQ { font-size: clamp(15px,2vw,19px); font-weight: 800; color: var(--text); }
+.gateGuide { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+.gateChoices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .gateChoices { grid-template-columns: 1fr; } }
+.gateCard { position: relative; text-align: left; display: grid; gap: 6px; padding: 22px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; overflow: hidden; }
+.gateCard .ic { font-size: 34px; }
+.gateCard b { font-size: 18px; }
+.gateCard small { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.gateCard .go { position: absolute; right: 18px; bottom: 16px; font-size: 22px; color: var(--acc); }
+.gateCard:hover { transform: translateY(-3px); border-color: var(--acc); box-shadow: 0 0 24px color-mix(in srgb, var(--acc), transparent 62%); }
+.gateCard.explore { border-color: color-mix(in srgb, var(--acc-2), transparent 45%); background: linear-gradient(135deg, color-mix(in srgb, var(--acc-2), transparent 88%), var(--card)); }
+.gateCard.explore::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--acc-2), var(--acc), transparent); background-size: 220% 100%; animation: neoFlow 3s linear infinite; }
+.gateCard .badge { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; letter-spacing: .06em; color: var(--on); padding: 4px 10px; border-radius: 999px; background: linear-gradient(110deg, var(--acc), var(--acc-2)); }
+
+.gatePromos { padding: 18px clamp(14px,3vw,24px); }
+.promoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 12px; margin-top: 12px; }
+.promoCard { display: flex; gap: 12px; padding: 14px; border-radius: var(--r); border: 1px solid var(--line); background: var(--bg-2); }
+.promoCard .ic { font-size: 26px; flex: none; }
+.promoCard .pc { display: grid; gap: 3px; }
+.promoCard .tag { font-size: 10.5px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--acc-2); }
+.promoCard b { font-size: 13.5px; line-height: 1.4; }
+.promoCard small { font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+/* ===== exploration promo banner ===== */
+.neoPromoBanner { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 11px; max-width: min(440px, 86vw); padding: 9px 12px 9px 14px; border-radius: var(--pill); animation: neoSlideUp .35s ease-out; }
+.neoPromoBanner .ic { font-size: 20px; flex: none; }
+.neoPromoBanner .txt { display: grid; gap: 1px; min-width: 0; }
+.neoPromoBanner .tag { font-size: 9.5px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--acc-2); }
+.neoPromoBanner b { font-size: 12.5px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.neoPromoBanner .x { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 15px; line-height: 1; }
+.neoPromoBanner .x:hover { color: var(--text); border-color: var(--acc); }
+
 @media (prefers-reduced-motion: reduce) {
   .neo *, .neo *::before, .neo *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }

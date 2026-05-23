@@ -4,7 +4,7 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, asset, local
 } from "./data.js";
 
 const T = {
@@ -20,7 +20,11 @@ const T = {
     roll: "サイコロを振る", warpTo: "隣接店舗へ移動", rank: "ランク", hp: "ENERGY",
     collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "取扱店舗", getRare: "GET!",
     fwd: "前進", bwd: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
-    up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動"
+    up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動",
+    gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
+    gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
+    gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
+    gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -34,7 +38,11 @@ const T = {
     roll: "Roll dice", warpTo: "Move to store", rank: "Rank", hp: "ENERGY",
     collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Sold at", getRare: "GET!",
     fwd: "Fwd", bwd: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
-    up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store"
+    up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store",
+    gateLead: "You've arrived", gateTitle: "How do you want to start?",
+    gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
+    gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
+    gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick"
   }
 };
 
@@ -98,7 +106,7 @@ export default function NeoApp() {
   }, [hp, screen]);
 
   function openStore(s) {
-    setStore(s); setProduct(PRODUCTS[0]); setScreen("shop");
+    setStore(s); setProduct(PRODUCTS[0]); setScreen("storeGate");
     try { if (!sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
   }
   function startTrial() { setPossessMode("trial"); setHp(78); setNodeId("entrance"); setHeading(0); setScreen("sync"); }
@@ -142,6 +150,9 @@ export default function NeoApp() {
     body = <Collection t={t} lang={lang} g={g} onBack={() => setScreen("home")} onGoStore={openStore} />;
   } else if (screen === "toio") {
     body = <ToioCorner t={t} lang={lang} g={g} store={store} onBack={() => setScreen("shop")} />;
+  } else if (screen === "storeGate") {
+    body = <StoreGate t={t} lang={lang} g={g} f={f} store={store}
+      onBack={() => setScreen("home")} onList={() => setScreen("shop")} onExplore={startTrial} />;
   } else if (screen === "shop") {
     body = <Shop t={t} lang={lang} g={g} f={f} store={store} product={product} reqlog={reqlog} toioCost={TOIO_COST}
       onBack={() => setScreen("home")} onProduct={setProduct} onRequest={request} onPossess={startPossess} onTrial={startTrial} onToio={openToio} />;
@@ -328,6 +339,122 @@ function MissionsPanel({ t, lang, g }) {
   );
 }
 
+// Brand guide character "Remo". Uses the provided render if present at
+// public/assets/generated/mascot-robot.png, otherwise an on-brand inline SVG.
+function MascotRobot({ size = 140, className = "" }) {
+  const [useImg, setUseImg] = useState(true);
+  const src = asset("assets/generated/mascot-robot.png");
+  if (useImg) {
+    return (
+      <img className={"mascotImg " + className} src={src} alt="Remo"
+        style={{ width: size, height: "auto" }} onError={() => setUseImg(false)} />
+    );
+  }
+  return (
+    <svg className={"mascotSvg " + className} width={size} height={size * 1.18} viewBox="0 0 120 142" role="img" aria-label="Remo">
+      <defs>
+        <linearGradient id="mbody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fdfefe" /><stop offset="1" stopColor="#d8e0ea" />
+        </linearGradient>
+        <radialGradient id="meye" cx="50%" cy="40%" r="60%">
+          <stop offset="0" stopColor="#9fd6ff" /><stop offset="1" stopColor="#2f97ff" />
+        </radialGradient>
+      </defs>
+      {/* shoulders / chest */}
+      <ellipse cx="28" cy="120" rx="20" ry="17" fill="#171c27" />
+      <ellipse cx="92" cy="120" rx="20" ry="17" fill="#171c27" />
+      <path d="M60 88c20 0 33 12 33 30v18H27v-18c0-18 13-30 33-30z" fill="url(#mbody)" stroke="#c2cdda" strokeWidth="1.5" />
+      <circle cx="60" cy="86" r="9" fill="#171c27" />
+      {/* side ear bumps */}
+      <circle cx="22" cy="44" r="11" fill="#171c27" />
+      <circle cx="98" cy="44" r="11" fill="#171c27" />
+      {/* head dome */}
+      <rect x="20" y="10" width="80" height="72" rx="34" fill="url(#mbody)" stroke="#c2cdda" strokeWidth="1.6" />
+      {/* face screen */}
+      <rect x="31" y="22" width="58" height="48" rx="22" fill="#0a0d15" />
+      {/* eyes */}
+      <rect x="44" y="36" width="9" height="17" rx="4.5" fill="url(#meye)" />
+      <rect x="67" y="36" width="9" height="17" rx="4.5" fill="url(#meye)" />
+      {/* smile */}
+      <path d="M48 58q12 9 24 0" stroke="url(#meye)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+// Rotating ad / event / discount banner shown during exploration.
+function ExplorePromo({ lang }) {
+  const [i, setI] = useState(0);
+  const [show, setShow] = useState(true);
+  useEffect(() => {
+    const id = setInterval(() => setI((v) => (v + 1) % EXPLORE_PROMOS.length), 5200);
+    return () => clearInterval(id);
+  }, []);
+  if (!show) return null;
+  const p = EXPLORE_PROMOS[i];
+  return (
+    <div className="neoPromoBanner neoGlass" key={i}>
+      <span className="ic">{p.icon}</span>
+      <div className="txt"><span className="tag">{local(p.tag, lang)}</span><b>{local(p.title, lang)}</b></div>
+      <button className="x" onClick={() => setShow(false)} aria-label="close">×</button>
+    </div>
+  );
+}
+
+// Store entry: choose between the product list and in-store exploration,
+// with promo / event / discount info nudging toward exploration.
+function StoreGate({ t, lang, g, f, store, onBack, onList, onExplore }) {
+  return (
+    <main className="neoGate">
+      <button className="neoBtn neoBack" onClick={onBack}>{t.back}</button>
+
+      <section className="gateHero neoPanel">
+        <div className="gateMascot">
+          <MascotRobot size={150} />
+          <span className="gateBubble">{lang === "ja" ? "ようこそ！どっちにする？" : "Welcome! Which one?"}</span>
+        </div>
+        <div className="gateIntro">
+          <p className="eyebrow">{t.gateLead} · {local(store.area, lang)}</p>
+          <h1>{store.name}</h1>
+          <p className="gateQ">{t.gateTitle}</p>
+          <p className="gateGuide">🤖 {t.gateGuide}</p>
+        </div>
+      </section>
+
+      <section className="gateChoices">
+        <button className="gateCard list" onClick={onList}>
+          <span className="ic">🛍</span>
+          <b>{t.gateList}</b>
+          <small>{t.gateListDesc}</small>
+          <span className="go">→</span>
+        </button>
+        <button className="gateCard explore" onClick={onExplore}>
+          <span className="badge">{t.recommend}</span>
+          <span className="ic">🤖</span>
+          <b>{t.gateExplore}</b>
+          <small>{t.gateExploreDesc}</small>
+          <span className="go">→</span>
+        </button>
+      </section>
+
+      <section className="gatePromos neoPanel">
+        <div className="neoPanelTitle">{t.gatePromo}</div>
+        <div className="promoGrid">
+          {EXPLORE_PROMOS.map((p, i) => (
+            <div className="promoCard" key={i}>
+              <span className="ic">{p.icon}</span>
+              <div className="pc">
+                <span className="tag">{local(p.tag, lang)}</span>
+                <b>{local(p.title, lang)}</b>
+                <small>{local(p.body, lang)}</small>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function Shop({ t, lang, g, f, store, product, reqlog, toioCost, onBack, onProduct, onRequest, onPossess, onTrial, onToio }) {
   const groups = [["recommended", t.recommended], ["limited", t.limited], ["popular", t.popular]];
   return (
@@ -460,8 +587,6 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
-  const leftStore = neighbors[0] ? storeById(neighbors[0]) : null;
-  const rightStore = neighbors[1] ? storeById(neighbors[1]) : null;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const view = node.view || { img: store.pano, x: 30, z: 150 };
   const bgX = clamp(view.x + (yaw - 4) * 7, 0, 100); // turning pans within the viewpoint
@@ -498,14 +623,9 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
         <span>🛒 {g.cartCount}</span>
       </header>
 
-      {/* store-to-store traversal導線: move sideways to neighbour stores */}
-      {f.openWorld && (leftStore || rightStore) && (
-        <div className="neoStoreNav">
-          {leftStore && <button className="g l" onClick={() => warp(leftStore.id)}>◀<span>{leftStore.name}</span></button>}
-          <span className="now">{store.name}</span>
-          {rightStore && <button className="g r" onClick={() => warp(rightStore.id)}><span>{rightStore.name}</span>▶</button>}
-        </div>
-      )}
+      {/* store-to-store traversal stays available via the twin minimap gates below */}
+
+      <ExplorePromo lang={lang} />
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
 

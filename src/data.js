@@ -28,6 +28,22 @@ export const TONES = [
   { id: "simple", ja: "シンプル", en: "Simple", acc: "#cfe0f0", acc2: "#7f93ad" }
 ];
 
+// 探索を促す広告・イベント・ディスカウント情報
+export const EXPLORE_PROMOS = [
+  { icon: "🎟", tag: { ja: "探索限定クーポン", en: "Explore-only coupon" },
+    title: { ja: "店内を3か所めぐると -¥500 クーポン", en: "Visit 3 spots in-store → ¥500 OFF" },
+    body: { ja: "歩いて棚を巡るほどおトク。探索者だけの割引です。", en: "The more you roam, the more you save — explorers only." } },
+  { icon: "✨", tag: { ja: "本日のイベント", en: "Today's event" },
+    title: { ja: "レア出現率 ×1.5 アップ中！", en: "Rare drop rate ×1.5 right now!" },
+    body: { ja: "今だけ図鑑のレアが見つかりやすい時間帯です。", en: "Limited-time window — rares are easier to find." } },
+  { icon: "🏷", tag: { ja: "タイムセール", en: "Flash sale" },
+    title: { ja: "限定棚の商品が“探索者価格”", en: "Explorer price on limited-shelf items" },
+    body: { ja: "店内で見つけた限定棚の商品が特別価格に。", en: "Limited-shelf finds drop to a special price in-store." } },
+  { icon: "🎁", tag: { ja: "ミッション", en: "Mission" },
+    title: { ja: "探索でEXPを稼いでTOIOコーナーへ", en: "Earn EXP exploring → unlock the TOIO corner" },
+    body: { ja: "歩く・スキャン・発見でEXPアップ。サービスに使えます。", en: "Walk, scan and discover to grow EXP you can spend." } }
+];
+
 export const STORES = [
   ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 62, 52],
   ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 46, 60],
