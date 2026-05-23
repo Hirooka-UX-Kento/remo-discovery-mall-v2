@@ -17,7 +17,7 @@ const productImage = (id) => (PRODUCT_IMG[id] ? asset(`assets/generated/products
 
 export const TONES = [
   { id: "cyber", ja: "サイバー", en: "Cyber", acc: "#19e0ff", acc2: "#ff48d0" },
-  { id: "game", ja: "レトロゲーム", en: "Retro game", acc: "#5bff9b", acc2: "#ffe24a" },
+  { id: "game", ja: "歓楽街ネオン", en: "Kamurocho", acc: "#ff2740", acc2: "#ffc23d" },
   { id: "night", ja: "夜市ネオン", en: "Night neon", acc: "#8b7bff", acc2: "#22d3ee" },
   { id: "pink", ja: "ピンク", en: "Pink", acc: "#ff5fb0", acc2: "#ff9ec7" },
   { id: "mint", ja: "ミント", en: "Mint", acc: "#2ff0c0", acc2: "#7df0ff" },

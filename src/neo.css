@@ -45,7 +45,8 @@
 
 /* ---------- tone palettes (dark cyber base, neon accents + fonts) ---------- */
 .neo.tone-cyber   { --acc:#19e0ff; --acc-2:#ff48d0; --font:"M PLUS 1 Code", ui-monospace, monospace; }
-.neo.tone-game    { --acc:#5bff9b; --acc-2:#ffe24a; --font:"DotGothic16","Courier New",monospace; }
+/* 歓楽街ネオン — 龍が如く風。漆黒 × ネオン朱赤 × 金。重厚な極太ゴシック看板フォント */
+.neo.tone-game    { --acc:#ff2740; --acc-2:#ffc23d; --bg:#070304; --bg-2:#140a0b; --text:#fff2e6; --on:#1a0306; --line: color-mix(in srgb, var(--acc-2), transparent 60%); --font:"Dela Gothic One","Reggae One","Hiragino Kaku Gothic ProN",sans-serif; }
 .neo.tone-night   { --acc:#8b7bff; --acc-2:#22d3ee; --font:"Zen Kaku Gothic New", sans-serif; }
 .neo.tone-pink    { --acc:#ff5fb0; --acc-2:#ff9ec7; --font:"Zen Maru Gothic", sans-serif; }
 .neo.tone-mint    { --acc:#2ff0c0; --acc-2:#7df0ff; --font:"Zen Kaku Gothic New", sans-serif; }
@@ -54,6 +55,23 @@
 .neo.tone-retro   { --acc:#ff7a3c; --acc-2:#ffd23c; --font:"Yusei Magic", sans-serif; }
 .neo.tone-festival{ --acc:#ff3b5c; --acc-2:#ffd23c; --font:"Reggae One", sans-serif; }
 .neo.tone-simple  { --acc:#cfe0f0; --acc-2:#7f93ad; --text:#eef4fb; --font:"Inter","Noto Sans JP",sans-serif; }
+
+/* ===== 歓楽街ネオン (龍が如く風) tone-specific flourishes ===== */
+/* deep crimson night-district glow over the base scene */
+.neo.tone-game { background:
+  radial-gradient(1100px 520px at 80% -12%, color-mix(in srgb, var(--acc), transparent 80%), transparent 60%),
+  radial-gradient(820px 460px at -6% 2%, color-mix(in srgb, var(--acc-2), transparent 84%), transparent 60%),
+  radial-gradient(700px 700px at 50% 120%, color-mix(in srgb, var(--acc), transparent 88%), transparent 70%),
+  linear-gradient(180deg, #140a0b, #070304); }
+/* the heavy signage font needs air + tighter heading line-height */
+.neo.tone-game { letter-spacing: .01em; }
+.neo.tone-game .neoTitle .main { letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--acc), transparent 45%), 0 0 60px color-mix(in srgb, var(--acc-2), transparent 60%); }
+.neo.tone-game .neoTitle .lead { background: linear-gradient(100deg, var(--acc-2), var(--acc)); -webkit-background-clip: text; background-clip: text; }
+/* gaudy gold-edged panels + neon-tube buttons */
+.neo.tone-game .neoPanel { border-color: color-mix(in srgb, var(--acc-2), transparent 55%); box-shadow: 0 0 0 1px color-mix(in srgb, var(--acc), transparent 80%), 0 18px 50px rgba(0,0,0,.6); }
+.neo.tone-game .neoBtn.solid { box-shadow: 0 0 24px color-mix(in srgb, var(--acc), transparent 40%), inset 0 0 0 1px color-mix(in srgb, var(--acc-2), transparent 50%); }
+.neo.tone-game .eyebrow { color: var(--acc-2); text-shadow: 0 0 12px color-mix(in srgb, var(--acc-2), transparent 55%); }
+.neo.tone-game .neoChips span { color: var(--acc-2); border-color: color-mix(in srgb, var(--acc-2), transparent 55%); }
 
 .neo h1,.neo h2,.neo h3 { margin: 0; line-height: 1.1; }
 .neo p { margin: 0; }
