@@ -51,7 +51,9 @@ export default function NeoApp() {
     trial: isFunctional("free_trial_area"),
     openWorld: isFunctional("anime_goods_open_world") || isFunctional("open_world_city_theme"),
     sugoroku: isFunctional("sugoroku_warp_exploration") || isFunctional("sugoroku_world_theme"),
-    collection: isFunctional("collection_book")
+    collection: isFunctional("collection_book"),
+    loginBonus: isFunctional("login_bonus"),
+    guild: isFunctional("guild")
   };
 
   const [screen, setScreen] = useState("home");
@@ -236,6 +238,26 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
             </div>
           )}
 
+          {f.loginBonus && (
+            <div className="neoPanel" style={{ padding: 16 }}>
+              <div className="neoPanelTitle">{lang === "ja" ? "ログインボーナス" : "Login bonus"} · {lang === "ja" ? "連続3日目" : "Day 3"}</div>
+              <div className="neoLoginRow">
+                {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                  <div key={d} className={"day" + (d < 3 ? " done" : "") + (d === 3 ? " today" : "") + (d === 7 ? " big" : "")}>
+                    <b>{d === 7 ? "SSR" : d <= 3 ? "✓" : "◈"}</b><small>{d}{lang === "ja" ? "日" : "d"}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {f.guild && (
+            <div className="neoPanel" style={{ padding: 16 }}>
+              <div className="neoPanelTitle">{lang === "ja" ? "ギルド" : "Guild"}</div>
+              <div className="neoGuild"><b>REMOLINKers</b><span>28 / 30</span></div>
+              <div className="neoGuildBar"><i style={{ width: "60%" }} /></div>
+              <small style={{ color: "var(--muted)", fontSize: 11 }}>{lang === "ja" ? "ギルドミッション 3 / 5" : "Guild mission 3 / 5"}</small>
+            </div>
+          )}
           {f.missions && <MissionsPanel t={t} lang={lang} g={g} />}
           {f.ranking && (
             <div className="neoPanel neoLeader" style={{ padding: 16 }}>
@@ -413,13 +435,11 @@ function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onM
       <div className="neoExShade" />
 
       <header className="neoExTop neoGlass">
-        <span className="rec">● REC 360</span><b>{store.name}</b><span>{local(node.label, lang)}</span><span>{HEADINGS[heading]}</span>
-        <span className="sp">{t.cart} {g.cartCount}</span>
+        <span className="rec">● LIVE 360</span><b>{store.name}</b><span>{local(node.label, lang)}</span>
+        <span className="sp">⚡ {hp}</span>
+        {f.rank && <span>{g.rank.rank.name} · {g.xp}XP</span>}
+        <span>🛒 {g.cartCount}</span>
       </header>
-      <section className="neoExStat neoGlass">
-        <div className="b"><strong>{t.hp} {hp}</strong><span>{f.rank ? `${g.rank.rank.name} · ${g.xp}XP` : ""}</span></div>
-        <div className="neoBar"><i style={{ width: hp + "%" }} /></div>
-      </section>
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
 
@@ -430,19 +450,23 @@ function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onM
         </button>
       ))}
 
-      {f.twin && (
+      {f.twin ? (
         <aside className="neoTwinMini neoGlass">
-          <div className="neoPanelTitle">{t.floor} · TWIN</div>
+          <div className="neoPanelTitle">{t.floor} · DIGITAL TWIN</div>
           <div className="holder"><TwinFloor node={node} onMove={onMove} mini /></div>
+          {f.openWorld && neighbors.length > 0 && (
+            <div className="twinGates">
+              <span className="lbl">⟿ {t.warpTo}</span>
+              {neighbors.map((id) => <button key={id} className="gate" onClick={() => warp(id)}>◈ {storeById(id).name}</button>)}
+            </div>
+          )}
         </aside>
-      )}
-
-      {f.openWorld && neighbors.length > 0 && (
+      ) : (f.openWorld && neighbors.length > 0 && (
         <aside className="twinWarp neoGlass">
           <div className="neoPanelTitle">⟿ {t.warpTo}</div>
           <div className="gates">{neighbors.map((id) => <button key={id} className="gate" onClick={() => warp(id)}>◈ {storeById(id).name}</button>)}</div>
         </aside>
-      )}
+      ))}
 
       <aside className="neoAr neoGlass">
         <p className="eyebrow">{scanned ? t.scanned : "QR TARGET"}</p>

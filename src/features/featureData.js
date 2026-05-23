@@ -47,6 +47,7 @@ const RAW = [
   // 1. 初回体験・オンボーディング
   ["free_trial_area", "無料体験コーナー", 0, "初回ユーザーが無料で遠隔操作を体験できる機能", "available", "MVP", true],
   ["mascot_guide", "マスコット案内", 0, "マスコットキャラクターが操作説明、サービス紹介、ミッション案内を行う機能", "coming_soon", "Phase2", false, { dependencies: ["mascot_character"] }],
+  ["login_bonus", "ログインボーナス", 0, "毎日ログインで報酬（ポイント/チケット）を付与。連続ログインでSSR確定チケット等の特典", "available", "MVP", true],
 
   // 2. 遠隔操作・制御UX
   ["save_point", "セーブポイント", 1, "探索中の地点を保存し、次回そこから再開できる機能", "coming_soon", "Phase2", false],
@@ -73,6 +74,7 @@ const RAW = [
 
   // 5. ソーシャル・コミュニティ
   ["player_interaction", "他プレイヤー干渉", 4, "他ユーザーの行動が自分の探索体験に間接的に影響する機能", "coming_soon", "Phase2", false],
+  ["guild", "ギルド", 4, "仲間とつながり、ギルドミッションや協力探索でエンゲージを高める機能", "available", "Phase2", true],
   ["life_share", "ライフ共有", 4, "フレンドやチーム内でライフ、ポイント、探索チケット、応援アイテムを共有する機能", "coming_soon", "Phase2", false],
 
   // 6. 世界観・コンテンツ演出
