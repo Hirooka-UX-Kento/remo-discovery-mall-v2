@@ -612,6 +612,41 @@
 .neoPossess .big s { color: var(--muted); font-size: 16px; font-weight: 600; }
 .neoPossess .big em { font-size: 13px; color: var(--muted); font-style: normal; }
 
+/* ===== Login / landing gate ===== */
+.loginScreen { min-height: 100vh; display: grid; place-items: center; padding: 28px 18px; }
+.loginLang { position: fixed; top: 16px; right: 16px; z-index: 5; padding: 7px 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.loginLang:hover { border-color: var(--acc); }
+.loginWrap { width: min(880px, 100%); display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(20px, 4vw, 48px); align-items: center; }
+@media (max-width: 720px) { .loginWrap { grid-template-columns: 1fr; gap: 26px; } }
+
+.loginBrand .lead { font-size: clamp(16px, 2.2vw, 22px); letter-spacing: .34em; font-weight: 900; background: linear-gradient(100deg, var(--acc), var(--acc-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.loginBrand .main { font-size: clamp(40px, 7vw, 76px); line-height: .98; letter-spacing: .02em; margin: 4px 0 16px; text-shadow: 0 0 40px color-mix(in srgb, var(--acc), transparent 65%); animation: neoTitleGlow 4s ease-in-out infinite; }
+.loginTagline { color: var(--muted); font-size: clamp(13px, 1.5vw, 15px); line-height: 1.8; max-width: 30em; }
+
+.loginCard { width: 100%; padding: 24px; display: grid; gap: 14px; }
+.loginCard .eyebrow { margin-bottom: 2px; }
+.loginField { display: grid; gap: 6px; }
+.loginField span { font-size: 12px; font-weight: 800; color: var(--text); letter-spacing: .04em; }
+.loginField input { width: 100%; padding: 12px 14px; border-radius: var(--r); border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 15px; }
+.loginField input:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc), transparent 75%); }
+.loginField input::placeholder { color: var(--muted); }
+
+.loginAgree { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.loginAgree input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--acc); flex: none; }
+.loginLink { border: 0; background: transparent; padding: 0; font: inherit; font-size: 13px; color: var(--acc); text-decoration: underline; cursor: pointer; }
+.loginError { color: #ff8189; font-size: 13px; font-weight: 700; margin: -2px 0 2px; }
+.loginDemo { border: 1px dashed var(--line); background: transparent; color: var(--acc-2); font: inherit; font-size: 12px; font-weight: 700; padding: 9px; border-radius: var(--r); cursor: pointer; }
+.loginDemo:hover { border-color: var(--acc-2); }
+.loginHint { font-size: 11.5px; color: var(--muted); text-align: center; }
+.loginHint code { color: var(--acc-2); background: color-mix(in srgb, var(--acc-2), transparent 88%); padding: 1px 6px; border-radius: 6px; font-size: 11.5px; }
+
+/* terms modal (reuses .neoModalOv + .neoTut shell) */
+.loginTerms { text-align: left; width: min(560px, 94vw); }
+.loginTerms h2 { font-size: 19px; margin: 2px 0 14px; text-align: center; }
+.loginTermsBody { max-height: 50vh; overflow: auto; display: grid; gap: 12px; margin-bottom: 16px; padding-right: 6px; }
+.loginClause b { display: block; font-size: 13px; color: var(--acc); margin-bottom: 3px; }
+.loginClause p { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
+
 @media (prefers-reduced-motion: reduce) {
   .neo *, .neo *::before, .neo *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
