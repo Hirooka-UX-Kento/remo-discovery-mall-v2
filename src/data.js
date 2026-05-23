@@ -106,12 +106,15 @@ export const RARES = RARE_DEFS.map(([storeId, ja, en, rarity, xp], i) => ({
 }));
 export const rareByStore = (storeId) => RARES.find((r) => r.storeId === storeId);
 
+// Each node = a "viewpoint" (street-view style). `view` = image + base crop + zoom,
+// so stepping forward switches to a visibly different scene. Swap `img` for real
+// per-viewpoint photos/generated images later — the structure is ready.
 export const NODES = [
-  { id: "entrance", label: { ja: "入口", en: "Entrance" }, pos: { left: "18%", top: "74%" }, products: ["model-kit", "card-pack", "charm"], next: ["main", "limited"] },
-  { id: "main", label: { ja: "メイン通路", en: "Main aisle" }, pos: { left: "42%", top: "54%" }, products: ["model-kit", "acrylic", "deck", "plush"], next: ["entrance", "showcase", "limited"] },
-  { id: "showcase", label: { ja: "ショーケース", en: "Showcase" }, pos: { left: "66%", top: "38%" }, products: ["soft-vinyl", "card-pack", "book"], next: ["main", "limited"] },
-  { id: "limited", label: { ja: "限定棚", en: "Limited" }, pos: { left: "80%", top: "22%" }, products: ["holo-badge", "poster", "pin", "acrylic"], next: ["main", "showcase", "checkout"] },
-  { id: "checkout", label: { ja: "レジ", en: "Checkout" }, pos: { left: "60%", top: "78%" }, products: ["keyring", "charm", "deck"], next: ["entrance", "limited"] }
+  { id: "entrance", label: { ja: "入口", en: "Entrance" }, pos: { left: "18%", top: "74%" }, products: ["model-kit", "card-pack", "charm"], next: ["main", "limited"], view: { img: ZONE_PANO, x: 8, z: 145 } },
+  { id: "main", label: { ja: "メイン通路", en: "Main aisle" }, pos: { left: "42%", top: "54%" }, products: ["model-kit", "acrylic", "deck", "plush"], next: ["entrance", "showcase", "limited"], view: { img: ZONE_AISLE, x: 35, z: 160 } },
+  { id: "showcase", label: { ja: "ショーケース", en: "Showcase" }, pos: { left: "66%", top: "38%" }, products: ["soft-vinyl", "card-pack", "book"], next: ["main", "limited"], view: { img: ZONE_PANO, x: 60, z: 175 } },
+  { id: "limited", label: { ja: "限定棚", en: "Limited" }, pos: { left: "80%", top: "22%" }, products: ["holo-badge", "poster", "pin", "acrylic"], next: ["main", "showcase", "checkout"], view: { img: ZONE_AISLE, x: 80, z: 165 } },
+  { id: "checkout", label: { ja: "レジ", en: "Checkout" }, pos: { left: "60%", top: "78%" }, products: ["keyring", "charm", "deck"], next: ["entrance", "limited"], view: { img: ZONE_PANO, x: 42, z: 150 } }
 ];
 export const nodeById = (id) => NODES.find((n) => n.id === id) || NODES[0];
 export const HEADINGS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];

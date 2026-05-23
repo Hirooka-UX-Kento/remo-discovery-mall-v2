@@ -239,7 +239,8 @@
    Explore (in-app trial) — HUD
    ===================================================================== */
 .neoEx { position: relative; min-height: 100vh; overflow: hidden; color: #eaf6ff; background: #04070f; }
-.neoFeed { position: absolute; inset: 0; background-size: cover; background-position: center; transition: background-position .4s ease; }
+.neoFeed { position: absolute; inset: 0; background-size: cover; background-position: center; transition: background-position .4s ease; animation: neoStepIn .45s ease; }
+@keyframes neoStepIn { from { opacity: .35; transform: scale(1.07); } to { opacity: 1; transform: none; } }
 .neoExShade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(3,7,14,.7), transparent 24%, transparent 76%, rgba(3,7,14,.7)), linear-gradient(180deg, rgba(3,7,14,.55), transparent 32% 68%, rgba(3,7,14,.66)), repeating-linear-gradient(0deg, rgba(25,224,255,.05) 0 1px, transparent 1px 20px); }
 .neoGlass { background: rgba(7,14,26,.62); border: 1px solid color-mix(in srgb, var(--acc), transparent 50%); backdrop-filter: blur(12px); }
 .neoExTop { position: absolute; z-index: 12; left: 14px; right: 14px; top: 14px; display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: var(--r); font-size: 12px; font-weight: 700; }

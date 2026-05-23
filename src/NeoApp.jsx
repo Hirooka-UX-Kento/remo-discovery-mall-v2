@@ -420,10 +420,11 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const leftStore = neighbors[0] ? storeById(neighbors[0]) : null;
   const rightStore = neighbors[1] ? storeById(neighbors[1]) : null;
-  const bgX = (yaw / 8) * 100;
-  const bgY = Math.max(0, Math.min(100, 50 + pitch * 9 - elev * 7));
-  const feedStyle = { backgroundImage: `url(${store.pano})`, backgroundPosition: `${bgX}% ${bgY}%`, backgroundSize: "150% auto" };
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const view = node.view || { img: store.pano, x: 30, z: 150 };
+  const bgX = clamp(view.x + (yaw - 4) * 7, 0, 100); // turning pans within the viewpoint
+  const bgY = clamp(50 + pitch * 9 - elev * 7, 0, 100);
+  const feedStyle = { backgroundImage: `url(${view.img})`, backgroundPosition: `${bgX}% ${bgY}%`, backgroundSize: `${view.z}% auto` };
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id);
@@ -445,7 +446,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
 
   return (
     <div className="neoEx">
-      <div className="neoFeed" style={feedStyle} />
+      <div className="neoFeed" key={node.id} style={feedStyle} />
       <div className="neoExShade" />
 
       <header className="neoExTop neoGlass">
