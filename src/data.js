@@ -16,16 +16,16 @@ const PRODUCT_IMG = {
 const productImage = (id) => (PRODUCT_IMG[id] ? asset(`assets/generated/products/${PRODUCT_IMG[id]}.png`) : PRODUCT_FALLBACK);
 
 export const TONES = [
-  { id: "cyber", ja: "サイバー", en: "Cyber" },
-  { id: "game", ja: "レトロゲーム", en: "Retro game" },
-  { id: "night", ja: "夜市ネオン", en: "Night neon" },
-  { id: "pink", ja: "ピンク", en: "Pink" },
-  { id: "mint", ja: "ミント", en: "Mint" },
-  { id: "premium", ja: "プレミアム", en: "Premium" },
-  { id: "wonder", ja: "ワンダー", en: "Wonder" },
-  { id: "retro", ja: "レトロ", en: "Retro" },
-  { id: "festival", ja: "祭り", en: "Festival" },
-  { id: "simple", ja: "シンプル", en: "Simple" }
+  { id: "cyber", ja: "サイバー", en: "Cyber", acc: "#19e0ff", acc2: "#ff48d0" },
+  { id: "game", ja: "レトロゲーム", en: "Retro game", acc: "#5bff9b", acc2: "#ffe24a" },
+  { id: "night", ja: "夜市ネオン", en: "Night neon", acc: "#8b7bff", acc2: "#22d3ee" },
+  { id: "pink", ja: "ピンク", en: "Pink", acc: "#ff5fb0", acc2: "#ff9ec7" },
+  { id: "mint", ja: "ミント", en: "Mint", acc: "#2ff0c0", acc2: "#7df0ff" },
+  { id: "premium", ja: "プレミアム", en: "Premium", acc: "#e6c061", acc2: "#b98a3a" },
+  { id: "wonder", ja: "ワンダー", en: "Wonder", acc: "#ffb020", acc2: "#ff6ad5" },
+  { id: "retro", ja: "レトロ", en: "Retro", acc: "#ff7a3c", acc2: "#ffd23c" },
+  { id: "festival", ja: "祭り", en: "Festival", acc: "#ff3b5c", acc2: "#ffd23c" },
+  { id: "simple", ja: "シンプル", en: "Simple", acc: "#cfe0f0", acc2: "#7f93ad" }
 ];
 
 export const STORES = [

@@ -117,6 +117,25 @@
   background: linear-gradient(45deg, transparent 50%, var(--acc) 50%) calc(100% - 14px) 52% / 7px 7px no-repeat, var(--card);
   cursor: pointer;
 }
+.neoThemeBtn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 12px; font-weight: 700; color: var(--text); padding: 8px 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+.neoThemeBtn:hover { border-color: var(--acc); }
+.neoThemeBtn .sw { width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(120deg, var(--acc), var(--acc-2)); box-shadow: 0 0 8px color-mix(in srgb, var(--acc), transparent 50%); }
+
+/* theme picker popover (live, non-blocking) */
+.thScrim { position: fixed; inset: 0; z-index: 340; background: transparent; }
+.thPop { position: fixed; z-index: 341; top: 64px; right: 16px; width: min(340px, calc(100vw - 24px)); padding: 16px; border-radius: var(--r-lg); background: var(--bg-2); border: 1px solid var(--line); box-shadow: 0 24px 70px rgba(0,0,0,.6); animation: neoSlideUp .22s ease-out; }
+.thHead { display: flex; align-items: center; justify-content: space-between; }
+.thHead b { font-size: 15px; }
+.thHead .close { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 16px; }
+.thHint { font-size: 11px; color: var(--muted); margin: 6px 0 12px; }
+.thGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.thCard { position: relative; display: flex; align-items: center; gap: 9px; text-align: left; padding: 9px; border-radius: var(--r); border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; }
+.thCard:hover { transform: translateY(-1px); border-color: var(--acc); }
+.thCard.on { border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc), transparent 60%); }
+.thCard .sw { width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; box-shadow: 0 0 10px rgba(0,0,0,.3); }
+.thCard b { font-size: 12.5px; }
+.thCard .chk { position: absolute; top: 6px; right: 8px; font-style: normal; font-size: 11px; color: var(--acc); }
+
 .neoCartBtn { position: relative; display: inline-flex; align-items: center; gap: 7px; }
 .neoCartBtn i { display: inline-grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--pill); font-style: normal; font-size: 11px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
 .neoIcon { width: 40px; height: 40px; border-radius: var(--pill); display: inline-grid; place-items: center; font-size: 16px; text-decoration: none; color: var(--muted); border: 1px solid var(--line); }

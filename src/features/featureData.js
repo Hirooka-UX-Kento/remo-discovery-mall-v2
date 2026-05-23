@@ -65,7 +65,7 @@ const RAW = [
 
   // 4. ゲーム化・継続利用
   ["user_rank_system", "ランク制度", 3, "利用回数、探索時間、ミッション達成などに応じてユーザーランクが上がる機能", "available", "MVP", true],
-  ["custom_theme", "カスタムテーマ", 3, "ユーザーがUIテーマや見た目を変更できる機能。ランク報酬やイベント報酬と連動可能", "available", "Phase2", false],
+  ["custom_theme", "カスタムテーマ", 3, "ユーザーがUIテーマ（トンマナ／世界観）を選んで切り替え・見比べできる機能。ランク報酬やイベント報酬と連動可能", "available", "MVP", true],
   ["ranking_system", "ランキング要素", 3, "探索距離、発見数、ミッション達成数などをランキング表示する機能", "available", "MVP", true],
   ["puzzle_quest", "謎解き要素", 3, "現地映像やAR情報と連動した謎解き・クイズ機能", "coming_soon", "Phase2", false],
   ["mission_system", "ミッション要素", 3, "デイリー、ウィークリー、イベントミッションを提示し、達成報酬を付与する機能", "available", "MVP", true],

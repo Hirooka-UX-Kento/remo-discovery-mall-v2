@@ -68,6 +68,7 @@ export default function NeoApp() {
   const [cartOpen, setCartOpen] = useState(false);
   const [welcome, setWelcome] = useState(false);
   const [tutorial, setTutorial] = useState(false);
+  const [themePicker, setThemePicker] = useState(false);
   const [reqlog, setReqlog] = useState([]);
 
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function NeoApp() {
   const themeClass = `neo tone-${f.theme ? tone : "cyber"}`;
 
   const header = (
-    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} />
+    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} />
   );
 
   let body;
@@ -156,12 +157,13 @@ export default function NeoApp() {
           onTrial={() => { setWelcome(false); startTrial(); }} />
       )}
       {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
+      {themePicker && f.theme && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
       <Toasts toasts={g.toasts} />
     </div>
   );
 }
 
-function Header({ t, g, f, onCart, onTutorial }) {
+function Header({ t, g, f, onCart, onTutorial, onTheme }) {
   return (
     <header className="neoTop">
       <div className="neoBrand">
@@ -180,9 +182,10 @@ function Header({ t, g, f, onCart, onTutorial }) {
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
         <button className="neoBtn" onClick={() => g.setLang(g.lang === "ja" ? "en" : "ja")}>{g.lang === "ja" ? "EN" : "日本語"}</button>
         {f.theme && (
-          <select className="neoSel" value={g.tone} onChange={(e) => g.setTone(e.target.value)}>
-            {TONES.map((x) => <option key={x.id} value={x.id}>{x[g.lang]}</option>)}
-          </select>
+          <button className="neoThemeBtn" onClick={onTheme} title={g.lang === "ja" ? "テーマを選ぶ" : "Choose theme"}>
+            <span className="sw" />
+            {g.lang === "ja" ? "テーマ" : "Theme"}
+          </button>
         )}
         <button className="neoBtn solid neoCartBtn" onClick={onCart}>🛒 {t.cart}{g.cartCount > 0 && <i>{g.cartCount}</i>}</button>
       </div>
@@ -762,6 +765,30 @@ function TutorialModal({ lang, f, onClose }) {
         <button className="skip" onClick={onClose}>{L("スキップ", "Skip")}</button>
       </div>
     </div>
+  );
+}
+
+function ThemePicker({ lang, g, onClose }) {
+  return (
+    <>
+      <div className="thScrim" onClick={onClose} />
+      <div className="thPop">
+        <div className="thHead">
+          <b>{lang === "ja" ? "世界観（トンマナ）" : "Theme"}</b>
+          <button className="close" onClick={onClose}>×</button>
+        </div>
+        <p className="thHint">{lang === "ja" ? "選ぶと即座に全画面へ反映。見比べてどうぞ。" : "Switches live across the whole UI — compare freely."}</p>
+        <div className="thGrid">
+          {TONES.map((tn) => (
+            <button key={tn.id} className={"thCard" + (g.tone === tn.id ? " on" : "")} onClick={() => g.setTone(tn.id)}>
+              <span className="sw" style={{ background: `linear-gradient(120deg, ${tn.acc}, ${tn.acc2})` }} />
+              <b>{tn[lang]}</b>
+              {g.tone === tn.id && <i className="chk">✓</i>}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
