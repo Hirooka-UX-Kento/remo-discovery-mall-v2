@@ -19,7 +19,7 @@ const T = {
     claim: "受取", claimed: "受取済", cart: "カート", total: "合計", checkout: "購入を確定", empty: "カートは空です",
     roll: "サイコロを振る", warpTo: "隣接店舗へ移動", rank: "ランク", hp: "ENERGY",
     collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "取扱店舗", getRare: "GET!",
-    fwd: "前進", back: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
+    fwd: "前進", bwd: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
     up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動"
   },
   en: {
@@ -33,7 +33,7 @@ const T = {
     claim: "Claim", claimed: "Claimed", cart: "Cart", total: "Total", checkout: "Checkout", empty: "Your cart is empty",
     roll: "Roll dice", warpTo: "Move to store", rank: "Rank", hp: "ENERGY",
     collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Sold at", getRare: "GET!",
-    fwd: "Fwd", back: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
+    fwd: "Fwd", bwd: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
     up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store"
   }
 };
@@ -58,8 +58,10 @@ export default function NeoApp() {
     collection: isFunctional("collection_book"),
     loginBonus: isFunctional("login_bonus"),
     guild: isFunctional("guild"),
-    paidUpgrade: isFunctional("paid_upgrade")
+    paidUpgrade: isFunctional("paid_upgrade"),
+    toio: isFunctional("toio_corner")
   };
+  const TOIO_COST = 80;
 
   const [screen, setScreen] = useState("home");
   const [store, setStore] = useState(STORES[0]);
@@ -100,6 +102,7 @@ export default function NeoApp() {
     try { if (!sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
   }
   function startTrial() { setPossessMode("trial"); setHp(78); setNodeId("entrance"); setHeading(0); setScreen("sync"); }
+  function openToio() { if (g.spendXp(TOIO_COST, lang === "ja" ? "TOIOコーナー" : "TOIO corner")) setScreen("toio"); }
   function startPossess() { setPossessMode("external"); setScreen("sync"); }
   function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
@@ -137,9 +140,11 @@ export default function NeoApp() {
     body = <Sugoroku t={t} lang={lang} g={g} onBack={() => setScreen("home")} />;
   } else if (screen === "collection") {
     body = <Collection t={t} lang={lang} g={g} onBack={() => setScreen("home")} onGoStore={openStore} />;
+  } else if (screen === "toio") {
+    body = <ToioCorner t={t} lang={lang} g={g} store={store} onBack={() => setScreen("shop")} />;
   } else if (screen === "shop") {
-    body = <Shop t={t} lang={lang} g={g} f={f} store={store} product={product} reqlog={reqlog}
-      onBack={() => setScreen("home")} onProduct={setProduct} onRequest={request} onPossess={startPossess} onTrial={startTrial} />;
+    body = <Shop t={t} lang={lang} g={g} f={f} store={store} product={product} reqlog={reqlog} toioCost={TOIO_COST}
+      onBack={() => setScreen("home")} onProduct={setProduct} onRequest={request} onPossess={startPossess} onTrial={startTrial} onToio={openToio} />;
   } else {
     body = <Home t={t} lang={lang} g={g} f={f} store={store} setStore={setStore} onOpenStore={openStore}
       onSugoroku={() => setScreen("sugoroku")} onCollection={() => setScreen("collection")} />;
@@ -323,7 +328,7 @@ function MissionsPanel({ t, lang, g }) {
   );
 }
 
-function Shop({ t, lang, g, f, store, product, reqlog, onBack, onProduct, onRequest, onPossess, onTrial }) {
+function Shop({ t, lang, g, f, store, product, reqlog, toioCost, onBack, onProduct, onRequest, onPossess, onTrial, onToio }) {
   const groups = [["recommended", t.recommended], ["limited", t.limited], ["popular", t.popular]];
   return (
     <main className="neoShop">
@@ -376,6 +381,15 @@ function Shop({ t, lang, g, f, store, product, reqlog, onBack, onProduct, onRequ
           <button className="neoBtn solid block" onClick={onPossess}>{t.possess}</button>
           {f.trial && <button className="neoBtn block" style={{ marginTop: 8 }} onClick={onTrial}>{t.trial}</button>}
         </div>
+
+        {f.toio && (
+          <div className="neoPanel neoToioCard">
+            <p className="eyebrow">MINIATURE CAMERA · TOIO</p>
+            <h2>🛺 {lang === "ja" ? "TOIOミニチュアコーナー" : "TOIO miniature corner"}</h2>
+            <p className="desc">{lang === "ja" ? "ミニチュア店内をTOIO走行カメラで巡り、キーホルダーや缶バッジを選んで景品 or 購入。" : "Drive the TOIO camera through a miniature store; pick keyrings or badges as a prize or buy."}</p>
+            <button className="neoBtn block toio" onClick={onToio}>🎟 {lang === "ja" ? `EXP ${toioCost} で遊ぶ` : `Play for ${toioCost} EXP`}</button>
+          </div>
+        )}
 
         <div className="neoPanel neoReqlog">
           <div className="neoPanelTitle">REQUEST LOG</div>
@@ -544,7 +558,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
           <button className="left" onClick={() => setYaw((v) => (v + 7) % 8)} title={t.turnL}>◀</button>
           <button className="ctr" disabled>{HEADINGS[yaw]}</button>
           <button className="right" onClick={() => setYaw((v) => (v + 1) % 8)} title={t.turnR}>▶</button>
-          <button className="down" onClick={back} title={t.back}>▼</button>
+          <button className="down" onClick={back} title={t.bwd}>▼</button>
         </div>
         <div className="neoDest">
           {node.next.map((id) => { const n = nodeById(id); return <button key={id} onClick={() => onMove(id)}>➜ {local(n.label, lang)}</button>; })}
@@ -664,6 +678,48 @@ function Collection({ t, lang, g, onBack, onGoStore }) {
   );
 }
 
+function ToioCorner({ t, lang, g, store, onBack }) {
+  const goods = PRODUCTS.filter((p) => ["keyring", "pin", "charm", "holo-badge", "plush"].includes(p.id));
+  const [picked, setPicked] = useState(null);
+  function claim(p) { g.toast(`🎁 ${lang === "ja" ? "景品GET" : "Prize"}: ${p.name}`, "ok"); setPicked(null); }
+  function buy(p) { g.addToCart(p, 1); g.toast(`🛒 ${lang === "ja" ? "カートに追加" : "Added"}: ${p.name}`, "ok"); setPicked(null); }
+  return (
+    <main className="neoToio">
+      <div className="toioHead">
+        <button className="neoBtn" onClick={onBack}>{t.back}</button>
+        <h1>🛺 {lang === "ja" ? "TOIOミニチュアコーナー" : "TOIO Miniature Corner"}</h1>
+        <span className="store">{store.name}</span>
+      </div>
+      <div className="toioStage" style={{ backgroundImage: `url(${store.pano})` }}>
+        <div className="toioScan" />
+        <p className="toioHint">{lang === "ja" ? "🚗 小型カメラがミニチュア店内を走行中…好きな商品を選ぼう" : "🚗 The mini camera is roaming the miniature store… pick a favourite"}</p>
+      </div>
+      <div className="toioGrid">
+        {goods.map((p) => (
+          <button key={p.id} className="toioItem" onClick={() => setPicked(p)}>
+            <img src={p.image} alt="" />
+            <b>{p.name}</b><small>{p.price}</small>
+          </button>
+        ))}
+      </div>
+      {picked && (
+        <div className="neoModalOv" onClick={() => setPicked(null)}>
+          <div className="toioPick" onClick={(e) => e.stopPropagation()}>
+            <button className="close" onClick={() => setPicked(null)}>×</button>
+            <img src={picked.image} alt="" />
+            <h2>{picked.name}</h2>
+            <p className="rar">{picked.rarity} · {picked.price}</p>
+            <div className="acts">
+              <button className="neoBtn solid block" onClick={() => claim(picked)}>🎁 {lang === "ja" ? "景品としてもらう" : "Take as prize"}</button>
+              <button className="neoBtn block" onClick={() => buy(picked)}>🛒 {lang === "ja" ? "購入する" : "Buy"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
 function Cart({ t, lang, g, onClose }) {
   return (
     <div className="neoCartOv" onClick={onClose}>
@@ -738,6 +794,8 @@ function TutorialModal({ lang, f, onClose }) {
     { ic: "🛰️", t: L("Remolink へようこそ", "Welcome to Remolink"), b: L("全国のアニメグッズ店舗を、自宅から自由に“回って”買える新感覚のEC。", "A new EC where you remotely visit anime-goods stores across Japan from home.") },
     { ic: "🗺️", t: L("店舗を選ぶ", "Pick a store"), b: L("地図のピンや店舗カードから、行きたいお店を選びます。", "Choose a store from the map pins or store cards.") },
     { ic: "⚡", t: L("憑依(DIVE)して探索", "DIVE & explore"), b: L("店内のロボットに憑依し、コントローラーで前後左右・視点・昇降を操作して店内を探索。", "Possess a store robot and pilot it — move, turn, tilt and lift to explore the aisles.") },
+    { ic: "⭐", t: L("EXPを貯めて使う", "Earn & spend EXP"), b: L("スキャン・クエスト達成・宝発見などの条件でEXPが増加。EXPはランクアップに加え、TOIOコーナーなどのサービスの対価として消費できます。", "Earn EXP by scanning, clearing quests and finding treasure. EXP raises your rank — and can be spent on services like the TOIO corner.") },
+    f.toio && { ic: "🛺", t: L("TOIOミニチュアコーナー", "TOIO miniature corner"), b: L("EXPを消費して、ミニチュア店内をTOIO走行カメラで探索。キーホルダーや缶バッジを選んで景品でもらうか購入できます。", "Spend EXP to drive a TOIO camera through a miniature store — pick keychains or can badges to win as a prize or buy.") },
     f.collection && { ic: "📘", t: L("レアを発見→図鑑", "Discover → Collection"), b: L("棚をスキャンしてレアを発見、図鑑に登録してコンプを目指そう。", "Scan shelves to find rares and complete your Collection.") },
     f.missions && { ic: "✅", t: L("クエストでXP→ランクUP", "Quests → Rank up"), b: L("デイリー等のクエストを達成してXPを稼ぎ、ランクを上げよう。", "Clear daily quests to earn XP and rank up.") },
     f.ranking && { ic: "👑", t: L("ランキング", "Ranking"), b: L("発見数やXPで他のダイバーとランキングを競えます。", "Compete with other divers on the leaderboard.") },

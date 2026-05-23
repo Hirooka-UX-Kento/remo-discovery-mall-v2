@@ -71,6 +71,7 @@ const RAW = [
   ["mission_system", "ミッション要素", 3, "デイリー、ウィークリー、イベントミッションを提示し、達成報酬を付与する機能", "available", "MVP", true],
   ["collection_book", "コレクション図鑑", 3, "発見したレア（店舗限定品）を図鑑に登録し、コンプ率を表示。回遊と継続の中核となる収集機能", "available", "MVP", true],
   ["treasure_random_event", "宝探し・奇跡要素", 3, "探索中にランダムで宝箱、レアアイテム、隠し演出が発生する機能", "available", "MVP", true, { dependencies: ["mission_system"] }],
+  ["toio_corner", "TOIOミニチュアコーナー", 3, "EXPを消費して遊ぶ別コーナー。TOIO走行カメラでミニチュア店内を巡り、キーホルダー/缶バッジ等の小物を選んで景品 or 購入できる（実機TOIO連携は将来）", "available", "MVP", true, { dependencies: ["toio_mini_goods_hunt"] }],
   ["challenge_bubble_mode", "バブル要素", 3, "制約つき操作や条件付き探索によって、遠隔操作そのものをゲーム化する機能", "coming_soon", "Phase2", false, { dependencies: ["remote_command"] }],
 
   // 5. ソーシャル・コミュニティ

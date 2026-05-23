@@ -17,7 +17,9 @@ export function GameProvider({ children }) {
   const saved = load();
   const [lang, setLang] = useState(saved.lang || "ja");
   const [tone, setTone] = useState(saved.tone || "cyber");
-  const [xp, setXp] = useState(saved.xp || 0);
+  const [xp, setXp] = useState(saved.xp || 0); // spendable EXP balance
+  const [earned, setEarned] = useState(saved.earned ?? (saved.xp || 0)); // lifetime EXP (drives rank)
+  const xpRef = useRef(saved.xp || 0);
   const [cart, setCart] = useState(saved.cart || []);
   const [treasures, setTreasures] = useState(saved.treasures || []);
   const [collection, setCollection] = useState(saved.collection || []);
@@ -29,9 +31,10 @@ export function GameProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ lang, tone, xp, cart, treasures, collection, claimed, counters }));
+      localStorage.setItem(KEY, JSON.stringify({ lang, tone, xp, earned, cart, treasures, collection, claimed, counters }));
     } catch { /* ignore */ }
-  }, [lang, tone, xp, cart, treasures, collection, claimed, counters]);
+  }, [lang, tone, xp, earned, cart, treasures, collection, claimed, counters]);
+  useEffect(() => { xpRef.current = xp; }, [xp]);
 
   function toast(message, kind = "info") {
     const id = ++toastId.current;
@@ -42,7 +45,16 @@ export function GameProvider({ children }) {
   function gainXp(amount, why) {
     if (!amount) return;
     setXp((v) => v + amount);
-    if (why) toast(`+${amount} XP · ${why}`, "xp");
+    setEarned((v) => v + amount);
+    if (why) toast(`+${amount} EXP · ${why}`, "xp");
+  }
+  // Spend EXP for a service (e.g. TOIO corner). Returns true if affordable.
+  function spendXp(amount, why) {
+    if (xpRef.current < amount) { toast(local({ ja: "EXPが足りません", en: "Not enough EXP" }, lang)); return false; }
+    xpRef.current -= amount;
+    setXp(xpRef.current);
+    if (why) toast(`-${amount} EXP · ${why}`, "ok");
+    return true;
   }
 
   function bump(track, n = 1) {
@@ -119,11 +131,11 @@ export function GameProvider({ children }) {
   const cartCount = useMemo(() => cart.reduce((s, l) => s + l.qty, 0), [cart]);
   const cartItems = useMemo(() => cart.map((l) => ({ ...l, product: productById(l.id) })).filter((l) => l.product), [cart]);
   const cartTotal = useMemo(() => cartItems.reduce((s, l) => s + l.product.priceValue * l.qty, 0), [cartItems]);
-  const rank = useMemo(() => rankFor(xp), [xp]);
+  const rank = useMemo(() => rankFor(earned), [earned]);
 
   const value = {
     lang, setLang, tone, setTone,
-    xp, rank, gainXp,
+    xp, earned, rank, gainXp, spendXp,
     cart, cartItems, cartCount, cartTotal, addToCart, changeQty, removeFromCart, checkout, requestPurchase,
     treasures, scannedIds, scan, move, warp, tryTreasure, counters,
     collection, collectionPct, huntRare,
