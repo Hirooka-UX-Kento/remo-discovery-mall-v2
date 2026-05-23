@@ -19,6 +19,11 @@ function useHashRoute() {
 
 export default function App() {
   const route = useHashRoute();
+  useEffect(() => {
+    if (route !== "admin") {
+      try { sessionStorage.setItem("rdm_last_app", route); } catch { /* ignore */ }
+    }
+  }, [route]);
   return (
     <FeatureProvider>
       {route === "admin" ? (

@@ -9,6 +9,9 @@ export default function AdminPanel() {
   const [status, setStatus] = useState("all");
   const [priority, setPriority] = useState("all");
   const [detail, setDetail] = useState(null);
+  const backRoute = (() => {
+    try { const s = sessionStorage.getItem("rdm_last_app"); return s === null ? "neo" : s; } catch { return "neo"; }
+  })();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -39,7 +42,7 @@ export default function AdminPanel() {
           <h1>体験機能管理</h1>
           <p className="rdmAdminLede">遠隔探索アプリに表示する機能をON/OFFできます。ONの機能だけがユーザー画面に反映されます。</p>
         </div>
-        <a className="rdmAdminBack" href="#/">← アプリへ戻る</a>
+        <a className="rdmAdminBack" href={`#/${backRoute}`}>← アプリへ戻る</a>
       </header>
 
       <div className="rdmAdminStats">
