@@ -57,7 +57,8 @@ export default function NeoApp() {
     sugoroku: isFunctional("sugoroku_warp_exploration") || isFunctional("sugoroku_world_theme"),
     collection: isFunctional("collection_book"),
     loginBonus: isFunctional("login_bonus"),
-    guild: isFunctional("guild")
+    guild: isFunctional("guild"),
+    paidUpgrade: isFunctional("paid_upgrade")
   };
 
   const [screen, setScreen] = useState("home");
@@ -123,9 +124,10 @@ export default function NeoApp() {
   if (screen === "explore") {
     return (
       <div className={themeClass}>
-        <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} heading={heading} hp={hp}
-          product={product} onScan={scan} onMove={moveTo} onRotate={(d) => setHeading((h) => (h + d + 8) % 8)}
-          onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore} />
+        <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} hp={hp}
+          product={product} onScan={scan} onMove={moveTo}
+          onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore}
+          onUpgrade={() => { window.location.href = EXPLORE_URL; }} />
         <Toasts toasts={g.toasts} />
       </div>
     );
@@ -361,7 +363,12 @@ function Shop({ t, lang, g, f, store, product, reqlog, onBack, onProduct, onRequ
         <div className="neoPanel neoPossess">
           <p className="eyebrow">{store.access}</p>
           <h2>{t.possessTitle}</h2>
-          <div className="big">{t.price}</div>
+          {f.paidUpgrade && g.xp > 0 ? (
+            <>
+              <div className="big"><s>¥1,500</s> ¥{(1500 - Math.min(1000, g.xp)).toLocaleString()} <em>/ 10{lang === "ja" ? "分" : "min"}</em></div>
+              <p className="neoDiscount">{lang === "ja" ? `獲得${g.xp}Pで -¥${Math.min(1000, g.xp)} 割引・ポイントは有料体験に引き継ぎ` : `-¥${Math.min(1000, g.xp)} from your ${g.xp}P · carries over to paid`}</p>
+            </>
+          ) : (<div className="big">{t.price}</div>)}
           <ul><li>{t.merit1}</li><li>{t.merit2}</li><li>{t.merit3}</li></ul>
           <button className="neoBtn solid block" onClick={onPossess}>{t.possess}</button>
           {f.trial && <button className="neoBtn block" style={{ marginTop: 8 }} onClick={onTrial}>{t.trial}</button>}
@@ -425,12 +432,14 @@ function TwinFloor({ node, onMove, mini, shelves = TWIN_LAYOUTS[0], exits = 0 })
   );
 }
 
-function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp }) {
+function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
   const [yaw, setYaw] = useState(0);     // 0-7 turn
   const [pitch, setPitch] = useState(0); // -2..2 tilt
   const [elev, setElev] = useState(0);   // 0..2 elevation
+  const [upsell, setUpsell] = useState(false);
+  useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
@@ -550,6 +559,35 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
             <button onClick={() => setElev((v) => clamp(v - 1, 0, 2))} title={t.down}>⤓</button>
           </div>
         </div>
+      </div>
+
+      {upsell && <UpsellModal lang={lang} g={g} discount={Math.min(1000, g.xp)} onUpgrade={onUpgrade} onClose={() => setUpsell(false)} />}
+    </div>
+  );
+}
+
+function UpsellModal({ lang, g, discount, onUpgrade, onClose }) {
+  const L = (ja, en) => (lang === "ja" ? ja : en);
+  const net = 1500 - discount;
+  return (
+    <div className="neoModalOv" onClick={onClose}>
+      <div className="neoUpsell" onClick={(e) => e.stopPropagation()}>
+        <button className="close" onClick={onClose}>×</button>
+        <p className="eyebrow">{L("無料体験はここまで", "Free trial ends here")}</p>
+        <h2>🔒 {L("ここから先は有料体験", "Unlock the full DIVE")}</h2>
+        <ul className="upBenes">
+          <li>{L("実機ロボットを自由に遠隔操作", "Pilot the real robot freely")}</li>
+          <li>{L("限定棚の商品を購入・取り置き", "Buy & reserve limited-shelf items")}</li>
+          <li>{L("発見したレアを確保（図鑑＆発送）", "Secure your rare finds (ship it)")}</li>
+        </ul>
+        <div className="upPrice">
+          <span className="orig">¥1,500</span>
+          <span className="net">¥{net.toLocaleString()}</span>
+          <small>/ 10{L("分", "min")}</small>
+        </div>
+        <p className="upNote">{L(`無料体験で獲得した ${g.xp}P を割引に充当（-¥${discount}）。ポイントは有料体験に引き継がれます。`, `Your ${g.xp}P from the trial applies as -¥${discount}. Points carry over to the paid DIVE.`)}</p>
+        <button className="neoBtn solid block" onClick={onUpgrade}>⚡ {L("有料体験に進む", "Continue to paid DIVE")}</button>
+        <button className="skip" onClick={onClose}>{L("無料体験を続ける", "Keep exploring (free)")}</button>
       </div>
     </div>
   );

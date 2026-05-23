@@ -48,6 +48,7 @@ const RAW = [
   ["free_trial_area", "無料体験コーナー", 0, "初回ユーザーが無料で遠隔操作を体験できる機能", "available", "MVP", true],
   ["mascot_guide", "マスコット案内", 0, "マスコットキャラクターが操作説明、サービス紹介、ミッション案内を行う機能", "coming_soon", "Phase2", false, { dependencies: ["mascot_character"] }],
   ["login_bonus", "ログインボーナス", 0, "毎日ログインで報酬（ポイント/チケット）を付与。連続ログインでSSR確定チケット等の特典", "available", "MVP", true],
+  ["paid_upgrade", "有料体験への導線", 0, "無料体験中に「ここから先は有料」アップセルを提示。獲得ポイントを有料体験の割引・引き継ぎに充当する導線", "available", "MVP", true],
 
   // 2. 遠隔操作・制御UX
   ["save_point", "セーブポイント", 1, "探索中の地点を保存し、次回そこから再開できる機能", "coming_soon", "Phase2", false],
