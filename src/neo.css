@@ -334,6 +334,22 @@
 .neoDice:disabled { opacity: .5; }
 
 /* =====================================================================
+   Collection / 図鑑
+   ===================================================================== */
+.neoCollGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.neoCollItem { position: relative; text-align: left; padding: 0 0 12px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .14s, border-color .14s; }
+.neoCollItem:hover { transform: translateY(-3px); border-color: var(--acc); }
+.neoCollItem .thumb { aspect-ratio: 1; display: grid; place-items: center; background: #0a1020; overflow: hidden; }
+.neoCollItem .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.neoCollItem .silh { font-size: 42px; font-weight: 900; color: color-mix(in srgb, var(--acc), transparent 78%); }
+.neoCollItem.got { border-color: color-mix(in srgb, var(--acc), transparent 48%); box-shadow: 0 0 22px color-mix(in srgb, var(--acc), transparent 74%); }
+.neoCollItem:not(.got) { opacity: .8; }
+.neoCollItem .rar { position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: var(--pill); color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
+.neoCollItem:not(.got) .rar { background: rgba(255,255,255,.12); color: var(--muted); }
+.neoCollItem b { display: block; margin: 9px 11px 0; font-size: 12.5px; }
+.neoCollItem small { display: block; margin: 3px 11px 0; font-size: 11px; color: var(--muted); }
+
+/* =====================================================================
    Possession tunnel
    ===================================================================== */
 .neoSync { position: relative; min-height: 100vh; overflow: hidden; display: grid; place-items: center; text-align: center; color: #fff; background: radial-gradient(circle at 50% 50%, #102046, #05070f 70%); perspective: 520px; }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { MISSIONS, TREASURES, productById, rankFor, local } from "./data.js";
+import { MISSIONS, TREASURES, RARES, productById, rankFor, local } from "./data.js";
 
 const KEY = "rdm_game_v2";
 const GameCtx = createContext(null);
@@ -20,6 +20,7 @@ export function GameProvider({ children }) {
   const [xp, setXp] = useState(saved.xp || 0);
   const [cart, setCart] = useState(saved.cart || []);
   const [treasures, setTreasures] = useState(saved.treasures || []);
+  const [collection, setCollection] = useState(saved.collection || []);
   const [claimed, setClaimed] = useState(saved.claimed || []);
   const [counters, setCounters] = useState(saved.counters || { scan: 0, move: 0, treasure: 0, warp: 0, request: 0 });
   const [scannedIds, setScannedIds] = useState([]);
@@ -28,9 +29,9 @@ export function GameProvider({ children }) {
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ lang, tone, xp, cart, treasures, claimed, counters }));
+      localStorage.setItem(KEY, JSON.stringify({ lang, tone, xp, cart, treasures, collection, claimed, counters }));
     } catch { /* ignore */ }
-  }, [lang, tone, xp, cart, treasures, claimed, counters]);
+  }, [lang, tone, xp, cart, treasures, collection, claimed, counters]);
 
   function toast(message, kind = "info") {
     const id = ++toastId.current;
@@ -81,6 +82,24 @@ export function GameProvider({ children }) {
     gainXp(t.xp, local({ ja: "宝箱発見！", en: "Treasure!" }, lang));
     return t;
   }
+  // Hunt the store's exclusive rare for the Collection / 図鑑.
+  // Uses a ref so rapid clicks can't double-award or duplicate.
+  const collectionRef = useRef(collection);
+  useEffect(() => { collectionRef.current = collection; }, [collection]);
+  function huntRare(storeId) {
+    const rare = RARES.find((r) => r.storeId === storeId);
+    bump("treasure");
+    if (rare && !collectionRef.current.includes(rare.id)) {
+      collectionRef.current = [...collectionRef.current, rare.id];
+      setCollection(collectionRef.current);
+      gainXp(rare.xp, local({ ja: "レア発見！", en: "Rare drop!" }, lang));
+      return { item: rare, isNew: true };
+    }
+    const t = TREASURES[Math.floor(Math.random() * TREASURES.length)];
+    gainXp(t.xp, local({ ja: "お宝発見", en: "Treasure" }, lang));
+    return { item: t, isNew: false };
+  }
+  const collectionPct = Math.round((collection.length / RARES.length) * 100);
 
   // ----- missions -----
   const missions = useMemo(
@@ -107,6 +126,7 @@ export function GameProvider({ children }) {
     xp, rank, gainXp,
     cart, cartItems, cartCount, cartTotal, addToCart, changeQty, removeFromCart, checkout, requestPurchase,
     treasures, scannedIds, scan, move, warp, tryTreasure, counters,
+    collection, collectionPct, huntRare,
     missions, claimMission,
     toasts, toast
   };

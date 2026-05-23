@@ -87,6 +87,25 @@ export const PRODUCTS = [
 }));
 export const productById = (id) => PRODUCTS.find((p) => p.id === id);
 
+// Collectible store-exclusive rares ("ご当地レア") — the Collection / 図鑑.
+const RARE_DEFS = [
+  ["akiba", "RX-Loop 試作ヘッド", "RX-Loop prototype head", "LEGEND", 200],
+  ["sendai", "'88 アーカイブ缶バッジ", "'88 archive can-badge", "RARE", 90],
+  ["sapporo", "雪結晶アクリル", "Snow-crystal acrylic", "LIMITED", 120],
+  ["kanazawa", "金沢カプセル・金", "Kanazawa gold capsule", "LEGEND", 200],
+  ["nagoya", "メカ試作コア", "Mecha prototype core", "LEGEND", 200],
+  ["kyoto", "金箔ホロバッジ", "Gold-leaf holo badge", "RARE", 90],
+  ["osaka", "難波ショーケース原型", "Namba showcase proto", "RARE", 90],
+  ["hiroshima", "港限定ミニチュア", "Port-only miniature", "LIMITED", 120],
+  ["fukuoka", "博多協力ピン", "Hakata co-op pin", "LIMITED", 120],
+  ["okinawa", "南国ホロシーサー", "Tropical holo shisa", "RARE", 90]
+];
+export const RARES = RARE_DEFS.map(([storeId, ja, en, rarity, xp], i) => ({
+  id: "rare_" + storeId, storeId, rarity, xp,
+  name: { ja, en }, image: PRODUCTS[i % PRODUCTS.length].image
+}));
+export const rareByStore = (storeId) => RARES.find((r) => r.storeId === storeId);
+
 export const NODES = [
   { id: "entrance", label: { ja: "入口", en: "Entrance" }, pos: { left: "18%", top: "74%" }, products: ["model-kit", "card-pack", "charm"], next: ["main", "limited"] },
   { id: "main", label: { ja: "メイン通路", en: "Main aisle" }, pos: { left: "42%", top: "54%" }, products: ["model-kit", "acrylic", "deck", "plush"], next: ["entrance", "showcase", "limited"] },

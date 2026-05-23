@@ -4,31 +4,33 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, EXPLORE_URL, TRANSFER_IMAGE, TONES, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, local
 } from "./data.js";
 
 const T = {
   ja: {
-    eyebrow: "Telepresence Shopping · Japan", sub: "地図から実店舗を選び、ロボットに憑依してデジタルツインの店内を探索する。",
-    map: "MAP", sugoroku: "すごろく", openStore: "店舗を見る", back: "← 地図へ", twin: "ツインスキャン",
+    eyebrow: "Telepresence Hunt · The Infinite Store", sub: "あなたはHunter。Gridに憑依(DIVE)し、世界一でかい店を巡ってご当地レアを集めろ。",
+    map: "MAP", sugoroku: "すごろく", collection: "図鑑", openStore: "店舗を見る", back: "← 地図へ", twin: "ツインスキャン",
     recommended: "おすすめ", limited: "限定", popular: "人気", request: "購入リクエスト", reqEmpty: "リクエストはまだありません",
-    possessTitle: "ロボット憑依", price: "¥1,500 / 10分", possess: "⚡ 憑依して探索（外部アプリ）",
-    trial: "お試し探索（無料・アプリ内）", merit1: "EC非掲載の限定棚に出会える", merit2: "他プレイヤーの探索ログ", merit3: "スタッフ確認の購入リクエスト",
-    sync: "意識転送中", scan: "棚QRをスキャン", scanned: "スキャン済み", forward: "前進", left: "左45°", right: "右45°", exit: "探索終了",
-    floor: "店内MAP", shelf: "棚", stock: "在庫", treasure: "宝箱をさがす", missions: "ミッション", leaderboard: "ランキング", you: "YOU",
+    possessTitle: "ロボットに憑依（DIVE）", price: "¥1,500 / 10分", possess: "⚡ DIVEして探索（外部Grid）",
+    trial: "お試しDIVE（無料・アプリ内）", merit1: "EC非掲載の限定棚に出会える", merit2: "他Hunterの探索ログ", merit3: "スタッフ確認の購入リクエスト",
+    sync: "GRID 同期中", scan: "棚QRをスキャン", scanned: "スキャン済み", forward: "前進", left: "左45°", right: "右45°", exit: "DIVE終了",
+    floor: "店内MAP", shelf: "棚", stock: "在庫", treasure: "レアをさがす", missions: "クエスト", leaderboard: "Hunterランキング", you: "YOU",
     claim: "受取", claimed: "受取済", cart: "カート", total: "合計", checkout: "購入を確定", empty: "カートは空です",
-    roll: "サイコロを振る", warpTo: "隣接ツインへワープ", rank: "ランク", hp: "ENERGY"
+    roll: "サイコロを振る", warpTo: "隣接ツインへワープ", rank: "ランク", hp: "ENERGY",
+    collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "発見場所", getRare: "GET!"
   },
   en: {
-    eyebrow: "Telepresence Shopping · Japan", sub: "Pick a real store, possess a robot and explore its digital-twin interior.",
-    map: "MAP", sugoroku: "Sugoroku", openStore: "View store", back: "← Map", twin: "Twin scan",
+    eyebrow: "Telepresence Hunt · The Infinite Store", sub: "You are a Hunter. DIVE into the Grid and collect regional rares across the world's biggest store.",
+    map: "MAP", sugoroku: "Sugoroku", collection: "Collection", openStore: "View store", back: "← Map", twin: "Twin scan",
     recommended: "Recommended", limited: "Limited", popular: "Popular", request: "Purchase request", reqEmpty: "No requests yet",
-    possessTitle: "Robot possession", price: "¥1,500 / 10min", possess: "⚡ Possess & explore (external)",
-    trial: "Free trial (in-app)", merit1: "Hidden shelves not on normal EC", merit2: "Other players' traces", merit3: "Staff-confirmed requests",
-    sync: "Transferring", scan: "Scan shelf QR", scanned: "Scanned", forward: "Forward", left: "Turn L", right: "Turn R", exit: "Exit",
-    floor: "Floor map", shelf: "Shelf", stock: "Stock", treasure: "Hunt treasure", missions: "Missions", leaderboard: "Leaderboard", you: "YOU",
+    possessTitle: "DIVE into the robot", price: "¥1,500 / 10min", possess: "⚡ DIVE & explore (external Grid)",
+    trial: "Free DIVE (in-app)", merit1: "Hidden shelves not on normal EC", merit2: "Other Hunters' traces", merit3: "Staff-confirmed requests",
+    sync: "GRID SYNC", scan: "Scan shelf QR", scanned: "Scanned", forward: "Forward", left: "Turn L", right: "Turn R", exit: "End DIVE",
+    floor: "Floor map", shelf: "Shelf", stock: "Stock", treasure: "Hunt rares", missions: "Quests", leaderboard: "Hunter ranking", you: "YOU",
     claim: "Claim", claimed: "Claimed", cart: "Cart", total: "Total", checkout: "Checkout", empty: "Your cart is empty",
-    roll: "Roll dice", warpTo: "Warp to twin", rank: "Rank", hp: "ENERGY"
+    roll: "Roll dice", warpTo: "Warp to twin", rank: "Rank", hp: "ENERGY",
+    collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Found at", getRare: "GET!"
   }
 };
 
@@ -48,7 +50,8 @@ export default function NeoApp() {
     ar: isFunctional("ar_info_overlay"),
     trial: isFunctional("free_trial_area"),
     openWorld: isFunctional("anime_goods_open_world") || isFunctional("open_world_city_theme"),
-    sugoroku: isFunctional("sugoroku_warp_exploration") || isFunctional("sugoroku_world_theme")
+    sugoroku: isFunctional("sugoroku_warp_exploration") || isFunctional("sugoroku_world_theme"),
+    collection: isFunctional("collection_book")
   };
 
   const [screen, setScreen] = useState("home");
@@ -113,12 +116,14 @@ export default function NeoApp() {
   }
   if (screen === "sugoroku") {
     body = <Sugoroku t={t} lang={lang} g={g} onBack={() => setScreen("home")} />;
+  } else if (screen === "collection") {
+    body = <Collection t={t} lang={lang} g={g} onBack={() => setScreen("home")} onGoStore={openStore} />;
   } else if (screen === "shop") {
     body = <Shop t={t} lang={lang} g={g} f={f} store={store} product={product} reqlog={reqlog}
       onBack={() => setScreen("home")} onProduct={setProduct} onRequest={request} onPossess={startPossess} onTrial={startTrial} />;
   } else {
     body = <Home t={t} lang={lang} g={g} f={f} store={store} setStore={setStore} onOpenStore={openStore}
-      onSugoroku={() => setScreen("sugoroku")} screenTab="home" />;
+      onSugoroku={() => setScreen("sugoroku")} onCollection={() => setScreen("collection")} />;
   }
 
   return (
@@ -157,7 +162,7 @@ function Header({ t, g, f, onCart }) {
     </header>
   );
 }
-function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku }) {
+function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onCollection }) {
   const [hover, setHover] = useState(null);
   const [warp, setWarp] = useState(false);
   const linked = hover || store.id;
@@ -179,10 +184,11 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku }) {
         <div className="neoChips"><span>360° ROBOT</span><span>DIGITAL TWIN</span><span>QR · AR</span>{f.openWorld && <span>OPEN WORLD</span>}</div>
       </section>
 
-      {f.sugoroku && (
+      {(f.sugoroku || f.collection) && (
         <div className="neoTabs">
           <button className="neoTab on">{t.map}</button>
-          <button className="neoTab" onClick={onSugoroku}>🎲 {t.sugoroku}</button>
+          {f.collection && <button className="neoTab" onClick={onCollection}>📘 {t.collection} {g.collectionPct}%</button>}
+          {f.sugoroku && <button className="neoTab" onClick={onSugoroku}>🎲 {t.sugoroku}</button>}
         </div>
       )}
 
@@ -384,7 +390,11 @@ function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onM
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const bgPos = `${(heading / (HEADINGS.length - 1)) * 100}% center`;
-  function hunt() { const found = g.tryTreasure(0.4); if (!found) g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); }
+  function hunt() {
+    if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
+    const res = g.huntRare(store.id);
+    g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
+  }
   function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
 
   if (warping) {
@@ -498,6 +508,32 @@ function Sugoroku({ t, lang, g, onBack }) {
             </div>
           ))}
         </div>
+      </div>
+    </main>
+  );
+}
+
+function Collection({ t, lang, g, onBack, onGoStore }) {
+  return (
+    <main className="neoSugo">
+      <div className="neoSugoHead">
+        <button className="neoBtn" onClick={onBack}>{t.back}</button>
+        <h1 style={{ fontSize: 24 }}>📘 {t.collTitle}</h1>
+        <div className="neoChips"><span>{t.complete} {g.collectionPct}% · {g.collection.length}/{RARES.length}</span></div>
+      </div>
+      <div className="neoCollGrid">
+        {RARES.map((r) => {
+          const got = g.collection.includes(r.id);
+          const s = storeById(r.storeId);
+          return (
+            <button key={r.id} className={"neoCollItem" + (got ? " got" : "")} onClick={() => onGoStore(s)} title={s.name}>
+              <div className="thumb">{got ? <img src={r.image} alt="" /> : <span className="silh">?</span>}</div>
+              <span className="rar">{r.rarity}</span>
+              <b>{got ? local(r.name, lang) : t.undiscovered}</b>
+              <small>◈ {s.name}</small>
+            </button>
+          );
+        })}
       </div>
     </main>
   );
