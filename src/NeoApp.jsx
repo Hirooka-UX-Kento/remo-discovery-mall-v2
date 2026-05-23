@@ -104,8 +104,8 @@ export default function NeoApp() {
   if (screen === "explore") {
     return (
       <div className={themeClass}>
-        <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} hp={hp}
-          product={product} onScan={scan} onMove={moveTo}
+        <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} heading={heading} hp={hp}
+          product={product} onScan={scan} onMove={moveTo} onRotate={(d) => setHeading((h) => (h + d + 8) % 8)}
           onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore} />
         <Toasts toasts={g.toasts} />
       </div>
@@ -356,52 +356,54 @@ const TWIN_SHELVES = [
 ];
 function offCalc(base, delta) { return `calc(${base} ${delta >= 0 ? "+" : "-"} ${Math.abs(delta)}%)`; }
 
-function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp }) {
+function TwinFloor({ node, onMove, mini }) {
+  return (
+    <div className={"twinStage" + (mini ? " mini" : "")}>
+      <div className="twinFloor" />
+      {TWIN_SHELVES.map((s, i) => (
+        <div key={i} className="twinShelf" style={{ left: s.l + "%", top: s.t + "%", width: s.w + "%", height: s.h + "%" }} />
+      ))}
+      <svg className="twinPaths" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {NODES.flatMap((n) => n.next.map((nx) => {
+          const m = nodeById(nx);
+          return <line key={n.id + nx} x1={parseFloat(n.pos.left)} y1={parseFloat(n.pos.top)} x2={parseFloat(m.pos.left)} y2={parseFloat(m.pos.top)} />;
+        }))}
+      </svg>
+      {NODES.map((n) => (
+        <button key={n.id} className={"twinNode" + (n.id === node.id ? " here" : "")} style={{ left: n.pos.left, top: n.pos.top }} onClick={() => onMove && onMove(n.id)} />
+      ))}
+      <div className="twinSelf" style={{ left: node.pos.left, top: node.pos.top }} />
+    </div>
+  );
+}
+
+function Explore({ t, lang, g, f, store, node, heading, hp, product, onScan, onMove, onRotate, onRequest, onExit, onWarp }) {
   const [warping, setWarping] = useState(false);
-  const items = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
+  const [warpTarget, setWarpTarget] = useState(null);
+  const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
+  const bgPos = `${(heading / (HEADINGS.length - 1)) * 100}% center`;
   function hunt() { const found = g.tryTreasure(0.4); if (!found) g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); }
-  function warp(id) { if (warping) return; setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); }, 750); }
+  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+
+  if (warping) {
+    return (
+      <div className="neoSync">
+        <div className="neoTunnel">{Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ "--i": i }} />)}</div>
+        <div className="neoSpeed" />
+        <div className="neoSyncCore"><span>TWIN WARP</span><h1>{warpTarget?.name}</h1><p>SYNCING DIGITAL TWIN…</p></div>
+      </div>
+    );
+  }
 
   return (
     <div className="neoEx">
-      <div className="twinScene">
-        <div className="twinStageWrap">
-          <div className="twinStage">
-            <div className="twinFloor" />
-            {TWIN_SHELVES.map((s, i) => (
-              <div key={i} className="twinShelf" style={{ left: s.l + "%", top: s.t + "%", width: s.w + "%", height: s.h + "%" }} />
-            ))}
-            <svg className="twinPaths" viewBox="0 0 100 100" preserveAspectRatio="none">
-              {NODES.flatMap((n) => n.next.map((nx) => {
-                const m = nodeById(nx);
-                return <line key={n.id + nx} x1={parseFloat(n.pos.left)} y1={parseFloat(n.pos.top)} x2={parseFloat(m.pos.left)} y2={parseFloat(m.pos.top)} />;
-              }))}
-            </svg>
-            {NODES.map((n) => (
-              <button key={n.id} className={"twinNode" + (n.id === node.id ? " here" : "")} style={{ left: n.pos.left, top: n.pos.top }} onClick={() => onMove(n.id)} aria-label={local(n.label, lang)} />
-            ))}
-            {items.map((p, i) => {
-              const off = [[-7, -9], [7, -9], [0, 11]][i % 3];
-              return (
-                <button key={p.id} className={"twinItem" + (p.id === product.id ? " active" : "")}
-                  style={{ left: offCalc(node.pos.left, off[0]), top: offCalc(node.pos.top, off[1]) }} onClick={() => onScan(p)}>
-                  <img src={p.image} alt="" />
-                </button>
-              );
-            })}
-            <div className="twinSelf" style={{ left: node.pos.left, top: node.pos.top }} />
-          </div>
-        </div>
-      </div>
-
-      {warping && <div className="neoWarp" />}
-
-      <div className="twinWorld"><span>World's biggest store</span><b>{store.name} · {local(node.label, lang)}</b></div>
+      <div className="neoFeed" style={{ backgroundImage: `url(${store.pano})`, backgroundPosition: bgPos }} />
+      <div className="neoExShade" />
 
       <header className="neoExTop neoGlass">
-        <span className="rec">● TWIN LINK</span><b>{store.name}</b><span>SCAN {store.twinScan}%</span>
+        <span className="rec">● REC 360</span><b>{store.name}</b><span>{local(node.label, lang)}</span><span>{HEADINGS[heading]}</span>
         <span className="sp">{t.cart} {g.cartCount}</span>
       </header>
       <section className="neoExStat neoGlass">
@@ -410,6 +412,20 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       </section>
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
+
+      {shelf.map((p, i) => (
+        <button key={p.id} className={"neoShelf" + (p.id === product.id ? " active" : "")}
+          style={{ "--x": `${24 + i * 18}%`, "--y": `${38 + ((i + heading) % 3) * 12}%` }} onClick={() => onScan(p)}>
+          <img src={p.image} alt="" /><span>QR</span>
+        </button>
+      ))}
+
+      {f.twin && (
+        <aside className="neoTwinMini neoGlass">
+          <div className="neoPanelTitle">{t.floor} · TWIN</div>
+          <div className="holder"><TwinFloor node={node} onMove={onMove} mini /></div>
+        </aside>
+      )}
 
       {f.openWorld && neighbors.length > 0 && (
         <aside className="twinWarp neoGlass">
@@ -432,6 +448,11 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
           : <button className="neoBtn solid block" onClick={() => onScan(product)}>{t.scan}</button>}
       </aside>
 
+      <nav className="neoLook">
+        <button onClick={() => onRotate(-1)}>{t.left}</button>
+        <button className="on">{HEADINGS[heading]}</button>
+        <button onClick={() => onRotate(1)}>{t.right}</button>
+      </nav>
       <nav className="neoMove">
         {node.next.map((id) => { const n = nodeById(id); return <button key={id} onClick={() => onMove(id)}>{local(n.label, lang)}<small>ENERGY -13</small></button>; })}
         <button className="exit" onClick={() => setTimeout(onExit, 0)}>{t.exit}</button>

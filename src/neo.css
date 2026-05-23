@@ -305,6 +305,16 @@
 .twinWarp .gate { text-align: left; border: 1px solid color-mix(in srgb, var(--acc-2), transparent 50%); background: color-mix(in srgb, var(--acc-2), transparent 88%); color: var(--text); border-radius: 9px; padding: 8px 11px; font-size: 12px; font-weight: 700; }
 .twinWarp .gate:hover { border-color: var(--acc-2); }
 
+/* compact point-cloud twin shown as the in-POV minimap */
+.neoTwinMini { position: absolute; z-index: 12; left: 14px; bottom: 128px; width: 204px; padding: 12px; border-radius: var(--r); }
+.neoTwinMini .holder { height: 144px; perspective: 640px; display: grid; place-items: center; margin-top: 8px; }
+.twinStage.mini { width: 144px; aspect-ratio: 1; transform: rotateX(56deg) rotateZ(-3deg); animation: none; }
+.twinStage.mini .twinShelf { box-shadow: none; opacity: .8; }
+.twinStage.mini .twinNode { width: 10px; height: 10px; }
+.twinStage.mini .twinSelf { width: 14px; height: 14px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc), transparent 55%), 0 0 16px var(--acc); }
+.twinStage.mini .twinSelf::after { inset: -7px; }
+@media (max-width: 940px) { .neoTwinMini { display: none; } }
+
 /* =====================================================================
    Sugoroku board
    ===================================================================== */
