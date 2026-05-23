@@ -4,7 +4,7 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, asset, local
 } from "./data.js";
 
 const T = {
@@ -24,7 +24,8 @@ const T = {
     gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
     gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
-    gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ"
+    gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
+    svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -42,7 +43,8 @@ const T = {
     gateLead: "You've arrived", gateTitle: "How do you want to start?",
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
     gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
-    gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick"
+    gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
+    svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back"
   }
 };
 
@@ -579,27 +581,42 @@ function TwinFloor({ node, onMove, mini, shelves = TWIN_LAYOUTS[0], exits = 0 })
 function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
-  const [yaw, setYaw] = useState(0);     // 0-7 turn
-  const [pitch, setPitch] = useState(0); // -2..2 tilt
-  const [elev, setElev] = useState(0);   // 0..2 elevation
+  const [pos, setPos] = useState(0);       // 0..steps-1 along the street-view sequence
+  const [heading, setHeading] = useState("forward"); // forward | left | right
+  const [yaw, setYaw] = useState(0);       // 0-7, nudges shelf placement on turns
+  const [pitch, setPitch] = useState(0);   // -2..2 tilt
+  const [elev, setElev] = useState(0);     // 0..2 elevation
   const [upsell, setUpsell] = useState(false);
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
+  // arriving at a new node (chip / minimap / warp / corridor end) resets the walk
+  useEffect(() => { setPos(0); setHeading("forward"); setPitch(0); setElev(0); }, [node.id]);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const view = node.view || { img: store.pano, x: 30, z: 150 };
-  const bgX = clamp(view.x + (yaw - 4) * 7, 0, 100); // turning pans within the viewpoint
-  const bgY = clamp(50 + pitch * 9 - elev * 7, 0, 100);
-  const feedStyle = { backgroundImage: `url(${view.img})`, backgroundPosition: `${bgX}% ${bgY}%`, backgroundSize: `${view.z}% auto` };
+  const last = STREETVIEW.steps - 1;
+  const svSrc = (STREETVIEW[heading] || STREETVIEW.forward)[clamp(pos, 0, last)];
+  // tilt / lift gently re-frame the still
+  const feedStyle = { objectPosition: `50% ${clamp(50 - pitch * 12, 5, 95)}%`, transform: `scale(${(1 + elev * 0.05).toFixed(3)})` };
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id);
     g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
   }
-  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); setYaw(0); setPitch(0); setElev(0); }, 1500); }
-  const fwd = () => onMove(node.next[0]);
-  const back = () => onMove(node.next[node.next.length > 1 ? 1 : 0]);
+  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+  // street-view movement: ▲ forward / ▼ back ; reaching the corridor end walks to the next area
+  function fwd() {
+    setHeading("forward");
+    if (pos < last) { setPos((v) => v + 1); g.move(); }
+    else if (node.next[0]) { onMove(node.next[0]); } // node change resets pos via effect
+  }
+  function back() {
+    setHeading("forward");
+    setPos((v) => Math.max(0, v - 1));
+  }
+  const turnLeft = () => { setHeading((h) => (h === "right" ? "forward" : "left")); setYaw((v) => (v + 7) % 8); };
+  const turnRight = () => { setHeading((h) => (h === "left" ? "forward" : "right")); setYaw((v) => (v + 1) % 8); };
+  const headLabel = heading === "forward" ? `${pos + 1}/${STREETVIEW.steps}` : (heading === "left" ? "◀ L" : "R ▶");
 
   if (warping) {
     return (
@@ -613,8 +630,9 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
 
   return (
     <div className="neoEx">
-      <div className="neoFeed" key={node.id} style={feedStyle} />
+      <img className="neoFeedImg" key={heading + pos} src={svSrc} alt="" style={feedStyle} draggable="false" />
       <div className="neoExShade" />
+      <div className="neoSvHint">{t.svHint}</div>
 
       <header className="neoExTop neoGlass">
         <span className="rec">● LIVE 360</span><b>{store.name}</b><span>{local(node.label, lang)}</span>
@@ -675,9 +693,9 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       <div className="neoCtl">
         <div className="neoPad" aria-label={t.move}>
           <button className="up" onClick={fwd} title={t.fwd}>▲</button>
-          <button className="left" onClick={() => setYaw((v) => (v + 7) % 8)} title={t.turnL}>◀</button>
-          <button className="ctr" disabled>{HEADINGS[yaw]}</button>
-          <button className="right" onClick={() => setYaw((v) => (v + 1) % 8)} title={t.turnR}>▶</button>
+          <button className="left" onClick={turnLeft} title={t.turnL}>◀</button>
+          <button className="ctr" disabled>{headLabel}</button>
+          <button className="right" onClick={turnRight} title={t.turnR}>▶</button>
           <button className="down" onClick={back} title={t.bwd}>▼</button>
         </div>
         <div className="neoDest">

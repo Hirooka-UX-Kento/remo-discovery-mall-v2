@@ -44,6 +44,13 @@ export const EXPLORE_PROMOS = [
     body: { ja: "歩く・スキャン・発見でEXPアップ。サービスに使えます。", en: "Walk, scan and discover to grow EXP you can spend." } }
 ];
 
+// Street-view-style frame sequences (10 steps each, walking the aisle).
+// forward = step deeper into the store; left / right = turn to face that way.
+const SV_STEPS = 10;
+const svSeq = (dir) =>
+  Array.from({ length: SV_STEPS }, (_, i) => asset(`assets/streetview/${dir}/${String(i + 1).padStart(2, "0")}.jpg`));
+export const STREETVIEW = { steps: SV_STEPS, forward: svSeq("forward"), left: svSeq("left"), right: svSeq("right") };
+
 export const STORES = [
   ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 62, 52],
   ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 46, 60],
