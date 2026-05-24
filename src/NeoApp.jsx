@@ -285,11 +285,7 @@ function DisplaySettings({ t, prefs, setPref, onClose }) {
 }
 function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onCollection }) {
   const [hover, setHover] = useState(null);
-  const [warp, setWarp] = useState(false);
   const linked = hover || store.id;
-  const neighbors = f.openWorld ? neighborsOf(store.id) : [];
-
-  function warpTo(s) { if (warp) return; setWarp(true); setHover(s.id); g.warp(); setTimeout(() => { setStore(s); setWarp(false); }, 750); }
 
   const players = useMemo(() => {
     const list = [...LEADERBOARD, { name: "YOU", xp: g.xp, you: true }].sort((a, b) => b.xp - a.xp);
@@ -325,11 +321,10 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
               })}
             </svg>
           )}
-          {warp && <div className="neoWarp" />}
           {STORES.map((s) => (
-            <button key={s.id} className={"neoPin" + (s.id === store.id ? " active" : "") + (s.id === linked ? " linked" : "") + (neighbors.includes(s.id) ? " portal" : "")}
+            <button key={s.id} className={"neoPin" + (s.id === store.id ? " active" : "") + (s.id === linked ? " linked" : "")}
               style={s.pin} onMouseEnter={() => setHover(s.id)} onMouseLeave={() => setHover(null)}
-              onClick={() => (neighbors.includes(s.id) ? warpTo(s) : setStore(s))} aria-label={s.name}>
+              onClick={() => setStore(s)} aria-label={s.name}>
               <span /><b>{s.name}<br />{local(s.area, lang)}</b>
             </button>
           ))}
@@ -346,15 +341,6 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
               <button className="neoBtn solid" style={{ marginTop: 8 }} onClick={() => onOpenStore(store)}>{t.openStore}</button>
             </div>
           </div>
-
-          {f.openWorld && neighbors.length > 0 && (
-            <div className="neoPanel" style={{ padding: 16 }}>
-              <div className="neoPanelTitle">⟿ {t.warpTo}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
-                {neighbors.map((id) => <button key={id} className="neoBtn" onClick={() => warpTo(storeById(id))}>{storeById(id).name}</button>)}
-              </div>
-            </div>
-          )}
 
           {f.guild && (
             <div className="neoPanel" style={{ padding: 16 }}>
