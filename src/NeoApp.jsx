@@ -25,7 +25,8 @@ const T = {
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
     gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
     gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
-    svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る"
+    svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
+    itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -44,7 +45,8 @@ const T = {
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
     gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
     gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
-    svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back"
+    svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
+    itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view"
   }
 };
 
@@ -586,12 +588,12 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
   const [yaw, setYaw] = useState(0);       // 0-7, nudges shelf placement on turns
   const [pitch, setPitch] = useState(0);   // -2..2 tilt
   const [elev, setElev] = useState(0);     // 0..2 elevation
+  const [picked, setPicked] = useState(null); // product popup (only on tap)
   const [upsell, setUpsell] = useState(false);
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
-  // arriving at a new node (chip / minimap / warp / corridor end) resets the walk
-  useEffect(() => { setPos(0); setHeading("forward"); setPitch(0); setElev(0); }, [node.id]);
+  // arriving at a new node (minimap / warp / corridor end) resets the walk + closes popup
+  useEffect(() => { setPos(0); setHeading("forward"); setPitch(0); setElev(0); setPicked(null); }, [node.id]);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
-  const scanned = g.scannedIds.includes(product.id);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const last = STREETVIEW.steps - 1;
@@ -628,36 +630,26 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
     );
   }
 
+  const pickedScanned = picked && g.scannedIds.includes(picked.id);
+
   return (
     <div className="neoEx">
       <img className="neoFeedImg" key={heading + pos} src={svSrc} alt="" style={feedStyle} draggable="false" />
       <div className="neoExShade" />
-      <div className="neoSvHint">{t.svHint}</div>
 
       <header className="neoExTop neoGlass">
-        <span className="rec">● LIVE 360</span><b>{store.name}</b><span>{local(node.label, lang)}</span>
+        <span className="rec">● LIVE</span><b>{store.name}</b><span className="nd">{local(node.label, lang)}</span>
         <span className="sp">⚡ {hp}</span>
-        {f.rank && <span>{g.rank.rank.name} · {g.xp}XP</span>}
-        <span>🛒 {g.cartCount}</span>
+        {f.rank && <span className="rk">{g.rank.rank.name} · {g.xp}XP</span>}
+        <span className="ct">🛒 {g.cartCount}</span>
+        <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}>✕ {t.exit}</button>
       </header>
-
-      {/* store-to-store traversal stays available via the twin minimap gates below */}
 
       <ExplorePromo lang={lang} />
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
 
-      {/* street-view forward step */}
-      <button className="neoFwd" onClick={fwd} title={t.fwd}>↑</button>
-
-      {shelf.map((p, i) => (
-        <button key={p.id} className={"neoShelf" + (p.id === product.id ? " active" : "")}
-          style={{ "--x": `${24 + i * 18}%`, "--y": `${38 + ((i + yaw) % 3) * 12}%` }} onClick={() => onScan(p)}>
-          <img src={p.image} alt="" /><span>QR</span>
-        </button>
-      ))}
-
-      {f.twin ? (
+      {f.twin && (
         <aside className="neoTwinMini neoGlass">
           <div className="neoPanelTitle">{t.floor} · DIGITAL TWIN</div>
           <div className="holder"><TwinFloor node={node} onMove={onMove} mini shelves={shelvesForStore(store.id)} exits={neighbors.length} /></div>
@@ -668,50 +660,51 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
             </div>
           )}
         </aside>
-      ) : (f.openWorld && neighbors.length > 0 && (
-        <aside className="twinWarp neoGlass">
-          <div className="neoPanelTitle">⟿ {t.warpTo}</div>
-          <div className="gates">{neighbors.map((id) => <button key={id} className="gate" onClick={() => warp(id)}>◈ {storeById(id).name}</button>)}</div>
+      )}
+
+      {/* product detail popup — ONLY shown when a specific item is tapped; sits above the dock, clear of the controller */}
+      {picked && (
+        <aside className="neoItemCard neoGlass">
+          <button className="x" onClick={() => setPicked(null)} aria-label="close">×</button>
+          <div className="head"><img src={picked.image} alt="" /><div><p className="eyebrow">{pickedScanned ? t.scanned : "QR · " + picked.shelf}</p><h2>{picked.name}</h2><span className="pr">{picked.price}</span></div></div>
+          {f.ar && (
+            <dl><div><dt>{t.shelf}</dt><dd>{picked.shelf}</dd></div><div><dt>RARITY</dt><dd>{picked.rarity}</dd></div><div><dt>XP</dt><dd>+{picked.xp}</dd></div></dl>
+          )}
+          {pickedScanned
+            ? <button className="neoBtn solid block" onClick={() => onRequest(picked)}>{t.request}</button>
+            : <button className="neoBtn solid block" onClick={() => onScan(picked)}>{t.scan}</button>}
         </aside>
-      ))}
+      )}
 
-      <aside className="neoAr neoGlass">
-        <p className="eyebrow">{scanned ? t.scanned : "QR TARGET"}</p>
-        <h2>{product.name}</h2>
-        {f.ar && (
-          <dl>
-            <div><dt>{t.shelf}</dt><dd>{product.shelf}</dd></div>
-            <div><dt>RARITY</dt><dd>{product.rarity}</dd></div>
-            <div><dt>XP</dt><dd>+{product.xp}</dd></div>
-          </dl>
-        )}
-        {scanned ? <button className="neoBtn solid block" onClick={() => onRequest(product)}>{t.request}</button>
-          : <button className="neoBtn solid block" onClick={() => onScan(product)}>{t.scan}</button>}
-      </aside>
-
-      {/* game-controller style controls */}
+      {/* control zone: products dock (left) + movement pad (right) */}
       <div className="neoCtl">
-        <div className="neoPad" aria-label={t.move}>
-          <button className="up" onClick={fwd} title={t.fwd}>▲</button>
-          <button className="left" onClick={turnLeft} title={t.turnL}>◀</button>
-          <button className="ctr" disabled>{headLabel}</button>
-          <button className="right" onClick={turnRight} title={t.turnR}>▶</button>
-          <button className="down" onClick={back} title={t.bwd}>▼</button>
+        <div className="neoDock neoGlass">
+          <span className="lbl">{shelf.length ? t.itemsHere : t.noItems}</span>
+          {shelf.length > 0 && (
+            <div className="row">
+              {shelf.map((p) => (
+                <button key={p.id} className={"dockItem" + (picked && picked.id === p.id ? " on" : "")} onClick={() => setPicked(p)} title={p.name}>
+                  <img src={p.image} alt="" />
+                  {g.scannedIds.includes(p.id) && <i className="ok">✓</i>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="neoDest">
-          {node.next.map((id) => { const n = nodeById(id); return <button key={id} onClick={() => onMove(id)}>➜ {local(n.label, lang)}</button>; })}
-          <button className="exit" onClick={() => setTimeout(onExit, 0)}>{t.exit}</button>
-        </div>
-        <div className="neoRpad">
-          <div className="neoCluster">
-            <button onClick={() => setPitch((v) => clamp(v + 1, -2, 2))} title={t.tiltUp}>▲</button>
-            <span className="lbl">{t.look}</span>
-            <button onClick={() => setPitch((v) => clamp(v - 1, -2, 2))} title={t.tiltDn}>▼</button>
-          </div>
-          <div className="neoCluster">
+
+        <div className="neoMovePad">
+          <div className="neoRpad">
+            <button onClick={() => setPitch((v) => clamp(v + 1, -2, 2))} title={t.tiltUp}>↥</button>
+            <button onClick={() => setPitch((v) => clamp(v - 1, -2, 2))} title={t.tiltDn}>↧</button>
             <button onClick={() => setElev((v) => clamp(v + 1, 0, 2))} title={t.up}>⤒</button>
-            <span className="lbl">{t.lift}</span>
             <button onClick={() => setElev((v) => clamp(v - 1, 0, 2))} title={t.down}>⤓</button>
+          </div>
+          <div className="neoPad" aria-label={t.move}>
+            <button className="up" onClick={fwd} title={t.fwd}>▲</button>
+            <button className="left" onClick={turnLeft} title={t.turnL}>◀</button>
+            <button className="ctr" disabled>{headLabel}</button>
+            <button className="right" onClick={turnRight} title={t.turnR}>▶</button>
+            <button className="down" onClick={back} title={t.bwd}>▼</button>
           </div>
         </div>
       </div>
