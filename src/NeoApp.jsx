@@ -4,8 +4,15 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, asset, local
 } from "./data.js";
+
+// FF-style save point persistence (per store).
+const SAVE_KEY = "rdm_savept";
+function loadSaveFor(storeId) { try { return (JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"))[storeId] || null; } catch { return null; } }
+function writeSaveFor(storeId, nodeId) {
+  try { const all = JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"); all[storeId] = { nodeId, ts: Date.now() }; localStorage.setItem(SAVE_KEY, JSON.stringify(all)); } catch { /* ignore */ }
+}
 
 const T = {
   ja: {
@@ -26,7 +33,9 @@ const T = {
     gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
     gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
     svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
-    itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る"
+    itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る",
+    faceFront: "正面", peekLeft: "左の棚を覗く", peekRight: "右の棚を覗く", backToFront: "◀▶で正面に戻る",
+    save: "セーブ", savePoint: "セーブポイント", saveMsg: "ここで進行状況をセーブし、エナジーを全回復します。", saveDo: "セーブする", saveClose: "とじる", saved: "セーブしました（エナジー回復）", resumed: "セーブ地点から再開"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -46,7 +55,9 @@ const T = {
     gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
     gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
     svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
-    itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view"
+    itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view",
+    faceFront: "Front", peekLeft: "Peek left shelf", peekRight: "Peek right shelf", backToFront: "◀▶ back to front",
+    save: "Save", savePoint: "Save Point", saveMsg: "Save your progress here and fully restore energy.", saveDo: "Save", saveClose: "Close", saved: "Saved! Energy restored", resumed: "Resumed from save point"
   }
 };
 
@@ -71,7 +82,8 @@ export default function NeoApp() {
     loginBonus: isFunctional("login_bonus"),
     guild: isFunctional("guild"),
     paidUpgrade: isFunctional("paid_upgrade"),
-    toio: isFunctional("toio_corner")
+    toio: isFunctional("toio_corner"),
+    save: isFunctional("save_point")
   };
   const TOIO_COST = 80;
 
@@ -113,9 +125,15 @@ export default function NeoApp() {
     setStore(s); setProduct(PRODUCTS[0]); setScreen("storeGate");
     try { if (!sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
   }
-  function startTrial() { setPossessMode("trial"); setHp(78); setNodeId("entrance"); setHeading(0); setScreen("sync"); }
+  function startTrial() {
+    setPossessMode("trial"); setHp(78);
+    const sp = f.save ? loadSaveFor(store.id) : null;
+    setNodeId(sp?.nodeId || "entrance"); setHeading(0); setScreen("sync");
+    if (sp) g.toast(t.resumed, "ok");
+  }
   function openToio() { if (g.spendXp(TOIO_COST, lang === "ja" ? "TOIOコーナー" : "TOIO corner")) setScreen("toio"); }
   function startPossess() { setPossessMode("external"); setScreen("sync"); }
+  function saveAt() { setHp(100); writeSaveFor(store.id, nodeId); g.toast(t.saved, "ok"); }
   function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
   function scan(p) { setProduct(p); g.scan(p); }
@@ -143,6 +161,7 @@ export default function NeoApp() {
         <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} hp={hp}
           product={product} onScan={scan} onMove={moveTo}
           onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore}
+          saveNode={f.save && SAVE_NODES.includes(node.id)} onSave={saveAt}
           onUpgrade={() => { window.location.href = EXPLORE_URL; }} />
         <Toasts toasts={g.toasts} />
       </div>
@@ -580,26 +599,25 @@ function TwinFloor({ node, onMove, mini, shelves = TWIN_LAYOUTS[0], exits = 0 })
   );
 }
 
-function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade }) {
+function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
   const [pos, setPos] = useState(0);       // 0..steps-1 along the street-view sequence
   const [heading, setHeading] = useState("forward"); // forward | left | right
-  const [yaw, setYaw] = useState(0);       // 0-7, nudges shelf placement on turns
-  const [pitch, setPitch] = useState(0);   // -2..2 tilt
-  const [elev, setElev] = useState(0);     // 0..2 elevation
+  const [elev, setElev] = useState(0);     // -2..2 camera elevation (up/down only)
   const [picked, setPicked] = useState(null); // product popup (only on tap)
+  const [saving, setSaving] = useState(false); // save-point dialog
   const [upsell, setUpsell] = useState(false);
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
   // arriving at a new node (minimap / warp / corridor end) resets the walk + closes popup
-  useEffect(() => { setPos(0); setHeading("forward"); setPitch(0); setElev(0); setPicked(null); }, [node.id]);
+  useEffect(() => { setPos(0); setHeading("forward"); setElev(0); setPicked(null); }, [node.id]);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const last = STREETVIEW.steps - 1;
   const svSrc = (STREETVIEW[heading] || STREETVIEW.forward)[clamp(pos, 0, last)];
-  // tilt / lift gently re-frame the still
-  const feedStyle = { objectPosition: `50% ${clamp(50 - pitch * 12, 5, 95)}%`, transform: `scale(${(1 + elev * 0.05).toFixed(3)})` };
+  // camera elevation re-frames the still vertically (up = higher shelves, down = floor)
+  const feedStyle = { objectPosition: `50% ${clamp(50 - elev * 16, 8, 92)}%` };
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id);
@@ -616,9 +634,11 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
     setHeading("forward");
     setPos((v) => Math.max(0, v - 1));
   }
-  const turnLeft = () => { setHeading((h) => (h === "right" ? "forward" : "left")); setYaw((v) => (v + 7) % 8); };
-  const turnRight = () => { setHeading((h) => (h === "left" ? "forward" : "right")); setYaw((v) => (v + 1) % 8); };
-  const headLabel = heading === "forward" ? `${pos + 1}/${STREETVIEW.steps}` : (heading === "left" ? "◀ L" : "R ▶");
+  // ◀▶ peek into the side shelves; press again toward front to face forward
+  const turnLeft = () => setHeading((h) => (h === "right" ? "forward" : "left"));
+  const turnRight = () => setHeading((h) => (h === "left" ? "forward" : "right"));
+  const facing = heading === "forward" ? t.faceFront : (heading === "left" ? t.peekLeft : t.peekRight);
+  const headLabel = heading === "forward" ? `${pos + 1}/${STREETVIEW.steps}` : (heading === "left" ? "👁◀" : "▶👁");
 
   if (warping) {
     return (
@@ -634,7 +654,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
 
   return (
     <div className="neoEx">
-      <img className="neoFeedImg" key={heading + pos} src={svSrc} alt="" style={feedStyle} draggable="false" />
+      <img className={"neoFeedImg sv-" + heading} key={heading + pos} src={svSrc} alt="" style={feedStyle} draggable="false" />
       <div className="neoExShade" />
 
       <header className="neoExTop neoGlass">
@@ -648,6 +668,13 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       <ExplorePromo lang={lang} />
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
+
+      {/* FF-style save point — glowing marker you step on */}
+      {saveNode && (
+        <button className="neoSavePoint" onClick={() => setSaving(true)} title={t.savePoint}>
+          <span className="ring" /><span className="core">💾</span><span className="lbl">{t.savePoint}</span>
+        </button>
+      )}
 
       {f.twin && (
         <aside className="neoTwinMini neoGlass">
@@ -693,21 +720,39 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
         </div>
 
         <div className="neoMovePad">
+          {/* facing indicator: makes left/right shelf-peeking obvious */}
+          <div className={"neoFacing face-" + heading}>
+            <b>👁 {facing}</b>
+            {heading !== "forward" && <small>{t.backToFront}</small>}
+          </div>
+          {/* only camera elevation up/down besides the D-pad */}
           <div className="neoRpad">
-            <button onClick={() => setPitch((v) => clamp(v + 1, -2, 2))} title={t.tiltUp}>↥</button>
-            <button onClick={() => setPitch((v) => clamp(v - 1, -2, 2))} title={t.tiltDn}>↧</button>
-            <button onClick={() => setElev((v) => clamp(v + 1, 0, 2))} title={t.up}>⤒</button>
-            <button onClick={() => setElev((v) => clamp(v - 1, 0, 2))} title={t.down}>⤓</button>
+            <button onClick={() => setElev((v) => clamp(v + 1, -2, 2))} title={t.up}>⤒</button>
+            <span className="lbl">{t.lift}</span>
+            <button onClick={() => setElev((v) => clamp(v - 1, -2, 2))} title={t.down}>⤓</button>
           </div>
           <div className="neoPad" aria-label={t.move}>
             <button className="up" onClick={fwd} title={t.fwd}>▲</button>
-            <button className="left" onClick={turnLeft} title={t.turnL}>◀</button>
+            <button className="left" onClick={turnLeft} title={t.peekLeft}>◀</button>
             <button className="ctr" disabled>{headLabel}</button>
-            <button className="right" onClick={turnRight} title={t.turnR}>▶</button>
+            <button className="right" onClick={turnRight} title={t.peekRight}>▶</button>
             <button className="down" onClick={back} title={t.bwd}>▼</button>
           </div>
         </div>
       </div>
+
+      {saving && (
+        <div className="neoModalOv" onClick={() => setSaving(false)}>
+          <div className="neoSaveBox neoGlass" onClick={(e) => e.stopPropagation()}>
+            <div className="ic">💾</div>
+            <p className="eyebrow">{t.savePoint}</p>
+            <h2>{local(node.label, lang)} · {store.name}</h2>
+            <p className="msg">{t.saveMsg}</p>
+            <button className="neoBtn solid block" onClick={() => { onSave(); setSaving(false); }}>💾 {t.saveDo}</button>
+            <button className="neoBtn block" onClick={() => setSaving(false)}>{t.saveClose}</button>
+          </div>
+        </div>
+      )}
 
       {upsell && <UpsellModal lang={lang} g={g} discount={Math.min(1000, g.xp)} onUpgrade={onUpgrade} onClose={() => setUpsell(false)} />}
     </div>

@@ -51,7 +51,7 @@ const RAW = [
   ["paid_upgrade", "有料体験への導線", 0, "無料体験中に「ここから先は有料」アップセルを提示。獲得ポイントを有料体験の割引・引き継ぎに充当する導線", "available", "MVP", true],
 
   // 2. 遠隔操作・制御UX
-  ["save_point", "セーブポイント", 1, "探索中の地点を保存し、次回そこから再開できる機能", "coming_soon", "Phase2", false],
+  ["save_point", "セーブポイント", 1, "探索中の地点を保存し、次回そこから再開できる機能（FF風セーブポイント。エナジー回復つき）", "available", "MVP", true],
   ["remote_command", "遠隔指令", 1, "「あの棚に行く」「次のポイントへ移動」など大まかな指令で操作できる機能", "available", "MVP", true],
   ["multi_user_control", "複数人連携操作", 1, "移動、カメラ、マップ確認、ギミック操作などを複数人で分担する機能", "coming_soon", "Phase2", false],
   ["sugoroku_warp_exploration", "すごろく型ワープ探索", 1, "店舗ツインのネットワークをすごろく盤のように進み、マス（店舗ノード）ごとにイベントや報酬・ワープが発生するボードゲーム型探索機能", "available", "MVP", true, { dependencies: ["sugoroku_world_theme", "digital_twin_overlay"], adminNote: "No22。ボードゲーム型・ゲーム進行感。離散ノード移動。No25とは別機能として管理する" }],

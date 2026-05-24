@@ -51,6 +51,9 @@ const svSeq = (dir) =>
   Array.from({ length: SV_STEPS }, (_, i) => asset(`assets/streetview/${dir}/${String(i + 1).padStart(2, "0")}.jpg`));
 export const STREETVIEW = { steps: SV_STEPS, forward: svSeq("forward"), left: svSeq("left"), right: svSeq("right") };
 
+// FF-style save points: nodes where you can save progress & restore energy.
+export const SAVE_NODES = ["entrance", "checkout"];
+
 export const STORES = [
   ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 62, 52],
   ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 46, 60],
