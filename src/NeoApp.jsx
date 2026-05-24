@@ -36,6 +36,7 @@ const T = {
     collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "取扱店舗", getRare: "GET!",
     fwd: "前進", bwd: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
     up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動",
+    heightLabel: "カメラの高さ", liftUp: "目線を上げる（高い棚を見る）", liftDown: "目線を下げる（低い棚を見る）", goLabel: "移動先",
     gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
     gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
@@ -63,6 +64,7 @@ const T = {
     collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Sold at", getRare: "GET!",
     fwd: "Fwd", bwd: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
     up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store",
+    heightLabel: "Camera height", liftUp: "Raise view (see high shelf)", liftDown: "Lower view (see low shelf)", goLabel: "Go to",
     gateLead: "You've arrived", gateTitle: "How do you want to start?",
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
     gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
@@ -669,7 +671,11 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   const last = STREETVIEW.steps - 1;
   const svSrc = (STREETVIEW[heading] || STREETVIEW.forward)[clamp(pos, 0, last)];
   // camera elevation re-frames the still vertically (up = higher shelves, down = floor)
-  const feedStyle = { objectPosition: `50% ${clamp(50 - elev * 16, 8, 92)}%` };
+  const feedStyle = { objectPosition: `50% ${clamp(50 - elev * 20, 4, 96)}%` };
+  // neighbour stores shown on the minimap as directional exits (up/right/down/left)
+  const DIRS = ["up", "right", "down", "left"];
+  const DIR_ARROW = { up: "↑", right: "→", down: "↓", left: "←" };
+  const gates = neighbors.slice(0, 4).map((id, i) => ({ id, name: storeById(id).name, dir: DIRS[i] }));
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id);
@@ -732,13 +738,14 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
       {f.twin && (
         <aside className="neoTwinMini neoGlass">
           <div className="neoPanelTitle">{t.floor} · DIGITAL TWIN</div>
-          <div className="holder"><TwinFloor node={node} onMove={onMove} mini shelves={shelvesForStore(store.id)} exits={neighbors.length} /></div>
-          {f.openWorld && neighbors.length > 0 && (
-            <div className="twinGates">
-              <span className="lbl">⟿ {t.warpTo}</span>
-              {neighbors.map((id) => <button key={id} className="gate" onClick={() => warp(id)}>◈ {storeById(id).name}</button>)}
-            </div>
-          )}
+          <div className="holder">
+            <TwinFloor node={node} onMove={onMove} mini shelves={shelvesForStore(store.id)} exits={neighbors.length} />
+            {f.openWorld && gates.map((gt) => (
+              <button key={gt.id} className={"twinDir " + gt.dir} onClick={() => warp(gt.id)} title={`${t.goLabel}: ${gt.name}`}>
+                <span className="ar">{DIR_ARROW[gt.dir]}</span><span className="nm">{gt.name}</span>
+              </button>
+            ))}
+          </div>
         </aside>
       )}
 
@@ -781,11 +788,12 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
               {heading !== "forward" && <small>{t.backToFront}</small>}
             </div>
           )}
-          {/* only camera elevation up/down besides the D-pad */}
-          <div className="neoRpad">
-            <button onClick={() => setElev((v) => clamp(v + 1, -2, 2))} title={t.up}>⤒</button>
-            <span className="lbl">{t.lift}</span>
-            <button onClick={() => setElev((v) => clamp(v - 1, -2, 2))} title={t.down}>⤓</button>
+          {/* camera HEIGHT control (only this + the D-pad). Raise/lower the view for high/low shelves. */}
+          <div className="neoRpad" aria-label={t.heightLabel}>
+            <button className="up" onClick={() => setElev((v) => clamp(v + 1, -2, 2))} title={t.liftUp} disabled={elev >= 2}>▲</button>
+            <div className="lvl" title={t.heightLabel}>{[2, 1, 0, -1, -2].map((l) => <i key={l} className={elev === l ? "on" : ""} />)}</div>
+            <button className="down" onClick={() => setElev((v) => clamp(v - 1, -2, 2))} title={t.liftDown} disabled={elev <= -2}>▼</button>
+            <span className="lbl">⇕ {t.heightLabel}</span>
           </div>
           <div className="neoPad" aria-label={t.move}>
             <button className="up" onClick={fwd} title={t.fwd}>▲</button>
