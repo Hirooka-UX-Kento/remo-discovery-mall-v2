@@ -730,8 +730,8 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
 
       {/* FF-style save point — glowing marker you step on */}
       {saveNode && (
-        <button className="neoSavePoint" onClick={() => setSaving(true)} title={t.savePoint}>
-          <span className="ring" /><span className="core"><TentIcon size={48} /></span><span className="lbl">{t.savePoint}</span>
+        <button className="neoSavePoint" onClick={() => setSaving(true)} title={t.savePoint} aria-label={t.savePoint}>
+          <TentIcon size={26} spin={false} />
         </button>
       )}
 
@@ -808,7 +808,7 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
       {saving && (
         <div className="neoModalOv" onClick={() => setSaving(false)}>
           <div className="neoSaveBox neoGlass" onClick={(e) => e.stopPropagation()}>
-            <div className="ic"><TentIcon size={58} /></div>
+            <div className="ic"><TentIcon size={84} /></div>
             <p className="eyebrow">{t.savePoint}</p>
             <h2>{local(node.label, lang)} · {store.name}</h2>
             <p className="msg">{t.saveMsg}</p>
