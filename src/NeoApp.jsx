@@ -34,6 +34,7 @@ const T = {
     gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
     svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
     itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る",
+    addCart: "カートに入れる", addedCart: "カートに追加しました",
     faceFront: "正面", peekLeft: "左の棚を覗く", peekRight: "右の棚を覗く", backToFront: "◀▶で正面に戻る",
     save: "セーブ", savePoint: "セーブポイント", saveMsg: "ここで進行状況をセーブし、エナジーを全回復します。", saveDo: "セーブする", saveClose: "とじる", saved: "セーブしました（エナジー回復）", resumed: "セーブ地点から再開"
   },
@@ -56,6 +57,7 @@ const T = {
     gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
     svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
     itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view",
+    addCart: "Add to cart", addedCart: "Added to cart",
     faceFront: "Front", peekLeft: "Peek left shelf", peekRight: "Peek right shelf", backToFront: "◀▶ back to front",
     save: "Save", savePoint: "Save Point", saveMsg: "Save your progress here and fully restore energy.", saveDo: "Save", saveClose: "Close", saved: "Saved! Energy restored", resumed: "Resumed from save point"
   }
@@ -714,6 +716,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
           {pickedScanned
             ? <button className="neoBtn solid block" onClick={() => onRequest(picked)}>{t.request}</button>
             : <button className="neoBtn solid block" onClick={() => onScan(picked)}>{t.scan}</button>}
+          <button className="neoBtn block cart" onClick={() => { g.addToCart(picked, 1); g.toast(`🛒 ${t.addedCart}: ${picked.name}`, "ok"); }}>🛒 {t.addCart}</button>
         </aside>
       )}
 
