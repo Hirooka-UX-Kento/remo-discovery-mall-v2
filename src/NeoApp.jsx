@@ -7,6 +7,14 @@ import {
   LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, asset, local
 } from "./data.js";
 
+// User display preferences (show/hide explanatory UI). Default: everything ON.
+const UIPREF_KEY = "rdm_ui_prefs_v1";
+const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true };
+function loadUiPrefs() {
+  try { return { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) }; } catch { return { ...UIPREF_DEFAULT }; }
+}
+function saveUiPrefs(p) { try { localStorage.setItem(UIPREF_KEY, JSON.stringify(p)); } catch { /* ignore */ } }
+
 // FF-style save point persistence (per store).
 const SAVE_KEY = "rdm_savept";
 function loadSaveFor(storeId) { try { return (JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"))[storeId] || null; } catch { return null; } }
@@ -36,7 +44,11 @@ const T = {
     itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る",
     addCart: "カートに入れる", addedCart: "カートに追加しました",
     faceFront: "正面", peekLeft: "左の棚を覗く", peekRight: "右の棚を覗く", backToFront: "◀▶で正面に戻る",
-    save: "セーブ", savePoint: "セーブポイント", saveMsg: "ここで進行状況をセーブし、エナジーを全回復します。", saveDo: "セーブする", saveClose: "とじる", saved: "セーブしました（エナジー回復）", resumed: "セーブ地点から再開"
+    save: "セーブ", savePoint: "セーブポイント", saveMsg: "ここで進行状況をセーブし、エナジーを全回復します。", saveDo: "セーブする", saveClose: "とじる", saved: "セーブしました（エナジー回復）", resumed: "セーブ地点から再開",
+    display: "表示設定", displayDesc: "説明・ポップアップの表示/非表示を切り替えます",
+    prefHud: "探索の補助HUD", prefHudDesc: "向き表示などの補助情報",
+    prefPromos: "広告・イベントバナー", prefPromosDesc: "探索中のプロモ/クーポン告知",
+    prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -59,7 +71,11 @@ const T = {
     itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view",
     addCart: "Add to cart", addedCart: "Added to cart",
     faceFront: "Front", peekLeft: "Peek left shelf", peekRight: "Peek right shelf", backToFront: "◀▶ back to front",
-    save: "Save", savePoint: "Save Point", saveMsg: "Save your progress here and fully restore energy.", saveDo: "Save", saveClose: "Close", saved: "Saved! Energy restored", resumed: "Resumed from save point"
+    save: "Save", savePoint: "Save Point", saveMsg: "Save your progress here and fully restore energy.", saveDo: "Save", saveClose: "Close", saved: "Saved! Energy restored", resumed: "Resumed from save point",
+    display: "Display", displayDesc: "Show or hide explanations & popups",
+    prefHud: "Explore HUD", prefHudDesc: "Facing indicator & helpers",
+    prefPromos: "Ads / event banners", prefPromosDesc: "Promo & coupon notices while exploring",
+    prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus"
   }
 };
 
@@ -97,10 +113,13 @@ export default function NeoApp() {
   const [welcome, setWelcome] = useState(false);
   const [tutorial, setTutorial] = useState(false);
   const [themePicker, setThemePicker] = useState(false);
+  const [dispOpen, setDispOpen] = useState(false);
+  const [uiPrefs, setUiPrefs] = useState(loadUiPrefs);
+  const setPref = (k, v) => setUiPrefs((p) => { const n = { ...p, [k]: v }; saveUiPrefs(n); return n; });
   const [reqlog, setReqlog] = useState([]);
 
   useEffect(() => {
-    try { if (!localStorage.getItem("rdm_tut_done")) setTutorial(true); } catch { /* ignore */ }
+    try { if (uiPrefs.onboarding && !localStorage.getItem("rdm_tut_done")) setTutorial(true); } catch { /* ignore */ }
   }, []);
   function closeTutorial() { setTutorial(false); try { localStorage.setItem("rdm_tut_done", "1"); } catch { /* ignore */ } }
 
@@ -125,7 +144,7 @@ export default function NeoApp() {
 
   function openStore(s) {
     setStore(s); setProduct(PRODUCTS[0]); setScreen("storeGate");
-    try { if (!sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
+    try { if (uiPrefs.onboarding && !sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
   }
   function startTrial() {
     setPossessMode("trial"); setHp(78);
@@ -145,7 +164,7 @@ export default function NeoApp() {
   const themeClass = `neo tone-${f.theme ? tone : "cyber"}`;
 
   const header = (
-    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} />
+    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} />
   );
 
   let body;
@@ -160,11 +179,12 @@ export default function NeoApp() {
   if (screen === "explore") {
     return (
       <div className={themeClass}>
-        <Explore t={t} lang={lang} g={g} f={f} store={store} node={node} hp={hp}
+        <Explore t={t} lang={lang} g={g} f={f} prefs={uiPrefs} store={store} node={node} hp={hp}
           product={product} onScan={scan} onMove={moveTo}
           onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore}
-          saveNode={f.save && SAVE_NODES.includes(node.id)} onSave={saveAt}
+          saveNode={f.save && SAVE_NODES.includes(node.id)} onSave={saveAt} onDisplay={() => setDispOpen(true)}
           onUpgrade={() => { window.location.href = EXPLORE_URL; }} />
+        {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
         <Toasts toasts={g.toasts} />
       </div>
     );
@@ -199,12 +219,13 @@ export default function NeoApp() {
       )}
       {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
       {themePicker && f.theme && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
+      {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
       <Toasts toasts={g.toasts} />
     </div>
   );
 }
 
-function Header({ t, g, f, onCart, onTutorial, onTheme }) {
+function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
   return (
     <header className="neoTop">
       <div className="neoBrand">
@@ -219,6 +240,7 @@ function Header({ t, g, f, onCart, onTutorial, onTheme }) {
         </div>
       )}
       <div className="neoActions">
+        <button className="neoIcon" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
         <button className="neoBtn" onClick={() => g.setLang(g.lang === "ja" ? "en" : "ja")}>{g.lang === "ja" ? "EN" : "日本語"}</button>
@@ -231,6 +253,34 @@ function Header({ t, g, f, onCart, onTutorial, onTheme }) {
         <button className="neoBtn solid neoCartBtn" onClick={onCart}>🛒 {t.cart}{g.cartCount > 0 && <i>{g.cartCount}</i>}</button>
       </div>
     </header>
+  );
+}
+
+// Display-preferences popover: show/hide explanatory UI (defaults all ON).
+function DisplaySettings({ t, prefs, setPref, onClose }) {
+  const rows = [
+    { k: "hud", label: t.prefHud, desc: t.prefHudDesc },
+    { k: "promos", label: t.prefPromos, desc: t.prefPromosDesc },
+    { k: "onboarding", label: t.prefOnboard, desc: t.prefOnboardDesc }
+  ];
+  return (
+    <>
+      <div className="thScrim" onClick={onClose} />
+      <div className="thPop dispPop" role="dialog">
+        <div className="thHead">
+          <div><b>🎛 {t.display}</b><small>{t.displayDesc}</small></div>
+          <button className="close" onClick={onClose}>×</button>
+        </div>
+        <div className="dispRows">
+          {rows.map((r) => (
+            <button key={r.k} className={"dispRow" + (prefs[r.k] ? " on" : "")} onClick={() => setPref(r.k, !prefs[r.k])} role="switch" aria-checked={!!prefs[r.k]}>
+              <div className="txt"><b>{r.label}</b><small>{r.desc}</small></div>
+              <span className="sw"><i /></span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onCollection }) {
@@ -615,7 +665,7 @@ function TentIcon({ size = 42, spin = true }) {
   );
 }
 
-function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave }) {
+function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave, onDisplay }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
   const [pos, setPos] = useState(0);       // 0..steps-1 along the street-view sequence
@@ -678,10 +728,11 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
         <span className="sp">⚡ {hp}</span>
         {f.rank && <span className="rk">{g.rank.rank.name} · {g.xp}XP</span>}
         <span className="ct">🛒 {g.cartCount}</span>
+        <button className="dispX" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}>✕ {t.exit}</button>
       </header>
 
-      <ExplorePromo lang={lang} />
+      {prefs.promos && <ExplorePromo lang={lang} />}
 
       {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
 
@@ -738,10 +789,12 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
 
         <div className="neoMovePad">
           {/* facing indicator: makes left/right shelf-peeking obvious */}
-          <div className={"neoFacing face-" + heading}>
-            <b>👁 {facing}</b>
-            {heading !== "forward" && <small>{t.backToFront}</small>}
-          </div>
+          {prefs.hud && (
+            <div className={"neoFacing face-" + heading}>
+              <b>👁 {facing}</b>
+              {heading !== "forward" && <small>{t.backToFront}</small>}
+            </div>
+          )}
           {/* only camera elevation up/down besides the D-pad */}
           <div className="neoRpad">
             <button onClick={() => setElev((v) => clamp(v + 1, -2, 2))} title={t.up}>⤒</button>
