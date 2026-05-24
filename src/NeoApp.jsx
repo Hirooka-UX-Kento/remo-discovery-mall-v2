@@ -599,6 +599,20 @@ function TwinFloor({ node, onMove, mini, shelves = TWIN_LAYOUTS[0], exits = 0 })
   );
 }
 
+// Spinning circus-tent save-point icon (replaces the floppy disk).
+function TentIcon({ size = 42, spin = true }) {
+  const xs = [6, 15, 24, 32, 40, 49, 58];
+  const wedges = xs.slice(0, -1).map((x, i) => ({ pts: `32,13 ${x},45 ${xs[i + 1]},45`, c: i % 2 ? "var(--acc-2)" : "#fff4e6" }));
+  return (
+    <svg className={"tentSvg" + (spin ? " spin" : "")} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      {wedges.map((w, i) => <polygon key={i} points={w.pts} fill={w.c} stroke="rgba(0,0,0,.16)" strokeWidth="0.4" />)}
+      <path d="M6 45 Q11 50 16 45 Q21 50 26 45 Q32 50 38 45 Q43 50 48 45 Q53 50 58 45" fill="none" stroke="var(--acc-2)" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="32" y1="13" x2="32" y2="5" stroke="var(--acc)" strokeWidth="1.6" />
+      <polygon points="32,4 42,7 32,10" fill="var(--acc)" />
+    </svg>
+  );
+}
+
 function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
@@ -672,7 +686,7 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       {/* FF-style save point — glowing marker you step on */}
       {saveNode && (
         <button className="neoSavePoint" onClick={() => setSaving(true)} title={t.savePoint}>
-          <span className="ring" /><span className="core">💾</span><span className="lbl">{t.savePoint}</span>
+          <span className="ring" /><span className="core"><TentIcon size={48} /></span><span className="lbl">{t.savePoint}</span>
         </button>
       )}
 
@@ -744,11 +758,11 @@ function Explore({ t, lang, g, f, store, node, hp, product, onScan, onMove, onRe
       {saving && (
         <div className="neoModalOv" onClick={() => setSaving(false)}>
           <div className="neoSaveBox neoGlass" onClick={(e) => e.stopPropagation()}>
-            <div className="ic">💾</div>
+            <div className="ic"><TentIcon size={58} /></div>
             <p className="eyebrow">{t.savePoint}</p>
             <h2>{local(node.label, lang)} · {store.name}</h2>
             <p className="msg">{t.saveMsg}</p>
-            <button className="neoBtn solid block" onClick={() => { onSave(); setSaving(false); }}>💾 {t.saveDo}</button>
+            <button className="neoBtn solid block" onClick={() => { onSave(); setSaving(false); }}>⛺ {t.saveDo}</button>
             <button className="neoBtn block" onClick={() => setSaving(false)}>{t.saveClose}</button>
           </div>
         </div>

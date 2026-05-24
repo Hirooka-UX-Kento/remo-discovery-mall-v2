@@ -715,7 +715,12 @@
 /* ===== FF-style save point ===== */
 .neoSavePoint { position: absolute; z-index: 11; left: 50%; top: 44%; transform: translate(-50%, -50%); width: 100px; height: 118px; border: 0; background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .neoSavePoint .ring { position: absolute; left: 50%; top: 44px; transform: translate(-50%, -50%); width: 82px; height: 82px; border-radius: 50%; border: 2px solid var(--acc-2); box-shadow: 0 0 30px var(--acc-2), inset 0 0 26px color-mix(in srgb, var(--acc-2), transparent 55%); animation: savePulse 1.6s ease-in-out infinite; }
-.neoSavePoint .core { position: absolute; left: 50%; top: 44px; transform: translate(-50%, -50%); font-size: 36px; filter: drop-shadow(0 0 10px var(--acc-2)); animation: saveFloat 2.4s ease-in-out infinite; }
+.neoSavePoint .core { position: absolute; left: 50%; top: 44px; transform: translate(-50%, -50%); display: grid; place-items: center; animation: saveFloat 2.4s ease-in-out infinite; }
+/* spinning circus tent */
+.tentSvg { overflow: visible; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--acc-2), transparent 35%)); }
+.tentSvg.spin { transform-origin: 50% 50%; animation: tentSpin 3s linear infinite; }
+@keyframes tentSpin { to { transform: rotate(360deg); } }
+.neoSaveBox .ic .tentSvg { filter: drop-shadow(0 0 12px color-mix(in srgb, var(--acc-2), transparent 30%)); }
 .neoSavePoint .lbl { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font-size: 11px; font-weight: 900; letter-spacing: .08em; color: var(--acc-2); text-shadow: 0 0 8px color-mix(in srgb, var(--acc-2), transparent 45%); white-space: nowrap; }
 .neoSavePoint:active .core { transform: translate(-50%, -50%) scale(.9); }
 @keyframes savePulse { 0%,100% { transform: translate(-50%,-50%) scale(.88); opacity: .65; } 50% { transform: translate(-50%,-50%) scale(1.16); opacity: 1; } }
