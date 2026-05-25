@@ -26,7 +26,7 @@ export const TONES = [
   { id: "retro", ja: "レトロ", en: "Retro", acc: "#ff7a3c", acc2: "#ffd23c" },
   { id: "festival", ja: "祭り", en: "Festival", acc: "#ff3b5c", acc2: "#ffd23c" },
   { id: "simple", ja: "シンプル", en: "Simple", acc: "#cfe0f0", acc2: "#7f93ad" },
-  { id: "ocean", ja: "オーシャン", en: "Ocean", acc: "#27b6a0", acc2: "#1f6fb2" }
+  { id: "corporate", ja: "コーポレート", en: "Corporate", acc: "#27b6a0", acc2: "#1f6fb2" }
 ];
 
 // 探索を促す広告・イベント・ディスカウント情報
