@@ -55,6 +55,8 @@
 .neo.tone-retro   { --acc:#ff7a3c; --acc-2:#ffd23c; --font:"Yusei Magic", sans-serif; }
 .neo.tone-festival{ --acc:#ff3b5c; --acc-2:#ffd23c; --font:"Reggae One", sans-serif; }
 .neo.tone-simple  { --acc:#cfe0f0; --acc-2:#7f93ad; --text:#eef4fb; --font:"Inter","Noto Sans JP",sans-serif; }
+/* オーシャン — ティールグリーン → ブルーのグラデ */
+.neo.tone-ocean   { --acc:#27b6a0; --acc-2:#1f6fb2; --bg:#04121a; --bg-2:#07202b; --font:"Zen Kaku Gothic New","Noto Sans JP",sans-serif; }
 
 /* ===== 歓楽街ネオン (龍が如く風) tone-specific flourishes ===== */
 /* deep crimson night-district glow over the base scene */
