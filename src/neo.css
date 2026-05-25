@@ -169,8 +169,8 @@
 
 .neoCartBtn { position: relative; display: inline-flex; align-items: center; gap: 7px; }
 .neoCartBtn i { display: inline-grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--pill); font-style: normal; font-size: 11px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
-.neoIcon { width: 40px; height: 40px; border-radius: var(--pill); display: inline-grid; place-items: center; font-size: 16px; text-decoration: none; color: var(--muted); border: 1px solid var(--line); }
-.neoIcon:hover { color: var(--text); border-color: var(--acc); }
+.neoActions .neoIcon { width: 40px; height: 40px; border-radius: var(--pill); display: inline-grid; place-items: center; font-size: 16px; text-decoration: none; color: var(--text); background: rgba(7,14,26,.5); border: 1px solid var(--line); -webkit-appearance: none; appearance: none; }
+.neoActions .neoIcon:hover { color: var(--acc); border-color: var(--acc); background: color-mix(in srgb, var(--acc), transparent 88%); }
 
 /* =====================================================================
    Home
