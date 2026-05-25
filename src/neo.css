@@ -646,6 +646,8 @@
 .neoTut .nav .neoBtn { flex: 1; justify-content: center; }
 .neoTut .nav > span { flex: 1; }
 .neoTut .skip { margin-top: 10px; border: 0; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; }
+.tutOptout { display: inline-flex; align-items: center; gap: 7px; margin-top: 14px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.tutOptout input { width: 15px; height: 15px; accent-color: var(--acc); }
 
 /* paywall / upgrade upsell */
 .neoUpsell { position: relative; width: min(420px, 94vw); max-height: 90vh; overflow: auto; background: var(--bg-2); border: 1px solid color-mix(in srgb, var(--acc-2), transparent 50%); border-radius: var(--r-lg); padding: 24px; box-shadow: 0 30px 80px rgba(0,0,0,.6); animation: neoSlideUp .3s ease-out; }

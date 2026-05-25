@@ -120,10 +120,19 @@ export default function NeoApp() {
   const setPref = (k, v) => setUiPrefs((p) => { const n = { ...p, [k]: v }; saveUiPrefs(n); return n; });
   const [reqlog, setReqlog] = useState([]);
 
+  // Show the tutorial once per login session, unless the user opted out ("次回から表示しない").
   useEffect(() => {
-    try { if (uiPrefs.onboarding && !localStorage.getItem("rdm_tut_done")) setTutorial(true); } catch { /* ignore */ }
+    try {
+      if (uiPrefs.onboarding && !localStorage.getItem("rdm_tut_optout") && !sessionStorage.getItem("rdm_tut_seen")) {
+        setTutorial(true);
+        sessionStorage.setItem("rdm_tut_seen", "1");
+      }
+    } catch { /* ignore */ }
   }, []);
-  function closeTutorial() { setTutorial(false); try { localStorage.setItem("rdm_tut_done", "1"); } catch { /* ignore */ } }
+  function closeTutorial(dontShowAgain) {
+    setTutorial(false);
+    if (dontShowAgain) { try { localStorage.setItem("rdm_tut_optout", "1"); } catch { /* ignore */ } }
+  }
 
   // explore state
   const [nodeId, setNodeId] = useState("entrance");
@@ -1049,12 +1058,14 @@ function TutorialModal({ lang, f, onClose }) {
     f.openWorld && { ic: "🌀", t: L("ワープで世界一でかい店へ", "Warp the infinite store"), b: L("店舗の端からワープすると隣の店へ。全店が地続きの“世界一でかい店”。", "Warp from a store edge to the next — all stores connect into one giant store.") }
   ].filter(Boolean);
   const [i, setI] = useState(0);
+  const [dontShow, setDontShow] = useState(false);
+  const close = () => onClose(dontShow);
   const step = steps[Math.min(i, steps.length - 1)];
   const last = i >= steps.length - 1;
   return (
-    <div className="neoModalOv" onClick={onClose}>
+    <div className="neoModalOv" onClick={close}>
       <div className="neoTut" onClick={(e) => e.stopPropagation()}>
-        <button className="close" onClick={onClose}>×</button>
+        <button className="close" onClick={close}>×</button>
         <div className="ic">{step.ic}</div>
         <p className="eyebrow">{L("チュートリアル", "Tutorial")} {i + 1}/{steps.length}</p>
         <h2>{step.t}</h2>
@@ -1068,12 +1079,15 @@ function TutorialModal({ lang, f, onClose }) {
         )}
         <div className="dots">{steps.map((_, k) => <span key={k} className={k === i ? "on" : ""} />)}</div>
         <div className="nav">
-          {i > 0 ? <button className="neoBtn" onClick={() => setI(i - 1)}>{L("戻る", "Back")}</button> : <span />}
+          {i > 0 ? <button className="neoBtn" onClick={() => setI(i - 1)}>{L("戻る", "Back")}</button> : <button className="neoBtn" onClick={close}>{L("スキップ", "Skip")}</button>}
           {last
-            ? <button className="neoBtn solid" onClick={onClose}>{L("はじめる", "Start")}</button>
+            ? <button className="neoBtn solid" onClick={close}>{L("はじめる", "Start")}</button>
             : <button className="neoBtn solid" onClick={() => setI(i + 1)}>{L("次へ", "Next")}</button>}
         </div>
-        <button className="skip" onClick={onClose}>{L("スキップ", "Skip")}</button>
+        <label className="tutOptout">
+          <input type="checkbox" checked={dontShow} onChange={(e) => setDontShow(e.target.checked)} />
+          {L("次回から表示しない", "Don't show again")}
+        </label>
       </div>
     </div>
   );
