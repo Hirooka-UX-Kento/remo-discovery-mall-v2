@@ -4,7 +4,7 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
 } from "./data.js";
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
@@ -236,8 +236,8 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
         <span className="neoLivePill"><i />LIVE</span>
       </div>
       {f.rank && (
-        <div className="neoXp">
-          <div className="row"><span className="rank">{g.rank.rank.name}</span><span className="pts">{g.xp} XP{g.rank.next ? ` · 次まで ${g.rank.toNext}` : ""}</span></div>
+        <div className="neoXp" title={g.lang === "ja" ? "あなたのランク（累計EXPで昇格）" : "Your rank (raised by lifetime EXP)"}>
+          <div className="row"><span className="rank"><em className="tag">{g.lang === "ja" ? "ランク" : "RANK"}</em>{g.rank.rank.name}</span><span className="pts">{g.xp} XP{g.rank.next ? ` · 次まで ${g.rank.toNext}` : ""}</span></div>
           <div className="track"><div className="fill" style={{ width: g.rank.pct + "%" }} /></div>
         </div>
       )}
@@ -718,7 +718,7 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
       <header className="neoExTop neoGlass">
         <span className="rec">● LIVE</span><b>{store.name}</b><span className="nd">{local(node.label, lang)}</span>
         <span className="sp">⚡ {hp}</span>
-        {f.rank && <span className="rk">{g.rank.rank.name} · {g.xp}XP</span>}
+        {f.rank && <span className="rk">{lang === "ja" ? "ランク" : "RANK"} {g.rank.rank.name} · {g.xp}XP</span>}
         <span className="ct">🛒 {g.cartCount}</span>
         <button className="dispX" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}>✕ {t.exit}</button>
@@ -1038,6 +1038,12 @@ function TutorialModal({ lang, f, onClose }) {
     f.toio && { ic: "🛺", t: L("TOIOミニチュアコーナー", "TOIO miniature corner"), b: L("EXPを消費して、ミニチュア店内をTOIO走行カメラで探索。キーホルダーや缶バッジを選んで景品でもらうか購入できます。", "Spend EXP to drive a TOIO camera through a miniature store — pick keychains or can badges to win as a prize or buy.") },
     f.collection && { ic: "📘", t: L("レアを発見→図鑑", "Discover → Collection"), b: L("棚をスキャンしてレアを発見、図鑑に登録してコンプを目指そう。", "Scan shelves to find rares and complete your Collection.") },
     f.missions && { ic: "✅", t: L("クエストでXP→ランクUP", "Quests → Rank up"), b: L("デイリー等のクエストを達成してXPを稼ぎ、ランクを上げよう。", "Clear daily quests to earn XP and rank up.") },
+    f.rank && {
+      ic: "🏅",
+      t: L("ランクの仕組み", "Rank tiers"),
+      b: L("累計EXPで「ランク（称号）」が昇格します。画面上部の表示はあなたの現在ランクです。", "Lifetime EXP raises your RANK (title). The badge at the top shows your current rank."),
+      ranks: RANKS
+    },
     f.ranking && { ic: "👑", t: L("ランキング", "Ranking"), b: L("発見数やXPで他のダイバーとランキングを競えます。", "Compete with other divers on the leaderboard.") },
     f.guild && { ic: "🛡️", t: L("ギルド", "Guild"), b: L("仲間とギルドを組み、協力ミッションでさらに楽しく。", "Team up in a guild and take on co-op missions.") },
     f.openWorld && { ic: "🌀", t: L("ワープで世界一でかい店へ", "Warp the infinite store"), b: L("店舗の端からワープすると隣の店へ。全店が地続きの“世界一でかい店”。", "Warp from a store edge to the next — all stores connect into one giant store.") }
@@ -1053,6 +1059,13 @@ function TutorialModal({ lang, f, onClose }) {
         <p className="eyebrow">{L("チュートリアル", "Tutorial")} {i + 1}/{steps.length}</p>
         <h2>{step.t}</h2>
         <p className="body">{step.b}</p>
+        {step.ranks && (
+          <ol className="tutRanks">
+            {step.ranks.map((r, k) => (
+              <li key={r.name}><span className="lv">{k + 1}</span><b>{r.name}</b><small>{r.min} XP{step.ranks[k + 1] ? "" : " +"}</small></li>
+            ))}
+          </ol>
+        )}
         <div className="dots">{steps.map((_, k) => <span key={k} className={k === i ? "on" : ""} />)}</div>
         <div className="nav">
           {i > 0 ? <button className="neoBtn" onClick={() => setI(i - 1)}>{L("戻る", "Back")}</button> : <span />}

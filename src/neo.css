@@ -124,7 +124,8 @@
 .neoBrand span { display: block; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
 .neoXp { min-width: 200px; flex: 0 1 280px; }
 .neoXp .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; margin-bottom: 5px; }
-.neoXp .rank { font-weight: 900; letter-spacing: .1em; color: var(--acc); }
+.neoXp .rank { font-weight: 900; letter-spacing: .1em; color: var(--acc); display: inline-flex; align-items: baseline; gap: 6px; }
+.neoXp .rank .tag { font-style: normal; font-size: 9px; font-weight: 800; letter-spacing: .14em; color: var(--muted); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
 .neoXp .pts { color: var(--muted); }
 .neoXp .track { height: 8px; border-radius: var(--pill); background: rgba(255,255,255,.08); overflow: hidden; border: 1px solid var(--line); }
 .neoXp .fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--acc), var(--acc-2)); box-shadow: 0 0 12px color-mix(in srgb, var(--acc), transparent 40%); transition: width .4s ease; }
@@ -633,6 +634,11 @@
 .neoTut .ic { font-size: 44px; margin: 8px 0; }
 .neoTut h2 { font-size: 21px; margin: 4px 0 10px; }
 .neoTut .body { color: var(--muted); font-size: 14px; line-height: 1.6; min-height: 70px; }
+.tutRanks { display: grid; gap: 5px; margin: 4px 0 2px; padding: 0; text-align: left; }
+.tutRanks li { display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 9px; background: var(--card); border: 1px solid var(--line); }
+.tutRanks .lv { width: 18px; height: 18px; flex: none; display: grid; place-items: center; font-size: 10px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); border-radius: 6px; }
+.tutRanks b { flex: 1; font-size: 12.5px; letter-spacing: .08em; color: var(--acc); text-align: left; }
+.tutRanks small { font-size: 11px; color: var(--muted); }
 .neoTut .dots { display: flex; gap: 6px; justify-content: center; margin: 14px 0; }
 .neoTut .dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
 .neoTut .dots span.on { background: var(--acc); box-shadow: 0 0 8px var(--acc); }
