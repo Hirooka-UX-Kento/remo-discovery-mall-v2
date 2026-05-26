@@ -206,7 +206,7 @@ export default function NeoApp() {
   function warpStore(id) { const s = storeById(id); if (!s) return; setStore(s); setNodeId("entrance"); setProduct(PRODUCTS[0]); setHp((v) => Math.max(20, v - 6)); g.warp(); g.toast(local({ ja: `${s.name} ツインへワープ`, en: `Warped to ${s.name}` }, lang), "ok"); }
 
   const tone = g.tone;
-  const themeClass = `neo tone-${f.theme ? tone : "cyber"}`;
+  const themeClass = `neo tone-${tone || "cyber"}`;
 
   const header = (
     <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} />
@@ -263,7 +263,7 @@ export default function NeoApp() {
           onTrial={() => { setWelcome(false); startTrial(); }} />
       )}
       {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
-      {themePicker && f.theme && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
+      {themePicker && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
       {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
       <Toasts toasts={g.toasts} />
     </div>
@@ -289,12 +289,10 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
         <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
         <button className="neoBtn" onClick={() => g.setLang(g.lang === "ja" ? "en" : "ja")}>{g.lang === "ja" ? "EN" : "日本語"}</button>
-        {f.theme && (
-          <button className="neoThemeBtn" onClick={onTheme} title={g.lang === "ja" ? "テーマを選ぶ" : "Choose theme"}>
-            <span className="sw" />
-            {g.lang === "ja" ? "テーマ" : "Theme"}
-          </button>
-        )}
+        <button className="neoThemeBtn" onClick={onTheme} title={g.lang === "ja" ? "テーマを選ぶ" : "Choose theme"}>
+          <span className="sw" />
+          {g.lang === "ja" ? "テーマ" : "Theme"}
+        </button>
         <button className="neoBtn solid neoCartBtn" onClick={onCart}>🛒 {t.cart}{g.cartCount > 0 && <i>{g.cartCount}</i>}</button>
       </div>
     </header>
