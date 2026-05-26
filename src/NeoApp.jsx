@@ -54,11 +54,11 @@ function writeSaveFor(storeId, nodeId) {
 
 const T = {
   ja: {
-    eyebrow: "新感覚リモートEC · ANIME GOODS", sub: "全国のアニメグッズ店舗を、自宅から自由に“回って”買える新感覚のEC。ロボットを遠隔操作して店内を探索しよう。",
+    eyebrow: "DIVE！店舗ロボに憑依する新感覚EC · ANIME GOODS", sub: "全国のアニメグッズ店舗のロボットに“憑依（DIVE）”して、自宅から店内を歩き回って買える新感覚EC。さあ、憑依しよう。DIVE！",
     map: "MAP", sugoroku: "すごろく", collection: "図鑑", openStore: "店舗を見る", back: "← 地図へ", twin: "ツインスキャン",
     recommended: "おすすめ", limited: "限定", popular: "人気", request: "購入リクエスト", reqEmpty: "リクエストはまだありません",
-    possessTitle: "ロボットに憑依（DIVE）", price: "¥1,500 / 10分", possess: "⚡ DIVEして探索（外部Grid）",
-    trial: "お試しDIVE（無料・アプリ内）", merit1: "EC非掲載の限定棚に出会える", merit2: "他Hunterの探索ログ", merit3: "スタッフ確認の購入リクエスト",
+    possessTitle: "ロボットに憑依する！（DIVE）", price: "¥1,500 / 10分", possess: "⚡ 今すぐ憑依する！ DIVE（外部Grid）",
+    trial: "お試し憑依DIVE（無料・アプリ内）", merit1: "EC非掲載の限定棚に出会える", merit2: "他Hunterの探索ログ", merit3: "スタッフ確認の購入リクエスト",
     sync: "GRID 同期中", scan: "棚QRをスキャン", scanned: "スキャン済み", forward: "前進", left: "左45°", right: "右45°", exit: "DIVE終了",
     floor: "店内MAP", shelf: "棚", stock: "在庫", treasure: "レアをさがす", missions: "クエスト", leaderboard: "Hunterランキング", you: "YOU",
     claim: "受取", claimed: "受取済", cart: "カート", total: "合計", checkout: "購入を確定", empty: "カートは空です",
@@ -69,7 +69,7 @@ const T = {
     heightLabel: "カメラの高さ", liftUp: "目線を上げる（高い棚を見る）", liftDown: "目線を下げる（低い棚を見る）", goLabel: "移動先", dowse: "レア反応",
     gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
-    gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
+    gateExplore: "憑依してDIVE！", gateExploreDesc: "今すぐ憑依（DIVE）！ ロボットに乗り移って360°店内を歩き、レアやお宝を発見。",
     gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
     svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
     itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る",
@@ -84,11 +84,11 @@ const T = {
     prefStoreTheme: "店舗ごとにテーマ自動切替", prefStoreThemeDesc: "店舗を移動するとトンマナ・BGMが変化"
   },
   en: {
-    eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
+    eyebrow: "DIVE! POSSESS A STORE ROBOT · ANIME GOODS", sub: "A new kind of EC: DIVE — possess store robots across Japan and walk the aisles from home to shop. Go on, DIVE in!",
     map: "MAP", sugoroku: "Sugoroku", collection: "Collection", openStore: "View store", back: "← Map", twin: "Twin scan",
     recommended: "Recommended", limited: "Limited", popular: "Popular", request: "Purchase request", reqEmpty: "No requests yet",
-    possessTitle: "DIVE into the robot", price: "¥1,500 / 10min", possess: "⚡ DIVE & explore (external Grid)",
-    trial: "Free DIVE (in-app)", merit1: "Hidden shelves not on normal EC", merit2: "Other Hunters' traces", merit3: "Staff-confirmed requests",
+    possessTitle: "Possess the robot — DIVE!", price: "¥1,500 / 10min", possess: "⚡ DIVE in now! (external Grid)",
+    trial: "Free trial DIVE (in-app)", merit1: "Hidden shelves not on normal EC", merit2: "Other Hunters' traces", merit3: "Staff-confirmed requests",
     sync: "GRID SYNC", scan: "Scan shelf QR", scanned: "Scanned", forward: "Forward", left: "Turn L", right: "Turn R", exit: "End DIVE",
     floor: "Floor map", shelf: "Shelf", stock: "Stock", treasure: "Hunt rares", missions: "Quests", leaderboard: "Hunter ranking", you: "YOU",
     claim: "Claim", claimed: "Claimed", cart: "Cart", total: "Total", checkout: "Checkout", empty: "Your cart is empty",
@@ -99,7 +99,7 @@ const T = {
     heightLabel: "Camera height", liftUp: "Raise view (see high shelf)", liftDown: "Lower view (see low shelf)", goLabel: "Go to", dowse: "Rare signal",
     gateLead: "You've arrived", gateTitle: "How do you want to start?",
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
-    gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
+    gateExplore: "DIVE in! Possess", gateExploreDesc: "DIVE now! Possess a robot, walk the 360° aisles and discover rares.",
     gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
     svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
     itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view",
@@ -1088,7 +1088,7 @@ function WelcomeModal({ t, lang, g, f, store, onClose, onPossess, onTrial }) {
           </div>
         </div>
         <div className="wlCta">
-          <button className="neoBtn solid block" onClick={onPossess}>⚡ {lang === "ja" ? "憑依して店内を探索" : "DIVE & explore"}</button>
+          <button className="neoBtn solid block" onClick={onPossess}>⚡ {lang === "ja" ? "今すぐ憑依する！ DIVE" : "DIVE in now!"}</button>
           {f.trial && <button className="neoBtn block" onClick={onTrial}>{t.trial}</button>}
         </div>
       </div>
@@ -1101,7 +1101,7 @@ function TutorialModal({ lang, f, onClose }) {
   const steps = [
     { ic: "🛰️", t: L("Remolink へようこそ", "Welcome to Remolink"), b: L("全国のアニメグッズ店舗を、自宅から自由に“回って”買える新感覚のEC。", "A new EC where you remotely visit anime-goods stores across Japan from home.") },
     { ic: "🗺️", t: L("店舗を選ぶ", "Pick a store"), b: L("地図のピンや店舗カードから、行きたいお店を選びます。", "Choose a store from the map pins or store cards.") },
-    { ic: "⚡", t: L("憑依(DIVE)して探索", "DIVE & explore"), b: L("店内のロボットに憑依し、コントローラーで前後左右・視点・昇降を操作して店内を探索。", "Possess a store robot and pilot it — move, turn, tilt and lift to explore the aisles.") },
+    { ic: "⚡", t: L("憑依する！＝DIVE", "DIVE = Possess!"), b: L("店舗ロボに“憑依（DIVE）”して乗り移り、コントローラーで前後左右・視点・昇降を操作して店内を探索。さあ、DIVE！", "DIVE = possess a store robot. Pilot it — move, turn, tilt and lift to explore the aisles. Go on, DIVE in!") },
     { ic: "⭐", t: L("EXPを貯めて使う", "Earn & spend EXP"), b: L("スキャン・クエスト達成・宝発見などの条件でEXPが増加。EXPはランクアップに加え、TOIOコーナーなどのサービスの対価として消費できます。", "Earn EXP by scanning, clearing quests and finding treasure. EXP raises your rank — and can be spent on services like the TOIO corner.") },
     f.toio && { ic: "🛺", t: L("TOIOミニチュアコーナー", "TOIO miniature corner"), b: L("EXPを消費して、ミニチュア店内をTOIO走行カメラで探索。キーホルダーや缶バッジを選んで景品でもらうか購入できます。", "Spend EXP to drive a TOIO camera through a miniature store — pick keychains or can badges to win as a prize or buy.") },
     f.collection && { ic: "📘", t: L("レアを発見→図鑑", "Discover → Collection"), b: L("棚をスキャンしてレアを発見、図鑑に登録してコンプを目指そう。", "Scan shelves to find rares and complete your Collection.") },
