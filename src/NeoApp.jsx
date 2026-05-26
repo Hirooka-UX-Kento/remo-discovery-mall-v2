@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./neo.css";
 import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
+import * as Sound from "./sound.js";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
   LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
@@ -9,7 +10,7 @@ import {
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
 const UIPREF_KEY = "rdm_ui_prefs_v1";
-const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true };
+const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true };
 function loadUiPrefs() {
   try { return { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) }; } catch { return { ...UIPREF_DEFAULT }; }
 }
@@ -49,7 +50,8 @@ const T = {
     display: "表示設定", displayDesc: "説明・ポップアップの表示/非表示を切り替えます",
     prefHud: "探索の補助HUD", prefHudDesc: "向き表示などの補助情報",
     prefPromos: "広告・イベントバナー", prefPromosDesc: "探索中のプロモ/クーポン告知",
-    prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ"
+    prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ",
+    prefSound: "サウンド（BGM・効果音）", prefSoundDesc: "エリア別BGMとワープ等の効果音"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -77,7 +79,8 @@ const T = {
     display: "Display", displayDesc: "Show or hide explanations & popups",
     prefHud: "Explore HUD", prefHudDesc: "Facing indicator & helpers",
     prefPromos: "Ads / event banners", prefPromosDesc: "Promo & coupon notices while exploring",
-    prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus"
+    prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus",
+    prefSound: "Sound (BGM & SFX)", prefSoundDesc: "Per-area BGM and effects like warp"
   }
 };
 
@@ -133,6 +136,8 @@ export default function NeoApp() {
     setTutorial(false);
     if (dontShowAgain) { try { localStorage.setItem("rdm_tut_optout", "1"); } catch { /* ignore */ } }
   }
+  // keep the audio engine in sync with the sound display-pref
+  useEffect(() => { Sound.setEnabled(uiPrefs.sound); }, [uiPrefs.sound]);
 
   // explore state
   const [nodeId, setNodeId] = useState("entrance");
@@ -160,15 +165,15 @@ export default function NeoApp() {
   function startTrial() {
     setPossessMode("trial"); setHp(78);
     const sp = f.save ? loadSaveFor(store.id) : null;
-    setNodeId(sp?.nodeId || "entrance"); setHeading(0); setScreen("sync");
+    setNodeId(sp?.nodeId || "entrance"); setHeading(0); setScreen("sync"); Sound.sfx("dive");
     if (sp) g.toast(t.resumed, "ok");
   }
   function openToio() { if (g.spendXp(TOIO_COST, lang === "ja" ? "TOIOコーナー" : "TOIO corner")) setScreen("toio"); }
-  function startPossess() { setPossessMode("external"); setScreen("sync"); }
-  function saveAt() { setHp(100); writeSaveFor(store.id, nodeId); g.toast(t.saved, "ok"); }
+  function startPossess() { setPossessMode("external"); setScreen("sync"); Sound.sfx("dive"); }
   function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
-  function scan(p) { setProduct(p); g.scan(p); }
+  function scan(p) { setProduct(p); g.scan(p); Sound.sfx("scan"); }
+  function saveAt() { setHp(100); writeSaveFor(store.id, nodeId); Sound.sfx("save"); g.toast(t.saved, "ok"); }
   function warpStore(id) { const s = storeById(id); if (!s) return; setStore(s); setNodeId("entrance"); setProduct(PRODUCTS[0]); setHp((v) => Math.max(20, v - 6)); g.warp(); g.toast(local({ ja: `${s.name} ツインへワープ`, en: `Warped to ${s.name}` }, lang), "ok"); }
 
   const tone = g.tone;
@@ -270,6 +275,7 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
 // Display-preferences popover: show/hide explanatory UI (defaults all ON).
 function DisplaySettings({ t, prefs, setPref, onClose }) {
   const rows = [
+    { k: "sound", label: t.prefSound, desc: t.prefSoundDesc },
     { k: "hud", label: t.prefHud, desc: t.prefHudDesc },
     { k: "promos", label: t.prefPromos, desc: t.prefPromosDesc },
     { k: "onboarding", label: t.prefOnboard, desc: t.prefOnboardDesc }
@@ -674,6 +680,9 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
   // arriving at a new node (minimap / warp / corridor end) resets the walk + closes popup
   useEffect(() => { setPos(0); setHeading("forward"); setElev(0); setPicked(null); }, [node.id]);
+  // per-area BGM: switch track on area change, stop when leaving exploration
+  useEffect(() => { Sound.playArea(node.id); }, [node.id]);
+  useEffect(() => () => Sound.stopBgm(), []);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -687,10 +696,10 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   const gates = neighbors.slice(0, 4).map((id, i) => ({ id, name: storeById(id).name, dir: DIRS[i] }));
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
-    const res = g.huntRare(store.id);
+    const res = g.huntRare(store.id); Sound.sfx("treasure");
     g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
   }
-  function warp(id) { if (warping) return; setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+  function warp(id) { if (warping) return; Sound.sfx("warp"); setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
   // street-view movement: ▲ forward / ▼ back ; reaching the corridor end walks to the next area
   function fwd() {
     setHeading("forward");
