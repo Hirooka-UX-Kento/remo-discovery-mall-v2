@@ -97,18 +97,26 @@ export function sfx(name) {
   const t = ctx.currentTime + 0.01;
   switch (name) {
     case "dive": {
-      // cinematic: whoosh riser -> soft descending bell cascade -> warm landing chord + impact
-      const src = ctx.createBufferSource(); src.buffer = noiseBuf;
-      const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.1;
-      bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(6000, t + 1.05);
-      const rg = ctx.createGain(); rg.gain.setValueAtTime(0.0001, t); rg.gain.linearRampToValueAtTime(0.1, t + 0.9); rg.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
-      src.connect(bp); bp.connect(rg); rg.connect(bus); src.start(t); src.stop(t + 1.5);
-      const penta = [0, 3, 5, 7, 10, 12, 15, 19];
-      for (let i = 0; i < 10; i++) { const t0 = t + 0.1 + i * 0.085; fmVoice(semi(1567.98, -penta[i % penta.length]), t0, 1.2, { gain: 0.06, ratio: 3.5, index: 110, attack: 0.004, release: 1.0, dest: bus }); }
-      const t1 = t + 1.05;
-      const o = ctx.createOscillator(), g = ctx.createGain(); o.type = "sine"; o.frequency.setValueAtTime(120, t1); o.frequency.exponentialRampToValueAtTime(44, t1 + 0.5);
-      g.gain.setValueAtTime(0.0001, t1); g.gain.linearRampToValueAtTime(0.3, t1 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t1 + 0.8); o.connect(g); g.connect(master); o.start(t1); o.stop(t1 + 0.9);
-      [261.63, 329.63, 392.0, 523.25].forEach((f) => ensembleVoice(f, t1, 1.5, { gain: 0.05, cutoff: 2600, attack: 0.05, release: 1.1, dest: bus, vib: 4 }));
+      // faint nostalgic music-box tones, far away, echoing, gradually reaching the ear
+      const delay = ctx.createDelay(0.8); delay.delayTime.value = 0.34;
+      const fb = ctx.createGain(); fb.gain.value = 0.52;            // echo feedback
+      delay.connect(fb); fb.connect(delay); delay.connect(bus);     // echo -> reverb (distance)
+      const penta = [0, 2, 4, 7, 9, 12, 16, 19, 21];
+      for (let i = 0; i < 15; i++) {
+        const t0 = t + 0.05 + i * 0.135;
+        const f = semi(523.25, penta[(i * 2) % penta.length] - 12 + (i % 3) * 12); // C5-ish, wandering
+        // soft music-box bell (FM, gentle)
+        const car = ctx.createOscillator(); car.type = "sine"; car.frequency.setValueAtTime(f, t0);
+        const mod = ctx.createOscillator(); mod.type = "sine"; mod.frequency.setValueAtTime(f * 3, t0);
+        const mg = ctx.createGain(); mg.gain.setValueAtTime(70, t0); mg.gain.exponentialRampToValueAtTime(1, t0 + 0.4); mod.connect(mg); mg.connect(car.frequency);
+        const g = ctx.createGain();
+        const peak = 0.01 + 0.045 * (i / 15);   // start very faint/far -> swell as it reaches the ear
+        g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.9);
+        car.connect(g); g.connect(delay); g.connect(bus);  // into echo + reverb
+        car.start(t0); mod.start(t0); car.stop(t0 + 1.0); mod.stop(t0 + 1.0);
+      }
+      // a faint warm chord arriving at the end (gentle "landing", still distant)
+      [261.63, 329.63, 392.0].forEach((f) => ensembleVoice(f, t + 1.7, 1.6, { gain: 0.03, cutoff: 1800, attack: 0.5, release: 1.1, dest: bus, vib: 4 }));
       break;
     }
     case "warp": {
@@ -233,21 +241,24 @@ const BGM_FILE = {
   orchestral: "assets/audio/orchestral.mp3",
   chip: "assets/audio/chip.mp3"
 };
+// per-theme track override (takes precedence over the style track)
+const TONE_FILE = { corporate: "assets/audio/corporate.mp3" };
 const BGM_VOL = 0.55;
-let bgmAudio = null;
+let bgmAudio = null, currentTrackFile = null;
+
+function trackFor(tone, sk) { return TONE_FILE[tone] || BGM_FILE[sk] || null; }
 
 function onBgmError() {
-  // track failed -> fall back to procedural for this style
-  if (bgmAudio) { bgmAudio.removeEventListener("error", onBgmError); }
+  if (bgmAudio) bgmAudio.removeEventListener("error", onBgmError);
   bgmAudio = null;
   startProcedural();
 }
-function startFileBgm(sk) {
+function startFileBgm(file) {
   stopScheduler(); // never run procedural + file at once
-  const file = BGM_FILE[sk];
   if (!file) { startProcedural(); return; }
   if (!bgmAudio) { bgmAudio = new Audio(); bgmAudio.loop = true; bgmAudio.preload = "auto"; bgmAudio.addEventListener("error", onBgmError); }
-  if (bgmAudio.getAttribute("data-style") !== sk) { bgmAudio.src = A_BASE + file; bgmAudio.setAttribute("data-style", sk); }
+  if (bgmAudio.getAttribute("data-file") !== file) { bgmAudio.src = A_BASE + file; bgmAudio.setAttribute("data-file", file); }
+  currentTrackFile = file;
   bgmAudio.volume = enabled ? BGM_VOL : 0;
   if (enabled) { const p = bgmAudio.play(); if (p && p.catch) p.catch(() => { /* autoplay blocked; resumes on next gesture */ }); }
 }
@@ -255,11 +266,11 @@ function startFileBgm(sk) {
 // area = node id, tone = current theme id (selects the track/style)
 export function playArea(areaId, tone) {
   const sk = TONE_STYLE[tone] || "electro";
-  const playing = (bgmAudio && !bgmAudio.paused && bgmAudio.getAttribute("data-style") === sk) || (schedTimer && styleKey === sk);
-  currentArea = areaId; toneKey = tone;
-  if (styleKey === sk && playing) return; // same style already going
-  styleKey = sk;
-  startFileBgm(sk);
+  const file = trackFor(tone, sk);
+  currentArea = areaId; toneKey = tone; styleKey = sk;
+  const playing = bgmAudio && !bgmAudio.paused && currentTrackFile === file;
+  if (playing) return; // same track already going
+  startFileBgm(file);
 }
 export function stopBgm() { stopScheduler(); if (bgmAudio) bgmAudio.pause(); currentArea = null; area = null; }
 
@@ -289,7 +300,7 @@ export function setEnabled(v) {
     if (enabled) { const p = bgmAudio.play(); if (p && p.catch) p.catch(() => {}); } else bgmAudio.pause();
   }
   if (enabled) {
-    if (!bgmAudio && currentArea) startFileBgm(styleKey || "electro");
+    if (!bgmAudio && currentArea) startFileBgm(trackFor(toneKey, styleKey || "electro"));
     if (dowseLevel > 0 && !dowseTimer) scheduleDowse();
   } else {
     stopScheduler();
