@@ -213,7 +213,8 @@ function scheduler() {
   while (nextTime < ctx.currentTime + 0.25) { scheduleStep(step16, nextTime); step16++; nextTime += stepDur; }
 }
 function stopScheduler() { if (schedTimer) { clearInterval(schedTimer); schedTimer = null; } }
-function startBgm() {
+// procedural BGM (fallback when the real track can't load)
+function startProcedural() {
   stopScheduler();
   if (!enabled || !currentArea || !ensureCtx()) return;
   area = AREAS[currentArea] || AREAS._default;
@@ -223,14 +224,44 @@ function startBgm() {
   schedTimer = setInterval(scheduler, 25);
 }
 
-// area = node id, tone = current theme id
+// ---- real BGM tracks (FreePD, public domain), one per theme style ----
+const A_BASE = (import.meta.env && import.meta.env.BASE_URL) || "/";
+const BGM_FILE = {
+  electro: "assets/audio/electro.mp3",
+  rock: "assets/audio/rock.mp3",
+  soft: "assets/audio/soft.mp3",
+  orchestral: "assets/audio/orchestral.mp3",
+  chip: "assets/audio/chip.mp3"
+};
+const BGM_VOL = 0.55;
+let bgmAudio = null;
+
+function onBgmError() {
+  // track failed -> fall back to procedural for this style
+  if (bgmAudio) { bgmAudio.removeEventListener("error", onBgmError); }
+  bgmAudio = null;
+  startProcedural();
+}
+function startFileBgm(sk) {
+  stopScheduler(); // never run procedural + file at once
+  const file = BGM_FILE[sk];
+  if (!file) { startProcedural(); return; }
+  if (!bgmAudio) { bgmAudio = new Audio(); bgmAudio.loop = true; bgmAudio.preload = "auto"; bgmAudio.addEventListener("error", onBgmError); }
+  if (bgmAudio.getAttribute("data-style") !== sk) { bgmAudio.src = A_BASE + file; bgmAudio.setAttribute("data-style", sk); }
+  bgmAudio.volume = enabled ? BGM_VOL : 0;
+  if (enabled) { const p = bgmAudio.play(); if (p && p.catch) p.catch(() => { /* autoplay blocked; resumes on next gesture */ }); }
+}
+
+// area = node id, tone = current theme id (selects the track/style)
 export function playArea(areaId, tone) {
   const sk = TONE_STYLE[tone] || "electro";
-  if (currentArea === areaId && styleKey === sk && schedTimer) return;
-  currentArea = areaId; toneKey = tone; styleKey = sk;
-  startBgm();
+  const playing = (bgmAudio && !bgmAudio.paused && bgmAudio.getAttribute("data-style") === sk) || (schedTimer && styleKey === sk);
+  currentArea = areaId; toneKey = tone;
+  if (styleKey === sk && playing) return; // same style already going
+  styleKey = sk;
+  startFileBgm(sk);
 }
-export function stopBgm() { stopScheduler(); currentArea = null; area = null; }
+export function stopBgm() { stopScheduler(); if (bgmAudio) bgmAudio.pause(); currentArea = null; area = null; }
 
 // ---------- Dowsing ----------
 function scheduleDowse() {
@@ -252,8 +283,17 @@ export function dowse(level) {
 export function setEnabled(v) {
   enabled = !!v;
   try { localStorage.setItem("rdm_sound", enabled ? "1" : "0"); } catch { /* ignore */ }
-  if (ctx && master) master.gain.setTargetAtTime(enabled ? 0.5 : 0, ctx.currentTime, 0.05);
-  if (enabled) { startBgm(); if (dowseLevel > 0 && !dowseTimer) scheduleDowse(); }
-  else { stopScheduler(); if (dowseTimer) { clearTimeout(dowseTimer); dowseTimer = null; } }
+  if (ctx && master) master.gain.setTargetAtTime(enabled ? 0.5 : 0, ctx.currentTime, 0.05); // SFX / dowsing / procedural
+  if (bgmAudio) {                                  // real BGM track
+    bgmAudio.volume = enabled ? BGM_VOL : 0;
+    if (enabled) { const p = bgmAudio.play(); if (p && p.catch) p.catch(() => {}); } else bgmAudio.pause();
+  }
+  if (enabled) {
+    if (!bgmAudio && currentArea) startFileBgm(styleKey || "electro");
+    if (dowseLevel > 0 && !dowseTimer) scheduleDowse();
+  } else {
+    stopScheduler();
+    if (dowseTimer) { clearTimeout(dowseTimer); dowseTimer = null; }
+  }
 }
 export function isEnabled() { return enabled; }
