@@ -707,8 +707,8 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
   // arriving at a new node (minimap / warp / corridor end) resets the walk + closes popup
   useEffect(() => { setPos(0); setHeading("forward"); setElev(0); setPicked(null); }, [node.id]);
-  // per-area BGM: switch track on area change, stop when leaving exploration
-  useEffect(() => { Sound.playArea(node.id); }, [node.id]);
+  // per-area BGM whose musical STYLE follows the selected theme; stop when leaving
+  useEffect(() => { Sound.playArea(node.id, g.tone); }, [node.id, g.tone]);
   useEffect(() => () => Sound.stopBgm(), []);
   const shelf = node.products.map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
   const neighbors = f.openWorld ? neighborsOf(store.id) : [];
