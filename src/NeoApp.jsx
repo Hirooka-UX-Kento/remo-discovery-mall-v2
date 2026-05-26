@@ -4,7 +4,7 @@ import { useGame } from "./game.jsx";
 import { useFeatures } from "./features/FeatureContext.jsx";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
 } from "./data.js";
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
@@ -943,6 +943,9 @@ function ToioCorner({ t, lang, g, store, onBack }) {
         <div className="toioScan" />
         <p className="toioHint">{lang === "ja" ? "🚗 小型カメラがミニチュア店内を走行中…好きな商品を選ぼう" : "🚗 The mini camera is roaming the miniature store… pick a favourite"}</p>
       </div>
+      <a className="neoBtn solid block toioConnect" href={TOIO_APP_URL} target="_blank" rel="noopener noreferrer">
+        🛺 {lang === "ja" ? "ミニチュア走行カメラに接続（実機アプリ）" : "Connect to the live miniature camera app"}
+      </a>
       <div className="toioGrid">
         {goods.map((p) => (
           <button key={p.id} className="toioItem" onClick={() => setPicked(p)}>

@@ -205,6 +205,10 @@ export const SUGOROKU = [
 export const EXPLORE_URL =
   "https://appbuilder.remolink.com/titles/01GE42X26S240JHM74R0Q3QE2S/apps/01KS7ZAPQM3H86D1C999A36WB0/builder?page=webUI&pageId=4686dc3a-6d9c-4ce7-9948-0351ce467a76&viewId=1738e0f5-d0a8-4886-9dca-5f9b7831abda&webUiTab=views";
 
+// TOIO miniature corner — external app (RemoLink AppBuilder preview)
+export const TOIO_APP_URL =
+  "https://appbuilder.remolink.com/titles/01KHTS9WDTH304GFV88JESM1E4/apps/01KJRN6QSZPH3450JY9NM23DEA/preview";
+
 export function local(value, lang) {
   if (value == null) return "";
   if (typeof value === "string") return value;
