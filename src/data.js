@@ -55,6 +55,12 @@ export const STREETVIEW = { steps: SV_STEPS, forward: svSeq("forward"), left: sv
 // FF-style save points: nodes where you can save progress & restore energy.
 export const SAVE_NODES = ["entrance", "checkout"];
 
+// per-store theme (トンマナ) — drives visual re-skin + BGM when you move between stores
+const STORE_THEME = {
+  akiba: "cyber", kyoto: "premium", osaka: "game", sapporo: "mint", kanazawa: "corporate",
+  fukuoka: "festival", okinawa: "wonder", nagoya: "night", sendai: "retro", hiroshima: "pink"
+};
+
 export const STORES = [
   ["akiba", "Akiba Hobby Terminal", "東京 / 秋葉原", "Tokyo / Akihabara", "模型・フィギュア・レアカード", "Model kits, figures, rare cards", "夜限定の補充棚", "Night limited restock", 66, 55],
   ["kyoto", "Kyoto Character Gallery", "京都 / 四条", "Kyoto / Shijo", "工芸グッズ・アクリルスタンド", "Craft goods, acrylic stands", "京都限定ホロバッジ", "Kyoto-only holo badge", 46, 57],
@@ -78,7 +84,8 @@ export const STORES = [
   pano: ZONE_PANO,
   hot: i === 0 || i === 3 || i === 7,
   players: 2 + (i % 5),
-  twinScan: 60 + ((i * 7) % 38) // % completeness of the digital twin scan
+  twinScan: 60 + ((i * 7) % 38), // % completeness of the digital twin scan
+  theme: STORE_THEME[id] || "cyber" // each store has its own トンマナ / BGM
 }));
 
 // Open-world: portals between store twins (cross the edge -> neighbour twin)

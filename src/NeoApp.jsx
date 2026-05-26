@@ -10,7 +10,7 @@ import {
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
 const UIPREF_KEY = "rdm_ui_prefs_v1";
-const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true };
+const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true, storeTheme: true };
 function loadUiPrefs() {
   try { return { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) }; } catch { return { ...UIPREF_DEFAULT }; }
 }
@@ -80,7 +80,8 @@ const T = {
     prefHud: "探索の補助HUD", prefHudDesc: "向き表示などの補助情報",
     prefPromos: "広告・イベントバナー", prefPromosDesc: "探索中のプロモ/クーポン告知",
     prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ",
-    prefSound: "サウンド（BGM・効果音）", prefSoundDesc: "エリア別BGMとワープ等の効果音"
+    prefSound: "サウンド（BGM・効果音）", prefSoundDesc: "エリア別BGMとワープ等の効果音",
+    prefStoreTheme: "店舗ごとにテーマ自動切替", prefStoreThemeDesc: "店舗を移動するとトンマナ・BGMが変化"
   },
   en: {
     eyebrow: "A NEW KIND OF REMOTE EC · ANIME GOODS", sub: "A new kind of EC: remotely visit anime-goods stores across Japan and shop from home. Pilot a robot to explore each store.",
@@ -109,7 +110,8 @@ const T = {
     prefHud: "Explore HUD", prefHudDesc: "Facing indicator & helpers",
     prefPromos: "Ads / event banners", prefPromosDesc: "Promo & coupon notices while exploring",
     prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus",
-    prefSound: "Sound (BGM & SFX)", prefSoundDesc: "Per-area BGM and effects like warp"
+    prefSound: "Sound (BGM & SFX)", prefSoundDesc: "Per-area BGM and effects like warp",
+    prefStoreTheme: "Auto theme per store", prefStoreThemeDesc: "Moving between stores changes theme & BGM"
   }
 };
 
@@ -189,6 +191,7 @@ export default function NeoApp() {
 
   function openStore(s) {
     setStore(s); setProduct(PRODUCTS[0]); setScreen("storeGate");
+    if (uiPrefs.storeTheme && s.theme) g.setTone(s.theme);
     try { if (uiPrefs.onboarding && !sessionStorage.getItem("rdm_welcomed")) { sessionStorage.setItem("rdm_welcomed", "1"); setWelcome(true); } } catch { /* ignore */ }
   }
   function startTrial() {
@@ -203,7 +206,7 @@ export default function NeoApp() {
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
   function scan(p) { setProduct(p); g.scan(p); Sound.sfx("scan"); }
   function saveAt() { setHp(100); writeSaveFor(store.id, nodeId); Sound.sfx("save"); g.toast(t.saved, "ok"); }
-  function warpStore(id) { const s = storeById(id); if (!s) return; setStore(s); setNodeId("entrance"); setProduct(PRODUCTS[0]); setHp((v) => Math.max(20, v - 6)); g.warp(); g.toast(local({ ja: `${s.name} ツインへワープ`, en: `Warped to ${s.name}` }, lang), "ok"); }
+  function warpStore(id) { const s = storeById(id); if (!s) return; setStore(s); setNodeId("entrance"); setProduct(PRODUCTS[0]); setHp((v) => Math.max(20, v - 6)); if (uiPrefs.storeTheme && s.theme) g.setTone(s.theme); g.warp(); g.toast(local({ ja: `${s.name} ツインへワープ`, en: `Warped to ${s.name}` }, lang), "ok"); }
 
   const tone = g.tone;
   const themeClass = `neo tone-${tone || "cyber"}`;
@@ -303,6 +306,7 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
 function DisplaySettings({ t, prefs, setPref, onClose }) {
   const rows = [
     { k: "sound", label: t.prefSound, desc: t.prefSoundDesc },
+    { k: "storeTheme", label: t.prefStoreTheme, desc: t.prefStoreThemeDesc },
     { k: "hud", label: t.prefHud, desc: t.prefHudDesc },
     { k: "promos", label: t.prefPromos, desc: t.prefPromosDesc },
     { k: "onboarding", label: t.prefOnboard, desc: t.prefOnboardDesc }

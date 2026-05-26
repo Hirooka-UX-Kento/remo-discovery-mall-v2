@@ -279,10 +279,16 @@ function scheduleDowse() {
   dowseTimer = null;
   if (!enabled || dowseLevel <= 0 || !ctx) return;
   const t = ctx.currentTime + 0.01;
-  const freq = 620 + dowseLevel * 820;
-  note(freq, t, 0.07, "square", 0.09);
-  if (dowseLevel > 0.7) note(freq * 1.5, t + 0.05, 0.05, "square", 0.06);
-  dowseTimer = setTimeout(scheduleDowse, Math.round(920 - dowseLevel * 780));
+  // mechanical scanner click (Geiger/metal-detector-like): short resonant noise burst + metallic tick
+  const src = ctx.createBufferSource(); src.buffer = noiseBuf;
+  const bpf = ctx.createBiquadFilter(); bpf.type = "bandpass"; bpf.Q.value = 9; bpf.frequency.setValueAtTime(1700 + dowseLevel * 2600, t);
+  const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.13 + dowseLevel * 0.1, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+  src.connect(bpf); bpf.connect(g); g.connect(master); src.start(t); src.stop(t + 0.06);
+  // short metallic ring on top (resonant), brighter when close
+  const o = ctx.createOscillator(); o.type = "square"; o.frequency.setValueAtTime(1500 + dowseLevel * 1500, t);
+  const og = ctx.createGain(); og.gain.setValueAtTime(0.0001, t); og.gain.linearRampToValueAtTime(0.05 + dowseLevel * 0.05, t + 0.002); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+  o.connect(og); og.connect(master); o.start(t); o.stop(t + 0.04);
+  dowseTimer = setTimeout(scheduleDowse, Math.round(900 - dowseLevel * 760));
 }
 export function dowse(level) {
   const lv = Math.max(0, Math.min(1, level || 0));
