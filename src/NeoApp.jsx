@@ -16,6 +16,35 @@ function loadUiPrefs() {
 }
 function saveUiPrefs(p) { try { localStorage.setItem(UIPREF_KEY, JSON.stringify(p)); } catch { /* ignore */ } }
 
+// --- node graph distance (for rare "dowsing" proximity) ---
+const NODE_ADJ = (() => {
+  const adj = {};
+  NODES.forEach((n) => {
+    adj[n.id] = adj[n.id] || new Set();
+    n.next.forEach((m) => { adj[n.id].add(m); (adj[m] = adj[m] || new Set()).add(n.id); });
+  });
+  return adj;
+})();
+function nodeDistance(aId, bId) {
+  if (aId === bId) return 0;
+  const seen = new Set([aId]); let frontier = [aId], d = 0;
+  while (frontier.length) {
+    d++; const next = [];
+    for (const x of frontier) for (const y of (NODE_ADJ[x] || [])) {
+      if (y === bId) return d;
+      if (!seen.has(y)) { seen.add(y); next.push(y); }
+    }
+    frontier = next;
+  }
+  return 99;
+}
+const NODE_MAX_DIST = 3;
+// deterministic "hidden rare" node per store (varies by store)
+function rareNodeFor(storeId) {
+  let h = 0; for (const c of String(storeId)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return NODES[h % NODES.length].id;
+}
+
 // FF-style save point persistence (per store).
 const SAVE_KEY = "rdm_savept";
 function loadSaveFor(storeId) { try { return (JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"))[storeId] || null; } catch { return null; } }
@@ -37,7 +66,7 @@ const T = {
     collTitle: "コレクション図鑑", complete: "コンプ率", undiscovered: "未発見", hintAt: "取扱店舗", getRare: "GET!",
     fwd: "前進", bwd: "後退", turnL: "左を向く", turnR: "右を向く", tiltUp: "上を見る", tiltDn: "下を見る",
     up: "上昇", down: "下降", move: "移動", look: "視点", lift: "昇降", toStore: "店舗へ移動",
-    heightLabel: "カメラの高さ", liftUp: "目線を上げる（高い棚を見る）", liftDown: "目線を下げる（低い棚を見る）", goLabel: "移動先",
+    heightLabel: "カメラの高さ", liftUp: "目線を上げる（高い棚を見る）", liftDown: "目線を下げる（低い棚を見る）", goLabel: "移動先", dowse: "レア反応",
     gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
     gateExplore: "店内を探索する", gateExploreDesc: "ロボットに憑依して360°店内を歩き、レアやお宝を発見。",
@@ -66,7 +95,7 @@ const T = {
     collTitle: "Collection", complete: "Complete", undiscovered: "Undiscovered", hintAt: "Sold at", getRare: "GET!",
     fwd: "Fwd", bwd: "Back", turnL: "Look L", turnR: "Look R", tiltUp: "Tilt up", tiltDn: "Tilt down",
     up: "Up", down: "Down", move: "Move", look: "View", lift: "Lift", toStore: "Move to store",
-    heightLabel: "Camera height", liftUp: "Raise view (see high shelf)", liftDown: "Lower view (see low shelf)", goLabel: "Go to",
+    heightLabel: "Camera height", liftUp: "Raise view (see high shelf)", liftDown: "Lower view (see low shelf)", goLabel: "Go to", dowse: "Rare signal",
     gateLead: "You've arrived", gateTitle: "How do you want to start?",
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
     gateExplore: "Explore the store", gateExploreDesc: "DIVE into a robot, walk the 360° aisles and discover rares.",
@@ -694,6 +723,14 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   const DIRS = ["up", "right", "down", "left"];
   const DIR_ARROW = { up: "↑", right: "→", down: "↓", left: "←" };
   const gates = neighbors.slice(0, 4).map((id, i) => ({ id, name: storeById(id).name, dir: DIRS[i] }));
+  // rare "dowsing": louder/faster pings the closer you are to the store's hidden rare
+  const rare = f.collection ? rareByStore(store.id) : null;
+  const rareGot = rare ? g.collection.includes(rare.id) : true;
+  const dowseLvl = (rare && !rareGot)
+    ? (() => { const d = nodeDistance(node.id, rareNodeFor(store.id)); return d === 0 ? 0.72 + 0.28 * (pos / Math.max(1, last)) : Math.max(0.08, 1 - d / (NODE_MAX_DIST + 1)) * 0.6; })()
+    : 0;
+  useEffect(() => { Sound.dowse(dowseLvl); }, [dowseLvl]);
+  useEffect(() => () => Sound.dowse(0), []);
   function hunt() {
     if (Math.random() > 0.55) { g.toast(local({ ja: "何も無かった…", en: "Nothing here…" }, lang)); return; }
     const res = g.huntRare(store.id); Sound.sfx("treasure");
@@ -799,6 +836,14 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
         </div>
 
         <div className="neoMovePad">
+          {/* rare-dowsing signal meter (sound + visual) */}
+          {prefs.hud && dowseLvl > 0 && (
+            <div className={"neoDowse" + (dowseLvl > 0.7 ? " hot" : "")}>
+              <span className="ic">📡</span>
+              <span className="bars">{[0, 1, 2, 3, 4].map((b) => <i key={b} className={dowseLvl * 5 > b ? "on" : ""} />)}</span>
+              <small>{t.dowse}</small>
+            </div>
+          )}
           {/* facing indicator: makes left/right shelf-peeking obvious */}
           {prefs.hud && (
             <div className={"neoFacing face-" + heading}>

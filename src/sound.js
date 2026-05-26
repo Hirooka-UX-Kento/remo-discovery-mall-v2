@@ -127,11 +127,34 @@ export function playArea(key) {
 
 export function stopBgm() { clearTimer(); currentArea = null; }
 
+// ---------- Dowsing pings (proximity to a hidden rare) ----------
+// level 0 = off, 1 = right on top of it. Closer = faster + higher pings.
+let dowseTimer = null;
+let dowseLevel = 0;
+function scheduleDowse() {
+  dowseTimer = null;
+  if (!enabled || dowseLevel <= 0 || !ctx) return;
+  const t = ctx.currentTime + 0.01;
+  const freq = 620 + dowseLevel * 820;          // 620Hz far -> ~1440Hz near
+  note(freq, t, 0.07, "square", 0.09);
+  if (dowseLevel > 0.7) note(freq * 1.5, t + 0.05, 0.05, "square", 0.06); // double-blip when very close
+  const interval = Math.round(920 - dowseLevel * 780); // 920ms far -> ~140ms near
+  dowseTimer = setTimeout(scheduleDowse, interval);
+}
+export function dowse(level) {
+  const lv = Math.max(0, Math.min(1, level || 0));
+  dowseLevel = lv;
+  if (!enabled || lv <= 0) { if (dowseTimer) { clearTimeout(dowseTimer); dowseTimer = null; } return; }
+  if (!ensureCtx()) return;
+  if (!dowseTimer) scheduleDowse();
+}
+
 export function setEnabled(v) {
   enabled = !!v;
   try { localStorage.setItem("rdm_sound", enabled ? "1" : "0"); } catch { /* ignore */ }
   if (ctx && master) master.gain.setTargetAtTime(enabled ? 0.6 : 0, ctx.currentTime, 0.05);
-  if (enabled) startBgm(); else clearTimer();
+  if (enabled) { startBgm(); if (dowseLevel > 0 && !dowseTimer) scheduleDowse(); }
+  else { clearTimer(); if (dowseTimer) { clearTimeout(dowseTimer); dowseTimer = null; } }
 }
 
 export function isEnabled() { return enabled; }
