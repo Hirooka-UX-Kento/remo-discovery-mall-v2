@@ -55,7 +55,7 @@ function writeSaveFor(storeId, nodeId) {
 const T = {
   ja: {
     eyebrow: "DIVE！店舗ロボに憑依する新感覚EC · ANIME GOODS", sub: "全国のアニメグッズ店舗のロボットに“憑依（DIVE）”して、自宅から店内を歩き回って買える新感覚EC。さあ、憑依しよう。DIVE！",
-    map: "MAP", sugoroku: "すごろく", collection: "図鑑", openStore: "店舗を見る", back: "← 地図へ", twin: "ツインスキャン",
+    map: "MAP", sugoroku: "すごろく", collection: "図鑑", openStore: "店舗を見る", back: "← トップ（地図）へ", twin: "ツインスキャン",
     recommended: "おすすめ", limited: "限定", popular: "人気", request: "購入リクエスト", reqEmpty: "リクエストはまだありません",
     possessTitle: "ロボットに憑依する！（DIVE）", price: "¥1,500 / 10分", possess: "⚡ 今すぐ憑依する！ DIVE（外部Grid）",
     trial: "お試し憑依DIVE（無料・アプリ内）", merit1: "EC非掲載の限定棚に出会える", merit2: "他Hunterの探索ログ", merit3: "スタッフ確認の購入リクエスト",
@@ -70,7 +70,7 @@ const T = {
     gateLead: "店舗に到着しました", gateTitle: "どちらを体験しますか？",
     gateList: "商品一覧を見る", gateListDesc: "棚の商品をすぐにチェックして購入リクエスト。",
     gateExplore: "憑依してDIVE！", gateExploreDesc: "今すぐ憑依（DIVE）！ ロボットに乗り移って360°店内を歩き、レアやお宝を発見。",
-    gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
+    gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ", gateListLink: "商品一覧はこちら（通常のEC購入）",
     svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
     itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップ＝キャプチャ／長押し＝情報", captured: "キャプチャ完了",
     addCart: "カートに入れる", addedCart: "カートに追加しました",
@@ -85,7 +85,7 @@ const T = {
   },
   en: {
     eyebrow: "DIVE! POSSESS A STORE ROBOT · ANIME GOODS", sub: "A new kind of EC: DIVE — possess store robots across Japan and walk the aisles from home to shop. Go on, DIVE in!",
-    map: "MAP", sugoroku: "Sugoroku", collection: "Collection", openStore: "View store", back: "← Map", twin: "Twin scan",
+    map: "MAP", sugoroku: "Sugoroku", collection: "Collection", openStore: "View store", back: "← Top (map)", twin: "Twin scan",
     recommended: "Recommended", limited: "Limited", popular: "Popular", request: "Purchase request", reqEmpty: "No requests yet",
     possessTitle: "Possess the robot — DIVE!", price: "¥1,500 / 10min", possess: "⚡ DIVE in now! (external Grid)",
     trial: "Free trial DIVE (in-app)", merit1: "Hidden shelves not on normal EC", merit2: "Other Hunters' traces", merit3: "Staff-confirmed requests",
@@ -100,7 +100,7 @@ const T = {
     gateLead: "You've arrived", gateTitle: "How do you want to start?",
     gateList: "Browse products", gateListDesc: "Check shelf items right away and send purchase requests.",
     gateExplore: "DIVE in! Possess", gateExploreDesc: "DIVE now! Possess a robot, walk the 360° aisles and discover rares.",
-    gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
+    gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick", gateListLink: "Browse the product list (normal EC)",
     svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
     itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap = capture / Hold = info", captured: "Captured",
     addCart: "Add to cart", addedCart: "Added to cart",
@@ -212,7 +212,7 @@ export default function NeoApp() {
   const themeClass = `neo tone-${tone || "cyber"}`;
 
   const header = (
-    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} />
+    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} onHome={() => setScreen("home")} />
   );
 
   let body;
@@ -273,14 +273,15 @@ export default function NeoApp() {
   );
 }
 
-function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
+function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome }) {
+  const homeHint = g.lang === "ja" ? "トップ（ホーム）へ" : "Back to top (home)";
   return (
     <header className="neoTop">
-      <div className="neoBrand">
+      <button className="neoBrand" onClick={onHome} title={homeHint} aria-label={homeHint}>
         <div className="neoLogo">R</div>
-        <div><b>Remolink Discovery Mall</b><span>Remote · Digital Twin · Japan</span></div>
+        <div><b>Remolink Discovery Mall</b><span>{g.lang === "ja" ? "クリックでトップへ" : "Click for top"}</span></div>
         <span className="neoLivePill"><i />LIVE</span>
-      </div>
+      </button>
       {f.rank && (
         <div className="neoXp" title={g.lang === "ja" ? "あなたのランク（累計EXPで昇格）" : "Your rank (raised by lifetime EXP)"}>
           <div className="row"><span className="rank"><em className="tag">{g.lang === "ja" ? "ランク" : "RANK"}</em>{g.rank.rank.name}</span><span className="pts">{g.xp} XP{g.rank.next ? ` · 次まで ${g.rank.toNext}` : ""}</span></div>
@@ -288,6 +289,7 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay }) {
         </div>
       )}
       <div className="neoActions">
+        <button className="neoIcon home" onClick={onHome} title={homeHint}>🏠</button>
         <button className="neoIcon" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
@@ -519,31 +521,23 @@ function StoreGate({ t, lang, g, f, store, onBack, onList, onExplore }) {
       <section className="gateHero neoPanel">
         <div className="gateMascot">
           <MascotRobot size={150} />
-          <span className="gateBubble">{lang === "ja" ? "ようこそ！どっちにする？" : "Welcome! Which one?"}</span>
+          <span className="gateBubble">{lang === "ja" ? "さあ、憑依しよう！" : "Let's DIVE in!"}</span>
         </div>
         <div className="gateIntro">
           <p className="eyebrow">{t.gateLead} · {local(store.area, lang)}</p>
           <h1>{store.name}</h1>
-          <p className="gateQ">{t.gateTitle}</p>
-          <p className="gateGuide">🤖 {t.gateGuide}</p>
+          <p className="gateQ">{lang === "ja" ? "店舗ロボに憑依して店内を探索しよう。" : "Possess a store robot and explore inside."}</p>
         </div>
       </section>
 
-      <section className="gateChoices">
-        <button className="gateCard list" onClick={onList}>
-          <span className="ic">🛍</span>
-          <b>{t.gateList}</b>
-          <small>{t.gateListDesc}</small>
-          <span className="go">→</span>
-        </button>
-        <button className="gateCard explore" onClick={onExplore}>
-          <span className="badge">{t.recommend}</span>
-          <span className="ic">🤖</span>
-          <b>{t.gateExplore}</b>
-          <small>{t.gateExploreDesc}</small>
-          <span className="go">→</span>
-        </button>
-      </section>
+      {/* primary action: DIVE */}
+      <button className="gateDiveCta" onClick={onExplore}>
+        <span className="badge">{t.recommend}</span>
+        <span className="ic">🤖⚡</span>
+        <b>{t.gateExplore}</b>
+        <small>{t.gateExploreDesc}</small>
+        <span className="go">DIVE →</span>
+      </button>
 
       <section className="gatePromos neoPanel">
         <div className="neoPanelTitle">{t.gatePromo}</div>
@@ -560,6 +554,9 @@ function StoreGate({ t, lang, g, f, store, onBack, onList, onExplore }) {
           ))}
         </div>
       </section>
+
+      {/* secondary, low-key: normal EC product list */}
+      <button className="gateListLink" onClick={onList}>🛍 {t.gateListLink}</button>
     </main>
   );
 }

@@ -116,7 +116,9 @@
   background: color-mix(in srgb, var(--bg), transparent 18%);
   border-bottom: 1px solid var(--line); backdrop-filter: blur(14px);
 }
-.neoBrand { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; }
+.neoBrand { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; text-align: left; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; padding: 4px 8px; border-radius: var(--r); -webkit-appearance: none; appearance: none; }
+.neoBrand:hover { background: color-mix(in srgb, var(--acc), transparent 90%); }
+.neoBrand:hover span { color: var(--acc); }
 .neoLogo {
   width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
   display: grid; place-items: center; font-size: 18px; font-weight: 900; color: var(--on);
@@ -760,6 +762,19 @@
 .gateCard.explore { border-color: color-mix(in srgb, var(--acc-2), transparent 45%); background: linear-gradient(135deg, color-mix(in srgb, var(--acc-2), transparent 88%), var(--card)); }
 .gateCard.explore::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--acc-2), var(--acc), transparent); background-size: 220% 100%; animation: neoFlow 3s linear infinite; }
 .gateCard .badge { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; letter-spacing: .06em; color: var(--on); padding: 4px 10px; border-radius: 999px; background: linear-gradient(110deg, var(--acc), var(--acc-2)); }
+
+/* DIVE-centric store gate: big primary DIVE CTA + subtle product-list link */
+.gateDiveCta { position: relative; display: grid; gap: 8px; width: 100%; text-align: center; padding: 30px 24px 26px; border-radius: var(--r-lg); border: 1px solid var(--acc); background: linear-gradient(135deg, color-mix(in srgb, var(--acc-2), transparent 84%), color-mix(in srgb, var(--acc), transparent 88%), var(--card)); color: var(--text); cursor: pointer; overflow: hidden; box-shadow: 0 0 30px color-mix(in srgb, var(--acc), transparent 70%); transition: transform .15s ease, box-shadow .15s ease; animation: neoBreathe 3s ease-in-out infinite; }
+.gateDiveCta:hover { transform: translateY(-3px); box-shadow: 0 0 40px color-mix(in srgb, var(--acc), transparent 55%); }
+.gateDiveCta::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--acc-2), var(--acc), transparent); background-size: 220% 100%; animation: neoFlow 2.8s linear infinite; }
+.gateDiveCta .ic { font-size: 46px; }
+.gateDiveCta b { font-size: clamp(22px, 4vw, 30px); letter-spacing: .02em; text-shadow: 0 0 22px color-mix(in srgb, var(--acc), transparent 55%); }
+.gateDiveCta small { font-size: 13px; color: var(--text); opacity: .85; max-width: 32em; margin: 0 auto; line-height: 1.6; }
+.gateDiveCta .go { margin-top: 8px; font-size: 15px; font-weight: 900; letter-spacing: .14em; color: var(--on); background: linear-gradient(110deg, var(--acc), var(--acc-2)); border-radius: 999px; padding: 9px 22px; justify-self: center; }
+.gateDiveCta .badge { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 900; letter-spacing: .06em; color: var(--on); padding: 4px 10px; border-radius: 999px; background: linear-gradient(110deg, var(--acc), var(--acc-2)); }
+
+.gateListLink { display: block; margin: 4px auto 0; padding: 10px 16px; border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.gateListLink:hover { color: var(--acc); }
 
 .gatePromos { padding: 18px clamp(14px,3vw,24px); }
 .promoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 12px; margin-top: 12px; }
