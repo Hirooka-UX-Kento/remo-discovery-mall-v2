@@ -10,9 +10,14 @@ import {
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
 const UIPREF_KEY = "rdm_ui_prefs_v1";
-const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true, storeTheme: true };
+const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true, storeTheme: false };
 function loadUiPrefs() {
-  try { return { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) }; } catch { return { ...UIPREF_DEFAULT }; }
+  try {
+    const prefs = { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) };
+    // one-time migration: store auto-theme is now opt-in (default off) — turn it off for existing users
+    if (!localStorage.getItem("rdm_pref_mig1")) { prefs.storeTheme = false; localStorage.setItem(UIPREF_KEY, JSON.stringify(prefs)); localStorage.setItem("rdm_pref_mig1", "1"); }
+    return prefs;
+  } catch { return { ...UIPREF_DEFAULT }; }
 }
 function saveUiPrefs(p) { try { localStorage.setItem(UIPREF_KEY, JSON.stringify(p)); } catch { /* ignore */ } }
 
