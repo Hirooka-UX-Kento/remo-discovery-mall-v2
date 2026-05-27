@@ -8,6 +8,7 @@ const ZONE_AISLE = asset("assets/generated/zones/robot-store-aisle.png");
 const ZONE_PANO = asset("assets/generated/zones/store-panorama-360.png");
 export const TRANSFER_IMAGE = asset("assets/generated/possession-transfer.png");
 export const DIVE_VIDEO = asset("assets/dive.mp4"); // 憑依（DIVE）演出ムービー
+export const HERO_IMAGE = asset("assets/hero-city.jpg"); // トップのヒーロー背景
 const PRODUCT_FALLBACK = asset("assets/generated/product-premium-model-kit.png");
 const PRODUCT_IMG = {
   "model-kit": "model-kit", acrylic: "acrylic", "card-pack": "card-pack", "holo-badge": "holo-badge",

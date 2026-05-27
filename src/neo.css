@@ -181,7 +181,12 @@
    Home
    ===================================================================== */
 .neoHome { max-width: 1280px; margin: 0 auto; padding: clamp(20px,3vw,40px) clamp(14px,3vw,30px) 60px; }
-.neoHero { margin-bottom: 26px; }
+.neoHero { position: relative; margin-bottom: 26px; padding: clamp(24px, 4vw, 48px); border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); }
+.neoHero > * { position: relative; z-index: 1; }
+.neoHeroBg { position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; }
+.neoHeroBg::after { content: ""; position: absolute; inset: 0; background:
+  linear-gradient(100deg, color-mix(in srgb, var(--bg), transparent 6%) 6%, color-mix(in srgb, var(--bg), transparent 40%) 46%, transparent 78%),
+  linear-gradient(0deg, color-mix(in srgb, var(--bg), transparent 20%), transparent 60%); }
 .neoTitle { display: flex; flex-direction: column; font-weight: 900; letter-spacing: -.04em; line-height: .82; margin: 8px 0 14px; }
 .neoTitle .lead { font-size: clamp(20px,2.6vw,34px); letter-spacing: .12em; text-transform: uppercase; background: linear-gradient(100deg, var(--acc), var(--acc-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .neoTitle .main { font-size: clamp(48px,8vw,108px); text-shadow: 0 0 40px color-mix(in srgb, var(--acc), transparent 70%); }

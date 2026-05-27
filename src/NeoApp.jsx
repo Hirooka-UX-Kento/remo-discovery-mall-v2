@@ -5,7 +5,7 @@ import { useFeatures } from "./features/FeatureContext.jsx";
 import * as Sound from "./sound.js";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, DIVE_VIDEO, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, DIVE_VIDEO, HERO_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
 } from "./data.js";
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
@@ -350,6 +350,7 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
   return (
     <main className="neoHome">
       <section className="neoHero">
+        <div className="neoHeroBg" style={{ backgroundImage: `url(${HERO_IMAGE})` }} aria-hidden="true" />
         <p className="eyebrow">{t.eyebrow}</p>
         <h1 className="neoTitle"><span className="lead">Remolink</span><span className="main">Discovery Mall</span></h1>
         <p>{t.sub}</p>
