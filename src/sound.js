@@ -97,26 +97,43 @@ export function sfx(name) {
   const t = ctx.currentTime + 0.01;
   switch (name) {
     case "dive": {
-      // faint nostalgic music-box tones, far away, echoing, gradually reaching the ear
-      const delay = ctx.createDelay(0.8); delay.delayTime.value = 0.34;
-      const fb = ctx.createGain(); fb.gain.value = 0.52;            // echo feedback
-      delay.connect(fb); fb.connect(delay); delay.connect(bus);     // echo -> reverb (distance)
-      const penta = [0, 2, 4, 7, 9, 12, 16, 19, 21];
-      for (let i = 0; i < 15; i++) {
-        const t0 = t + 0.05 + i * 0.135;
-        const f = semi(523.25, penta[(i * 2) % penta.length] - 12 + (i % 3) * 12); // C5-ish, wandering
-        // soft music-box bell (FM, gentle)
-        const car = ctx.createOscillator(); car.type = "sine"; car.frequency.setValueAtTime(f, t0);
-        const mod = ctx.createOscillator(); mod.type = "sine"; mod.frequency.setValueAtTime(f * 3, t0);
-        const mg = ctx.createGain(); mg.gain.setValueAtTime(70, t0); mg.gain.exponentialRampToValueAtTime(1, t0 + 0.4); mod.connect(mg); mg.connect(car.frequency);
-        const g = ctx.createGain();
-        const peak = 0.01 + 0.045 * (i / 15);   // start very faint/far -> swell as it reaches the ear
-        g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(peak, t0 + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.9);
-        car.connect(g); g.connect(delay); g.connect(bus);  // into echo + reverb
-        car.start(t0); mod.start(t0); car.stop(t0 + 1.0); mod.stop(t0 + 1.0);
+      // rushing through a tunnel — wind-cutting whoosh that lasts the possession sequence
+      const dur = 8.0;
+      // main wind: looping noise through a sweeping resonant bandpass + lowpass
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+      const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.5;
+      bp.frequency.setValueAtTime(260, t);
+      bp.frequency.linearRampToValueAtTime(1900, t + 2.2);
+      bp.frequency.linearRampToValueAtTime(1100, t + 4.6);
+      bp.frequency.linearRampToValueAtTime(2800, t + 7.0);
+      const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 5400;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.32, t + 0.5);
+      g.gain.setValueAtTime(0.32, t + dur - 1.3);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(master);
+      // gusting tremolo (LFO speeds up = accelerating)
+      const lfo = ctx.createOscillator(); lfo.type = "sine"; lfo.frequency.setValueAtTime(0.8, t); lfo.frequency.linearRampToValueAtTime(3.6, t + dur);
+      const lfg = ctx.createGain(); lfg.gain.value = 0.12; lfo.connect(lfg); lfg.connect(g.gain);
+      src.start(t); src.stop(t + dur + 0.1); lfo.start(t); lfo.stop(t + dur + 0.1);
+      // deep tunnel rumble
+      const sub = ctx.createOscillator(); sub.type = "sine";
+      sub.frequency.setValueAtTime(40, t); sub.frequency.linearRampToValueAtTime(88, t + dur * 0.6); sub.frequency.linearRampToValueAtTime(54, t + dur);
+      const sg = ctx.createGain(); sg.gain.setValueAtTime(0.0001, t); sg.gain.linearRampToValueAtTime(0.18, t + 1); sg.gain.setValueAtTime(0.18, t + dur - 1.5); sg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      sub.connect(sg); sg.connect(master); sub.start(t); sub.stop(t + dur + 0.1);
+      // "風を切る" cuts: short high swishes, panned alternately (doppler-ish)
+      for (let i = 0; i < 7; i++) {
+        const t0 = t + 0.9 + i * 0.95;
+        const s2 = ctx.createBufferSource(); s2.buffer = noiseBuf;
+        const f2 = ctx.createBiquadFilter(); f2.type = "bandpass"; f2.Q.value = 2.6;
+        f2.frequency.setValueAtTime(1100, t0); f2.frequency.exponentialRampToValueAtTime(4600, t0 + 0.34);
+        const g2 = ctx.createGain(); g2.gain.setValueAtTime(0.0001, t0); g2.gain.linearRampToValueAtTime(0.15, t0 + 0.05); g2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42);
+        s2.connect(f2); f2.connect(g2);
+        if (ctx.createStereoPanner) { const pan = ctx.createStereoPanner(); pan.pan.value = i % 2 ? 0.65 : -0.65; g2.connect(pan); pan.connect(master); }
+        else g2.connect(master);
+        s2.start(t0); s2.stop(t0 + 0.45);
       }
-      // a faint warm chord arriving at the end (gentle "landing", still distant)
-      [261.63, 329.63, 392.0].forEach((f) => ensembleVoice(f, t + 1.7, 1.6, { gain: 0.03, cutoff: 1800, attack: 0.5, release: 1.1, dest: bus, vib: 4 }));
       break;
     }
     case "warp": {

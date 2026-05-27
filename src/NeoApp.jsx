@@ -646,7 +646,6 @@ function Shop({ t, lang, g, f, store, product, reqlog, toioCost, onBack, onProdu
 
 function Sync({ t, store, video, onComplete }) {
   const vref = useRef(null);
-  const warpedRef = useRef(false);
   useEffect(() => {
     const v = vref.current;
     if (!v) { return undefined; }
@@ -654,14 +653,12 @@ function Sync({ t, store, video, onComplete }) {
     const onEnd = () => onComplete && onComplete();
     const onErr = () => onComplete && onComplete(); // if the video fails, proceed anyway
     const onMeta = () => { if (v.duration && isFinite(v.duration)) { clearTimeout(metaTimer); metaTimer = setTimeout(onEnd, (v.duration + 0.6) * 1000); } }; // ends ~at clip length even if 'ended' is flaky
-    const onTime = () => { if (!warpedRef.current && v.duration && v.currentTime > v.duration - 1.5) { warpedRef.current = true; Sound.sfx("warp"); } };
     v.addEventListener("ended", onEnd);
     v.addEventListener("error", onErr);
     v.addEventListener("loadedmetadata", onMeta);
-    v.addEventListener("timeupdate", onTime);
     if (v.readyState >= 1) onMeta();
     const p = v.play(); if (p && p.catch) p.catch(() => { /* muted autoplay should be allowed; fallback timer covers edge cases */ });
-    return () => { clearTimeout(metaTimer); v.removeEventListener("ended", onEnd); v.removeEventListener("error", onErr); v.removeEventListener("loadedmetadata", onMeta); v.removeEventListener("timeupdate", onTime); };
+    return () => { clearTimeout(metaTimer); v.removeEventListener("ended", onEnd); v.removeEventListener("error", onErr); v.removeEventListener("loadedmetadata", onMeta); };
   }, []);
   return (
     <div className="neoSync">
