@@ -521,6 +521,9 @@
    Possession tunnel
    ===================================================================== */
 .neoSync { position: relative; min-height: 100vh; overflow: hidden; display: grid; place-items: center; text-align: center; color: #fff; background: radial-gradient(circle at 50% 50%, #102046, #05070f 70%); perspective: 520px; }
+.neoSyncVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.neoSync .neoSyncVideo ~ .neoSyncCore { z-index: 2; text-shadow: 0 2px 18px #000, 0 0 30px rgba(0,0,0,.6); }
+.neoSync .neoSyncVideo ~ .neoSyncCore::before { content: ""; position: absolute; inset: -40px -60px; background: radial-gradient(60% 60% at 50% 50%, rgba(4,8,16,.55), transparent 70%); z-index: -1; }
 .neoSync img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .12; }
 .neoTunnel { position: absolute; inset: 0; transform-style: preserve-3d; }
 .neoTunnel span { position: absolute; left: 50%; top: 50%; width: 70vmax; height: 70vmax; margin: -35vmax 0 0 -35vmax; border-radius: 44%; border: 2px solid color-mix(in srgb, var(--acc), transparent 35%); box-shadow: 0 0 60px color-mix(in srgb, var(--acc), transparent 70%); opacity: 0; animation: neoTunnelZ 1.9s linear infinite; animation-delay: calc(var(--i) * -.211s); }

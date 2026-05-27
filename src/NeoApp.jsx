@@ -5,7 +5,7 @@ import { useFeatures } from "./features/FeatureContext.jsx";
 import * as Sound from "./sound.js";
 import {
   STORES, STORE_LINKS, storeById, neighborsOf, PRODUCTS, NODES, nodeById, HEADINGS,
-  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
+  LEADERBOARD, SUGOROKU, RARES, rareByStore, EXPLORE_URL, TOIO_APP_URL, TRANSFER_IMAGE, DIVE_VIDEO, TONES, EXPLORE_PROMOS, STREETVIEW, SAVE_NODES, RANKS, asset, local
 } from "./data.js";
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
@@ -176,12 +176,17 @@ export default function NeoApp() {
   const [hp, setHp] = useState(78);
   const node = nodeById(nodeId);
 
+  // possession sync completes when the DIVE video ends; a long fallback prevents hangs
+  const syncDoneRef = useRef(false);
+  function finishSync() {
+    if (syncDoneRef.current) return;
+    syncDoneRef.current = true;
+    if (possessMode === "trial") setScreen("explore");
+    else window.location.href = EXPLORE_URL;
+  }
   useEffect(() => {
     if (screen !== "sync") return undefined;
-    const id = setTimeout(() => {
-      if (possessMode === "trial") setScreen("explore");
-      else window.location.href = EXPLORE_URL;
-    }, 2200);
+    const id = setTimeout(finishSync, 12000); // fallback only
     return () => clearTimeout(id);
   }, [screen, possessMode]);
 
@@ -197,11 +202,11 @@ export default function NeoApp() {
   function startTrial() {
     setPossessMode("trial"); setHp(78);
     const sp = f.save ? loadSaveFor(store.id) : null;
-    setNodeId(sp?.nodeId || "entrance"); setHeading(0); setScreen("sync"); Sound.sfx("dive");
+    setNodeId(sp?.nodeId || "entrance"); setHeading(0); syncDoneRef.current = false; setScreen("sync"); Sound.sfx("dive");
     if (sp) g.toast(t.resumed, "ok");
   }
   function openToio() { if (g.spendXp(TOIO_COST, lang === "ja" ? "TOIOコーナー" : "TOIO corner")) setScreen("toio"); }
-  function startPossess() { setPossessMode("external"); setScreen("sync"); Sound.sfx("dive"); }
+  function startPossess() { setPossessMode("external"); syncDoneRef.current = false; setScreen("sync"); Sound.sfx("dive"); }
   function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
   function scan(p) { setProduct(p); g.scan(p); Sound.sfx("scan"); }
@@ -219,7 +224,7 @@ export default function NeoApp() {
   if (screen === "sync") {
     return (
       <div className={themeClass}>
-        <Sync t={t} store={store} />
+        <Sync t={t} store={store} video={DIVE_VIDEO} onComplete={finishSync} />
         <Toasts toasts={g.toasts} />
       </div>
     );
@@ -633,13 +638,35 @@ function Shop({ t, lang, g, f, store, product, reqlog, toioCost, onBack, onProdu
   );
 }
 
-function Sync({ t, store }) {
+function Sync({ t, store, video, onComplete }) {
+  const vref = useRef(null);
+  const warpedRef = useRef(false);
+  useEffect(() => {
+    const v = vref.current;
+    if (!v) { return undefined; }
+    let metaTimer = null;
+    const onEnd = () => onComplete && onComplete();
+    const onErr = () => onComplete && onComplete(); // if the video fails, proceed anyway
+    const onMeta = () => { if (v.duration && isFinite(v.duration)) { clearTimeout(metaTimer); metaTimer = setTimeout(onEnd, (v.duration + 0.6) * 1000); } }; // ends ~at clip length even if 'ended' is flaky
+    const onTime = () => { if (!warpedRef.current && v.duration && v.currentTime > v.duration - 1.5) { warpedRef.current = true; Sound.sfx("warp"); } };
+    v.addEventListener("ended", onEnd);
+    v.addEventListener("error", onErr);
+    v.addEventListener("loadedmetadata", onMeta);
+    v.addEventListener("timeupdate", onTime);
+    if (v.readyState >= 1) onMeta();
+    const p = v.play(); if (p && p.catch) p.catch(() => { /* muted autoplay should be allowed; fallback timer covers edge cases */ });
+    return () => { clearTimeout(metaTimer); v.removeEventListener("ended", onEnd); v.removeEventListener("error", onErr); v.removeEventListener("loadedmetadata", onMeta); v.removeEventListener("timeupdate", onTime); };
+  }, []);
   return (
     <div className="neoSync">
-      <img src={TRANSFER_IMAGE} alt="" />
-      <div className="neoTunnel">{Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ "--i": i }} />)}</div>
+      {video
+        ? <video ref={vref} className="neoSyncVideo" src={video} muted playsInline autoPlay preload="auto" />
+        : (<>
+            <img src={TRANSFER_IMAGE} alt="" />
+            <div className="neoTunnel">{Array.from({ length: 9 }).map((_, i) => <span key={i} style={{ "--i": i }} />)}</div>
+          </>)}
       <div className="neoSpeed" />
-      <div className="neoSyncCore"><span>ROBOT POSSESSION</span><h1>{t.sync}</h1><p>{store.name} · AUTH OK · 360 CAMERA · QR READY</p></div>
+      <div className="neoSyncCore"><span>ROBOT POSSESSION · 憑依 · DIVE</span><h1>{t.sync}</h1><p>{store.name} · AUTH OK · 360 CAMERA · QR READY</p></div>
     </div>
   );
 }
@@ -738,7 +765,7 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
     const res = g.huntRare(store.id); Sound.sfx("treasure");
     g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
   }
-  function warp(id) { if (warping) return; Sound.sfx("warp"); setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+  function warp(id) { if (warping) return; Sound.sfx("warp"); setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 2600); }
   // capture (= photograph/scan) a product: camera-flash animation + register the scan
   function capture(p) {
     setPicked(null); setCapturing(p); onScan(p);
