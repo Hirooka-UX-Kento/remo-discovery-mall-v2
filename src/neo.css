@@ -293,7 +293,7 @@
    ===================================================================== */
 .neoEx { position: relative; min-height: 100vh; overflow: hidden; color: #eaf6ff; background: #04070f; }
 .neoFeed { position: absolute; inset: 0; background-size: cover; background-position: center; transition: background-position .4s ease; animation: neoStepIn .45s ease; }
-.neoFeedImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; user-select: none; -webkit-user-drag: none; animation: neoStepIn .4s ease; will-change: transform; transition: object-position .35s ease; }
+.neoFeedImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; user-select: none; -webkit-user-drag: none; animation: neoStepIn .4s ease; will-change: transform; transition: transform .35s ease; }
 @keyframes neoStepIn { from { opacity: .4; transform: scale(1.06); } to { opacity: 1; } }
 /* directional slide makes left/right peeking legible */
 .neoFeedImg.sv-left { animation: svPanLeft .42s ease; }
@@ -385,6 +385,26 @@
 .dockItem img { width: 100%; height: 100%; object-fit: cover; }
 .dockItem.on { border-color: var(--acc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc), transparent 45%); }
 .dockItem .ok { position: absolute; right: 2px; bottom: 2px; font-style: normal; font-size: 10px; font-weight: 900; line-height: 1; color: var(--on); background: var(--acc); border-radius: 5px; padding: 1px 3px; }
+.dockItem .qr { position: absolute; top: 2px; left: 2px; z-index: 1; font-size: 7px; font-weight: 900; letter-spacing: .04em; color: var(--on); background: var(--acc-2); border-radius: 4px; padding: 1px 3px; opacity: .9; }
+.dockItem { touch-action: none; -webkit-tap-highlight-color: transparent; }
+.dockItem:active { border-color: var(--acc-2); box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc-2), transparent 40%); }
+
+/* product "capture" (camera flash + scan reticle) */
+.neoCapture { position: absolute; inset: 0; z-index: 18; display: grid; place-items: center; pointer-events: none; }
+.neoCapture .reticle { position: relative; width: min(240px, 60vw); aspect-ratio: 1; display: grid; place-items: center; animation: capPop .85s ease-out forwards; }
+.neoCapture .reticle img { width: 64%; height: 64%; object-fit: cover; border-radius: 10px; box-shadow: 0 0 30px color-mix(in srgb, var(--acc), transparent 40%); }
+.neoCapture .c { position: absolute; width: 26px; height: 26px; border: 3px solid var(--acc); }
+.neoCapture .c.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.neoCapture .c.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.neoCapture .c.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.neoCapture .c.br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.neoCapture .scanline { position: absolute; left: 6%; right: 6%; height: 2px; background: var(--acc); box-shadow: 0 0 10px var(--acc); animation: capScan .5s linear; }
+.neoCapture b { position: absolute; bottom: -30px; font-size: 14px; font-weight: 900; color: var(--acc); text-shadow: 0 0 10px color-mix(in srgb, var(--acc), transparent 50%); white-space: nowrap; }
+.neoCapture small { position: absolute; bottom: -48px; font-size: 11px; color: var(--text); white-space: nowrap; }
+.neoCapture .flash { position: absolute; inset: 0; background: #fff; animation: capFlash .35s ease-out forwards; }
+@keyframes capPop { 0% { transform: scale(.7); opacity: 0; } 18% { transform: scale(1.04); opacity: 1; } 78% { opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes capScan { from { top: 6%; } to { top: 92%; } }
+@keyframes capFlash { from { opacity: .85; } to { opacity: 0; } }
 
 /* movement pad — right side, large touch targets; D-pad is the conventional cross */
 .neoMovePad { display: flex; flex-direction: column; align-items: center; gap: 8px; }

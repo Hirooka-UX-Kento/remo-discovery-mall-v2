@@ -72,7 +72,7 @@ const T = {
     gateExplore: "憑依してDIVE！", gateExploreDesc: "今すぐ憑依（DIVE）！ ロボットに乗り移って360°店内を歩き、レアやお宝を発見。",
     gatePromo: "探索特典・イベント情報", gateGuide: "案内ロボ「レモ」", recommend: "おすすめ",
     svHint: "▲▼ で前後に進む・◀▶ で左右を向く", svFwd: "前へ", svBack: "戻る",
-    itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップで商品を見る",
+    itemsHere: "この場所の商品", noItems: "この付近に商品はありません", tapItem: "タップ＝キャプチャ／長押し＝情報", captured: "キャプチャ完了",
     addCart: "カートに入れる", addedCart: "カートに追加しました",
     faceFront: "正面", peekLeft: "左の棚を覗く", peekRight: "右の棚を覗く", backToFront: "◀▶で正面に戻る",
     save: "セーブ", savePoint: "セーブポイント", saveMsg: "ここで進行状況をセーブし、エナジーを全回復します。", saveDo: "セーブする", saveClose: "とじる", saved: "セーブしました（エナジー回復）", resumed: "セーブ地点から再開",
@@ -102,7 +102,7 @@ const T = {
     gateExplore: "DIVE in! Possess", gateExploreDesc: "DIVE now! Possess a robot, walk the 360° aisles and discover rares.",
     gatePromo: "Explore perks & events", gateGuide: "Guide bot \"Remo\"", recommend: "Pick",
     svHint: "▲▼ to move · ◀▶ to turn", svFwd: "Forward", svBack: "Back",
-    itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap to view",
+    itemsHere: "Items here", noItems: "No items nearby", tapItem: "Tap = capture / Hold = info", captured: "Captured",
     addCart: "Add to cart", addedCart: "Added to cart",
     faceFront: "Front", peekLeft: "Peek left shelf", peekRight: "Peek right shelf", backToFront: "◀▶ back to front",
     save: "Save", savePoint: "Save Point", saveMsg: "Save your progress here and fully restore energy.", saveDo: "Save", saveClose: "Close", saved: "Saved! Energy restored", resumed: "Resumed from save point",
@@ -707,10 +707,12 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   const [elev, setElev] = useState(0);     // -2..2 camera elevation (up/down only)
   const [picked, setPicked] = useState(null); // product popup (only on tap)
   const [saving, setSaving] = useState(false); // save-point dialog
+  const [capturing, setCapturing] = useState(null); // product being "captured" (camera flash)
+  const lpRef = useRef(null); // long-press tracking for dock items
   const [upsell, setUpsell] = useState(false);
   useEffect(() => { if (f.paidUpgrade && node.id === "limited") setUpsell(true); }, [node.id, f.paidUpgrade]);
   // arriving at a new node (minimap / warp / corridor end) resets the walk + closes popup
-  useEffect(() => { setPos(0); setHeading("forward"); setElev(0); setPicked(null); }, [node.id]);
+  useEffect(() => { setPos(0); setHeading("forward"); setElev(0); setPicked(null); setCapturing(null); }, [node.id]);
   // per-area BGM whose musical STYLE follows the selected theme; stop when leaving
   useEffect(() => { Sound.playArea(node.id, g.tone); }, [node.id, g.tone]);
   useEffect(() => () => Sound.stopBgm(), []);
@@ -719,8 +721,9 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   const last = STREETVIEW.steps - 1;
   const svSrc = (STREETVIEW[heading] || STREETVIEW.forward)[clamp(pos, 0, last)];
-  // camera elevation re-frames the still vertically (up = higher shelves, down = floor)
-  const feedStyle = { objectPosition: `50% ${clamp(50 - elev * 20, 4, 96)}%` };
+  // camera elevation actually pans the view vertically: over-scale the still so there is
+  // vertical headroom, then translate it (up = reveal higher shelves, down = reveal floor)
+  const feedStyle = { transform: `scale(1.22) translateY(${clamp(elev * 4.5, -9, 9)}%)` };
   // neighbour stores shown on the minimap as directional exits (up/right/down/left)
   const DIRS = ["up", "right", "down", "left"];
   const DIR_ARROW = { up: "↑", right: "→", down: "↓", left: "←" };
@@ -739,6 +742,21 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
     g.toast(`${t.getRare} ${local(res.item.name, lang)} [${res.item.rarity}]`, res.isNew ? "ok" : "info");
   }
   function warp(id) { if (warping) return; Sound.sfx("warp"); setWarpTarget(storeById(id)); setWarping(true); setTimeout(() => { onWarp(id); setWarping(false); setWarpTarget(null); }, 1500); }
+  // capture (= photograph/scan) a product: camera-flash animation + register the scan
+  function capture(p) {
+    setPicked(null); setCapturing(p); onScan(p);
+    setTimeout(() => setCapturing((c) => (c && c.id === p.id ? null : c)), 850);
+  }
+  // touch: short tap = capture ; long-press = overlay product info
+  function pressStart(p) {
+    pressCancel();
+    lpRef.current = { id: p.id, long: false, timer: setTimeout(() => { if (lpRef.current) { lpRef.current.long = true; setPicked(p); } }, 420) };
+  }
+  function pressEnd(p) {
+    const s = lpRef.current; if (!s || s.id !== p.id) { pressCancel(); return; }
+    clearTimeout(s.timer); if (!s.long) capture(p); lpRef.current = null;
+  }
+  function pressCancel() { if (lpRef.current) { clearTimeout(lpRef.current.timer); lpRef.current = null; } }
   // street-view movement: ▲ forward / ▼ back ; reaching the corridor end walks to the next area
   function fwd() {
     setHeading("forward");
@@ -821,14 +839,32 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
         </aside>
       )}
 
+      {/* capturing animation (camera flash + scan reticle) */}
+      {capturing && (
+        <div className="neoCapture">
+          <div className="reticle">
+            <img src={capturing.image} alt="" />
+            <span className="c tl" /><span className="c tr" /><span className="c bl" /><span className="c br" />
+            <span className="scanline" />
+            <b>📸 {t.captured} ✓</b>
+            <small>{capturing.name}</small>
+          </div>
+          <div className="flash" />
+        </div>
+      )}
+
       {/* control zone: products dock (left) + movement pad (right) */}
       <div className="neoCtl">
         <div className="neoDock neoGlass">
-          <span className="lbl">{shelf.length ? t.itemsHere : t.noItems}</span>
+          <span className="lbl">{shelf.length ? `${t.itemsHere} · ${t.tapItem}` : t.noItems}</span>
           {shelf.length > 0 && (
             <div className="row">
               {shelf.map((p) => (
-                <button key={p.id} className={"dockItem" + (picked && picked.id === p.id ? " on" : "")} onClick={() => setPicked(p)} title={p.name}>
+                <button key={p.id} className={"dockItem" + (picked && picked.id === p.id ? " on" : "")} title={p.name}
+                  onPointerDown={(e) => { e.preventDefault(); pressStart(p); }} onPointerUp={() => pressEnd(p)}
+                  onPointerLeave={pressCancel} onPointerCancel={pressCancel}
+                  onContextMenu={(e) => e.preventDefault()}>
+                  <span className="qr">QR</span>
                   <img src={p.image} alt="" />
                   {g.scannedIds.includes(p.id) && <i className="ok">✓</i>}
                 </button>
