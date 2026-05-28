@@ -427,13 +427,21 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
         </div>
       </div>
 
-      <div className="neoPanel neoStores" style={{ marginTop: 18 }}>
-        <div className="neoPanelTitle">REGISTERED STORES · {STORES.length}</div>
+      <div className="neoPanel neoStores" style={{ marginTop: 22 }}>
+        <div className="neoStoresHead">
+          <div>
+            <p className="eyebrow">REGISTERED STORES · {STORES.length}</p>
+            <h2>{lang === "ja" ? "登録店舗一覧" : "All registered stores"}</h2>
+          </div>
+          <span className="saleTotal">🔥 {lang === "ja" ? `${STORES.filter((s) => s.hot).length}店舗でセール中！` : `${STORES.filter((s) => s.hot).length} stores ON SALE!`}</span>
+        </div>
         <div className="neoStoresGrid">
           {STORES.map((s) => (
             <button key={s.id} className={"neoStore" + (s.hot ? " hot" : "") + (s.id === store.id ? " active" : "")}
-              onClick={() => setStore(s)} onDoubleClick={() => onOpenStore(s)} onMouseEnter={() => setHover(s.id)} onMouseLeave={() => setHover(null)}>
-              <img src={s.image} alt="" /><i>{s.hot ? "HOT" : "LIVE"}</i>
+              onClick={() => onOpenStore(s)} onMouseEnter={() => setHover(s.id)} onMouseLeave={() => setHover(null)}>
+              <img src={s.image} alt="" />
+              <i>{s.hot ? "🔥 SALE" : "LIVE"}</i>
+              {s.hot && <span className="ribbon">{lang === "ja" ? "今だけ特価" : "LIMITED DEAL"}</span>}
               <b>{s.name}</b><small>{local(s.area, lang)}</small>
             </button>
           ))}

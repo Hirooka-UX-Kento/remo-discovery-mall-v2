@@ -227,15 +227,30 @@
 .neoSelected h2 { font-size: 20px; margin: 2px 0 4px; }
 .neoSelected p { font-size: 12px; color: var(--muted); }
 .neoSelected .twin { margin-top: 8px; font-size: 11px; color: var(--acc); }
-.neoStores { padding: 16px; }
-.neoStoresGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px; max-height: 360px; overflow: auto; }
-.neoStore { position: relative; text-align: left; padding: 0 0 12px; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .14s, border-color .14s; }
-.neoStore:hover, .neoStore.active { transform: translateY(-3px); border-color: var(--acc); }
-.neoStore img { width: 100%; height: 84px; object-fit: cover; }
-.neoStore i { position: absolute; top: 8px; left: 8px; font-style: normal; font-size: 9px; font-weight: 900; letter-spacing: .08em; padding: 3px 8px; border-radius: var(--pill); color: var(--text); background: rgba(6,12,22,.7); }
-.neoStore.hot i { color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
-.neoStore b { display: block; margin: 9px 11px 0; font-size: 12.5px; }
-.neoStore small { display: block; margin: 3px 11px 0; font-size: 11px; color: var(--muted); }
+.neoStores { padding: 20px clamp(16px, 2.4vw, 24px); }
+.neoStoresHead { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.neoStoresHead h2 { font-size: clamp(20px, 2.4vw, 28px); margin: 2px 0 0; letter-spacing: .01em; }
+.neoStoresHead .saleTotal { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 900; padding: 7px 14px; border-radius: 999px; color: var(--on); background: linear-gradient(110deg, #ff3b5c, #ffb020); box-shadow: 0 0 18px color-mix(in srgb, #ff3b5c, transparent 50%); animation: saleHeadPulse 1.6s ease-in-out infinite; }
+@keyframes saleHeadPulse { 0%,100% { transform: scale(1); box-shadow: 0 0 14px color-mix(in srgb, #ff3b5c, transparent 60%); } 50% { transform: scale(1.05); box-shadow: 0 0 26px color-mix(in srgb, #ff3b5c, transparent 35%); } }
+
+.neoStoresGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; margin-top: 4px; }
+.neoStore { position: relative; text-align: left; padding: 0 0 14px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; cursor: pointer; }
+.neoStore:hover, .neoStore.active { transform: translateY(-4px); border-color: var(--acc); box-shadow: 0 0 22px color-mix(in srgb, var(--acc), transparent 65%); }
+.neoStore img { width: 100%; height: 140px; object-fit: cover; display: block; }
+.neoStore i { position: absolute; top: 10px; left: 10px; font-style: normal; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; padding: 4px 10px; border-radius: var(--pill); color: var(--text); background: rgba(6,12,22,.75); backdrop-filter: blur(4px); }
+.neoStore.hot i { color: #fff; background: linear-gradient(110deg, #ff3b5c, #ffb020); box-shadow: 0 0 14px color-mix(in srgb, #ff3b5c, transparent 45%); }
+.neoStore b { display: block; margin: 11px 14px 0; font-size: 15px; }
+.neoStore small { display: block; margin: 4px 14px 0; font-size: 12px; color: var(--muted); }
+
+/* セール演出：強い発光＋光が流れるグラデ枠＋斜めリボン */
+.neoStore.hot { border-color: #ff3b5c; box-shadow: 0 0 24px color-mix(in srgb, #ff3b5c, transparent 50%), 0 0 50px color-mix(in srgb, #ffb020, transparent 75%); animation: saleGlow 1.6s ease-in-out infinite; }
+.neoStore.hot::before { content: ""; position: absolute; inset: -2px; border-radius: inherit; padding: 2px; background: linear-gradient(110deg, #ff3b5c, #ffb020, #19e0ff, #ff3b5c); background-size: 320% 100%; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: saleSweep 3s linear infinite; pointer-events: none; }
+.neoStore.hot::after { content: ""; position: absolute; left: -45%; top: 0; bottom: 0; width: 28%; background: linear-gradient(110deg, transparent, rgba(255,255,255,.45), transparent); transform: skewX(-18deg); animation: saleShine 2.4s ease-in-out infinite; pointer-events: none; }
+.neoStore.hot .ribbon { position: absolute; top: 14px; right: -34px; transform: rotate(34deg); width: 130px; text-align: center; font-size: 10px; font-weight: 900; letter-spacing: .08em; color: #fff; padding: 4px 0; background: linear-gradient(110deg, #ff3b5c, #ffb020); box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+.neoStore.hot:hover { box-shadow: 0 0 34px color-mix(in srgb, #ff3b5c, transparent 30%), 0 0 70px color-mix(in srgb, #ffb020, transparent 55%); }
+@keyframes saleGlow { 0%,100% { box-shadow: 0 0 18px color-mix(in srgb, #ff3b5c, transparent 60%), 0 0 40px color-mix(in srgb, #ffb020, transparent 80%); } 50% { box-shadow: 0 0 28px color-mix(in srgb, #ff3b5c, transparent 35%), 0 0 60px color-mix(in srgb, #ffb020, transparent 60%); } }
+@keyframes saleSweep { from { background-position: 0% 50%; } to { background-position: 320% 50%; } }
+@keyframes saleShine { 0% { left: -45%; } 60% { left: 110%; } 100% { left: 110%; } }
 
 /* missions / leaderboard */
 .neoMission { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid var(--line); }
