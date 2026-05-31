@@ -157,10 +157,10 @@
 .ccBubble .ccChips button:hover:not(:disabled) { border-color: var(--acc-2); color: var(--acc-2); }
 .ccBubble .ccChips button:disabled { opacity: .5; }
 .ccBubble .ccClose { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 14px; cursor: pointer; }
-.ccMascot { width: 108px; flex: none; animation: neoBreathe 3s ease-in-out infinite; filter: drop-shadow(0 10px 22px rgba(0,0,0,.5)); }
-.ccMascot .conciergeImg, .ccMascot .conciergeSvg { width: 100%; height: auto; display: block; }
+.ccMascot { width: 96px; flex: none; animation: lumDance 2.6s ease-in-out infinite; filter: drop-shadow(0 10px 22px rgba(0,0,0,.5)) drop-shadow(0 0 16px rgba(170,123,255,.4)); }
+.ccMascot .conciergeImg, .ccMascot .conciergeSvg { width: 100% !important; height: auto !important; display: block; }
 @keyframes ccPop { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; transform: none; } }
-@media (max-width: 480px) { .neoConcierge { right: 8px; bottom: 8px; max-width: calc(100vw - 16px); } .ccMascot { width: 76px; } }
+@media (max-width: 480px) { .neoConcierge { right: 8px; bottom: 8px; max-width: calc(100vw - 16px); } .ccMascot { width: 72px; } }
 
 /* ===== In-explore concierge (Monster Farm-style big helper portrait) ===== */
 /* explore top-bar toggle (💁) — sits next to the 🎛 display button */
@@ -171,64 +171,76 @@
 }
 .neoExTop .ccX.on {
   border-color: transparent;
-  background: linear-gradient(135deg, #ff66b3, #7d5cff);
-  box-shadow: 0 0 18px rgba(255,102,179,.55), 0 0 6px rgba(125,92,255,.6);
+  background: linear-gradient(135deg, #b07bff, #7d5cff);
+  box-shadow: 0 0 18px rgba(176,123,255,.65), 0 0 6px rgba(125,92,255,.6);
 }
-.neoExTop .ccX:hover { border-color: #ffb3da; }
+.neoExTop .ccX:hover { border-color: #d3bbff; }
 
-/* big helper anchored bottom-left so it doesn't fight the dock (bottom-center) or pad (bottom-right) */
+/* Lumina (idol android) helper — anchored to the RIGHT edge, in the mid/upper band
+   between the treasure button (top-right) and the move pad (bottom-right). */
 .neoDiveConcierge {
   position: fixed;
-  left: max(10px, env(safe-area-inset-left));
-  bottom: 200px;       /* above dock; tuned via media queries below */
+  right: max(6px, env(safe-area-inset-right));
+  top: 104px;               /* below the treasure button; clears the bottom move pad */
   z-index: 355;
-  width: min(360px, 42vw);
+  width: min(400px, 46vw);
   pointer-events: none;
-  animation: dcSlideIn .32s ease-out;
+  animation: dcSlideInR .34s ease-out;
 }
 .neoDiveConcierge > * { pointer-events: auto; }
 .dcFrame {
   position: relative;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px;
-  align-items: end;
+  display: flex;
+  align-items: flex-start;       /* bubble aligns near her upper body */
+  justify-content: flex-end;     /* portrait hugs the right edge */
+  gap: 6px;
 }
 .dcPortrait {
   position: relative;
-  width: 160px;
+  width: 150px;
   flex: none;
-  filter: drop-shadow(0 18px 28px rgba(0,0,0,.55)) drop-shadow(0 0 18px rgba(255,102,179,.35));
-  animation: neoBreathe 3.4s ease-in-out infinite;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)) drop-shadow(0 0 22px rgba(170,123,255,.45));
+  animation: lumDance 2.4s ease-in-out infinite, lumGlow 3.2s ease-in-out infinite;
 }
 .dcPortrait .conciergeImg,
-.dcPortrait .conciergeSvg { width: 100%; height: auto; display: block; }
-.dcName {
-  position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%);
-  font-size: 11px; font-weight: 900; letter-spacing: .12em;
-  padding: 3px 10px; border-radius: 999px; color: #fff;
-  background: linear-gradient(120deg, #ff66b3, #7d5cff);
-  box-shadow: 0 6px 18px rgba(0,0,0,.4); white-space: nowrap;
+.dcPortrait .conciergeSvg { width: 100% !important; height: auto !important; display: block; }
+/* floating sparkles around the idol */
+.dcPortrait::before, .dcPortrait::after {
+  content: "✦"; position: absolute; color: #efe0ff; font-size: 14px;
+  text-shadow: 0 0 8px rgba(170,123,255,.9); pointer-events: none;
 }
-.dcName em { font-style: normal; color: #fff7ad; margin-left: 4px; }
+.dcPortrait::before { top: 6%; left: -4%; animation: lumSpark 1.8s ease-in-out infinite; }
+.dcPortrait::after  { top: 40%; right: -6%; font-size: 11px; animation: lumSpark 2.3s ease-in-out infinite .6s; }
+.dcName {
+  position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
+  font-size: 11px; font-weight: 900; letter-spacing: .16em;
+  padding: 3px 12px; border-radius: 999px; color: #fff;
+  background: linear-gradient(120deg, #b07bff, #7d5cff);
+  box-shadow: 0 6px 18px rgba(0,0,0,.4), 0 0 14px rgba(170,123,255,.5); white-space: nowrap;
+}
+.dcName em { font-style: normal; color: #fff2a8; margin-left: 4px; }
 
 .dcBubble {
   position: relative;
-  padding: 12px 36px 10px 14px;
-  border-radius: 16px 16px 16px 4px;
-  background: linear-gradient(180deg, rgba(255,236,247,.96), rgba(232,224,255,.96));
-  border: 1px solid rgba(255,160,210,.6);
+  flex: 1 1 auto;
+  max-width: 260px;
+  margin-top: 18px;              /* drop the bubble toward her face level */
+  padding: 12px 14px 10px 14px;
+  border-radius: 16px 16px 4px 16px;  /* tail toward the portrait (right) */
+  background: linear-gradient(180deg, rgba(244,236,255,.97), rgba(224,224,255,.97));
+  border: 1px solid rgba(170,123,255,.6);
   color: #2b1b3a;
-  box-shadow: 0 20px 44px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.5);
+  box-shadow: 0 20px 44px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.55);
   cursor: pointer;
-  min-height: 110px;
+  min-height: 104px;
 }
 .dcBubble::before {
-  /* tail pointing to the portrait */
-  content: ""; position: absolute; left: -8px; bottom: 18px; width: 14px; height: 14px;
-  background: linear-gradient(180deg, rgba(255,236,247,.96), rgba(232,224,255,.96));
-  border-left: 1px solid rgba(255,160,210,.6); border-bottom: 1px solid rgba(255,160,210,.6);
-  transform: rotate(45deg);
+  /* tail pointing right toward the idol */
+  content: ""; position: absolute; right: -8px; bottom: 18px; width: 14px; height: 14px;
+  background: linear-gradient(180deg, rgba(244,236,255,.97), rgba(224,224,255,.97));
+  border-right: 1px solid rgba(170,123,255,.6); border-bottom: 1px solid rgba(170,123,255,.6);
+  transform: rotate(-45deg);
 }
 .dcBubble p { font-size: 13px; line-height: 1.55; margin: 0 0 8px; color: #2b1b3a; font-weight: 600; }
 
@@ -236,12 +248,12 @@
   display: flex; align-items: center; gap: 8px;
   padding: 6px; margin: 0 0 8px;
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,232,246,.85));
+  background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(238,232,255,.85));
   border: 1px dashed rgba(125,92,255,.45);
 }
-.dcReco img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f3e7ff; }
+.dcReco img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #efe7ff; }
 .dcReco > div { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.dcReco .rar { font-size: 10px; font-weight: 900; color: #a430a4; letter-spacing: .08em; }
+.dcReco .rar { font-size: 10px; font-weight: 900; color: #8a30c4; letter-spacing: .08em; }
 .dcReco b { font-size: 13px; color: #2b1b3a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dcReco small { font-size: 11px; color: #6a4a86; }
 
@@ -249,8 +261,8 @@
 .dcChips button {
   font: inherit; font-size: 11px; font-weight: 800; color: #fff;
   padding: 5px 11px; border-radius: 999px; border: 0;
-  background: linear-gradient(120deg, #ff66b3, #7d5cff);
-  cursor: pointer; box-shadow: 0 4px 12px rgba(255,102,179,.45);
+  background: linear-gradient(120deg, #b07bff, #7d5cff);
+  cursor: pointer; box-shadow: 0 4px 12px rgba(125,92,255,.45);
 }
 .dcChips button:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
 .dcChips button:disabled { opacity: .5; background: #c4b9d6; box-shadow: none; cursor: default; }
@@ -261,23 +273,50 @@
   background: #fff; color: #6a4a86; font-size: 14px; cursor: pointer;
 }
 
-@keyframes dcSlideIn {
-  from { opacity: 0; transform: translateY(14px) scale(.96); }
+@keyframes dcSlideInR {
+  from { opacity: 0; transform: translateY(-50%) translateX(24px) scale(.96); }
+  to   { opacity: 1; transform: translateY(-50%); }
+}
+/* energetic idol "dance": bob + sway + tilt + scale pop */
+@keyframes lumDance {
+  0%   { transform: translateY(0)     rotate(-2.5deg) scale(1); }
+  18%  { transform: translateY(-11px) rotate(2.5deg)  scale(1.03); }
+  34%  { transform: translateY(-2px)  rotate(-1.5deg) scale(1); }
+  52%  { transform: translateY(-13px) rotate(3deg)    scale(1.04); }
+  70%  { transform: translateY(-3px)  rotate(-2deg)   scale(1.01); }
+  86%  { transform: translateY(-8px)  rotate(1.5deg)  scale(1.02); }
+  100% { transform: translateY(0)     rotate(-2.5deg) scale(1); }
+}
+@keyframes lumGlow {
+  0%,100% { filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)) drop-shadow(0 0 16px rgba(170,123,255,.4)); }
+  50%     { filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(196,150,255,.85)); }
+}
+@keyframes lumSpark {
+  0%,100% { opacity: 0; transform: scale(.5) rotate(0deg); }
+  50%     { opacity: 1; transform: scale(1.15) rotate(25deg); }
+}
+@keyframes dcSlideUp {
+  from { opacity: 0; transform: translateY(16px) scale(.96); }
   to   { opacity: 1; transform: none; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .dcPortrait { animation: lumGlow 3.2s ease-in-out infinite; }
+}
 
-/* keep clear of UI on smaller widths */
-@media (max-width: 900px) {
-  .neoDiveConcierge { width: min(320px, 58vw); bottom: 230px; }
-  .dcPortrait { width: 130px; }
+/* keep clear of UI / scale down on smaller widths */
+@media (max-width: 940px) {
+  .neoDiveConcierge { width: min(360px, 60vw); top: 46%; }
+  .dcPortrait { width: 140px; }
+  .dcBubble { max-width: 220px; }
 }
 @media (max-width: 640px) {
-  .neoDiveConcierge { width: calc(100vw - 20px); left: 10px; bottom: 290px; }
-  .dcPortrait { width: 110px; }
-  .dcBubble { min-height: 90px; }
+  /* portrait pinned to right edge; bubble sits to its left, both small */
+  .neoDiveConcierge { width: calc(100vw - 16px); right: 8px; top: auto; bottom: 286px; transform: none; animation: dcSlideUp .3s ease-out; }
+  .dcPortrait { width: 112px; }
+  .dcBubble { max-width: none; min-height: 88px; margin-top: 8px; }
 }
 @media (max-width: 480px) {
-  .neoDiveConcierge { bottom: 270px; }
+  .neoDiveConcierge { bottom: 264px; }
   .dcPortrait { width: 96px; }
   .dcBubble p { font-size: 12px; }
   .dcReco img { width: 38px; height: 38px; }

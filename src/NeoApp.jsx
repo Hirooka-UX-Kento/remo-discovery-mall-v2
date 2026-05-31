@@ -510,7 +510,7 @@ function Concierge({ t, lang, g, onClose, onOpenStore }) {
   // taste-based pick (refreshes when scanned set changes — i.e. taste was updated)
   const [tick, setTick] = useState(0);
   const { product: pick, hasHistory } = useMemo(() => tastePick([]), [tick, g.scannedIds.length]);
-  const greet = L("こんにちは、Remi だよ♪ あなた専属のコンシェルジュ！", "Hi, I'm Remi ♪ Your personal concierge!");
+  const greet = L("こんにちは、Lumina だよ☆ あなた専属のアイドル・コンシェルジュ！", "Hi, I'm Lumina ☆ your personal idol concierge!");
   const recoLine = hasHistory
     ? L(`今日のおすすめは、この「${pick.name}」よ！ ${pick.rarity} ✨`, `Today's pick for you: "${pick.name}"! ${pick.rarity} ✨`)
     : L(`まずは「${pick.name}」(${pick.price}) はどうかな？ ✨`, `How about "${pick.name}" (${pick.price})? ✨`);
@@ -590,7 +590,7 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
   }, [messages.length]);
   function next() { setI((v) => (v + 1) % messages.length); setTick((x) => x + 1); }
   function pickIt() {
-    g.toast(`✨ Remi: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
+    g.toast(`✨ Lumina: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
     // count this as taste data too
     tasteTrack(r, 0.4);
   }
@@ -602,10 +602,6 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
   return (
     <aside className="neoDiveConcierge" role="dialog" aria-live="polite">
       <div className="dcFrame">
-        <div className="dcPortrait">
-          <ConciergeGirl size={160} className="dcGirl" />
-          <span className="dcName">Remi <em>♡</em></span>
-        </div>
         <div className="dcBubble" onClick={next} title={L("次のメッセージへ", "Next")}>
           <p>{messages[i]}</p>
           <div className="dcReco">
@@ -622,6 +618,10 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
             <button onClick={(e) => { e.stopPropagation(); next(); }}>💬 {L("次へ", "Next")}</button>
           </div>
           <button className="dcClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
+        </div>
+        <div className="dcPortrait">
+          <ConciergeGirl size={150} className="dcGirl" />
+          <span className="dcName">LUMINA <em>★</em></span>
         </div>
       </div>
     </aside>
@@ -670,122 +670,115 @@ function MascotRobot({ size = 140, className = "" }) {
   );
 }
 
-// Cute girl-android "Remi" — the otaku-friendly concierge. Tries to use a
-// provided image at public/assets/generated/concierge.png; falls back to inline SVG.
-function ConciergeGirl({ size = 180, mood = "smile", className = "" }) {
+// "Lumina" (STELLA-07) — next-gen android idol concierge. Tries to use a provided
+// poster render at public/assets/generated/concierge.png; falls back to inline SVG.
+function ConciergeGirl({ size = 180, className = "" }) {
   const [useImg, setUseImg] = useState(true);
   const src = asset("assets/generated/concierge.png");
   if (useImg) {
     return (
-      <img className={"conciergeImg " + className} src={src} alt="Remi"
+      <img className={"conciergeImg " + className} src={src} alt="Lumina"
         style={{ width: size, height: "auto" }} onError={() => setUseImg(false)} />
     );
   }
-  // SVG fallback: kawaii anime-style girl android — twin antennae, pastel pink/teal,
-  // huge sparkly eyes, blush, side-tail "hair", chest core, smile.
-  const w = size, h = size * 1.42;
-  const mouth = mood === "happy"
-    ? "M52 86q12 12 26 0"
-    : mood === "wink"
-      ? "M54 86q10 8 22 0"
-      : "M54 86q10 6 22 0";
+  // SVG fallback: full-body lavender idol android — star crown, long flowing hair,
+  // big violet eyes, white/purple armor, crystalline holographic skirt, glowing joints.
+  const w = size, h = size * 2.0;
   return (
-    <svg className={"conciergeSvg " + className} width={w} height={h} viewBox="0 0 130 184" role="img" aria-label="Remi">
+    <svg className={"conciergeSvg " + className} width={w} height={h} viewBox="0 0 130 260" role="img" aria-label="Lumina">
       <defs>
-        <linearGradient id="cgHair" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffd1e6" /><stop offset="1" stopColor="#ff8cc6" />
+        <linearGradient id="luHair" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#efe0ff" /><stop offset=".5" stopColor="#cba9ff" /><stop offset="1" stopColor="#a87bff" />
         </linearGradient>
-        <linearGradient id="cgFace" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff8fb" /><stop offset="1" stopColor="#ffe1ee" />
+        <linearGradient id="luSkin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff9ff" /><stop offset="1" stopColor="#f0e6ff" />
         </linearGradient>
-        <linearGradient id="cgSuit" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#bfeaff" />
+        <linearGradient id="luArmor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#dccbff" />
         </linearGradient>
-        <radialGradient id="cgEye" cx="40%" cy="35%" r="70%">
-          <stop offset="0" stopColor="#9aeaff" />
-          <stop offset=".55" stopColor="#3aa6ff" />
-          <stop offset="1" stopColor="#1454c8" />
+        <linearGradient id="luSkirt" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#e0ccff" stopOpacity=".95" /><stop offset="1" stopColor="#a9c9ff" stopOpacity=".5" />
+        </linearGradient>
+        <radialGradient id="luEye" cx="42%" cy="32%" r="72%">
+          <stop offset="0" stopColor="#f6e6ff" /><stop offset=".5" stopColor="#b483ff" /><stop offset="1" stopColor="#7a3df0" />
         </radialGradient>
-        <radialGradient id="cgCore" cx="50%" cy="50%" r="60%">
-          <stop offset="0" stopColor="#ffe9a3" /><stop offset=".6" stopColor="#ff9bd1" /><stop offset="1" stopColor="#7a3aa6" />
+        <radialGradient id="luCore" cx="50%" cy="50%" r="60%">
+          <stop offset="0" stopColor="#ffffff" /><stop offset=".5" stopColor="#d6a6ff" /><stop offset="1" stopColor="#7a3df0" />
         </radialGradient>
       </defs>
 
-      {/* twin antennae with little hearts */}
-      <g stroke="#ff5fa6" strokeWidth="2.2" strokeLinecap="round" fill="none">
-        <path d="M44 18 Q40 8 36 4" /><path d="M86 18 Q90 8 94 4" />
-      </g>
-      <path d="M33 4c2-3 6-3 6 1 0 3-3 4-3 4s-3-1-3-4z" fill="#ff5fa6" />
-      <path d="M91 4c2-3 6-3 6 1 0 3-3 4-3 4s-3-1-3-4z" fill="#ff5fa6" />
+      {/* long flowing back hair */}
+      <path d="M38 30 Q65 6 92 30 Q108 50 102 84 L28 84 Q22 50 38 30 Z" fill="url(#luHair)" />
+      <path d="M30 60 Q6 116 18 196 Q24 156 35 120 Q30 92 42 72 Z" fill="url(#luHair)" />
+      <path d="M100 60 Q124 116 112 196 Q106 156 95 120 Q100 92 88 72 Z" fill="url(#luHair)" />
 
-      {/* back hair halo */}
-      <path d="M22 70 Q12 40 32 22 Q50 6 65 8 Q82 6 100 24 Q116 42 108 72 Q104 92 96 96 L34 96 Q26 92 22 70 Z" fill="url(#cgHair)" />
+      {/* star crown */}
+      <path d="M65 2 l3.4 8 8.6 .8 -6.4 5.8 1.9 8.4 -7.5 -4.4 -7.5 4.4 1.9 -8.4 -6.4 -5.8 8.6 -.8 z" fill="#fff" stroke="#cba9ff" strokeWidth="1" />
+      <circle cx="50" cy="16" r="1.4" fill="#fff" /><circle cx="82" cy="14" r="1.6" fill="#fff" />
 
-      {/* side ear-pods (mechanical hair clips) */}
-      <circle cx="22" cy="78" r="10" fill="#fff" stroke="#ff8cc6" strokeWidth="2" />
-      <circle cx="22" cy="78" r="4" fill="#ff5fa6" />
-      <circle cx="108" cy="78" r="10" fill="#fff" stroke="#ff8cc6" strokeWidth="2" />
-      <circle cx="108" cy="78" r="4" fill="#ff5fa6" />
+      {/* headphone ear pods */}
+      <circle cx="41" cy="50" r="8" fill="#fff" stroke="#b483ff" strokeWidth="1.6" />
+      <circle cx="41" cy="50" r="3" fill="#b483ff" />
+      <circle cx="89" cy="50" r="8" fill="#fff" stroke="#b483ff" strokeWidth="1.6" />
+      <circle cx="89" cy="50" r="3" fill="#b483ff" />
 
-      {/* face oval */}
-      <ellipse cx="65" cy="64" rx="33" ry="36" fill="url(#cgFace)" stroke="#f7b9d2" strokeWidth="1.4" />
-
+      {/* face */}
+      <ellipse cx="65" cy="46" rx="19" ry="21" fill="url(#luSkin)" stroke="#e7d2ff" strokeWidth="1" />
       {/* fringe */}
-      <path d="M34 56 Q40 30 56 28 Q56 44 50 56 Z" fill="url(#cgHair)" />
-      <path d="M96 56 Q90 30 74 28 Q74 44 80 56 Z" fill="url(#cgHair)" />
-      <path d="M52 30 Q65 24 78 30 Q72 42 65 42 Q58 42 52 30 Z" fill="url(#cgHair)" />
-
-      {/* visor seam (android hint) */}
-      <path d="M40 60 Q65 56 90 60" stroke="#f4a8c7" strokeWidth="1" fill="none" opacity=".6" />
-
+      <path d="M46 44 Q49 22 65 20 Q81 22 84 44 Q74 33 65 33 Q56 33 46 44 Z" fill="url(#luHair)" />
       {/* blush */}
-      <ellipse cx="46" cy="78" rx="6" ry="3" fill="#ffadc8" opacity=".75" />
-      <ellipse cx="84" cy="78" rx="6" ry="3" fill="#ffadc8" opacity=".75" />
-
-      {/* eyes — big sparkly anime */}
-      <g>
-        <ellipse cx="50" cy="70" rx="8" ry="10" fill="url(#cgEye)" />
-        <ellipse cx="80" cy="70" rx="8" ry="10" fill="url(#cgEye)" />
-        <circle cx="47" cy="66" r="2.6" fill="#fff" />
-        <circle cx="77" cy="66" r="2.6" fill="#fff" />
-        <circle cx="53" cy="74" r="1.2" fill="#fff" opacity=".9" />
-        <circle cx="83" cy="74" r="1.2" fill="#fff" opacity=".9" />
-      </g>
-
-      {/* eyelashes */}
-      <path d="M42 64 q4-3 9-2" stroke="#3a2547" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <path d="M72 64 q4-3 9-2" stroke="#3a2547" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-
-      {/* mouth */}
-      <path d={mouth} stroke="#c44b85" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+      <ellipse cx="54" cy="54" rx="3.4" ry="1.8" fill="#ffb3e0" opacity=".7" />
+      <ellipse cx="76" cy="54" rx="3.4" ry="1.8" fill="#ffb3e0" opacity=".7" />
+      {/* eyes */}
+      <ellipse cx="57" cy="48" rx="5" ry="7" fill="url(#luEye)" />
+      <ellipse cx="73" cy="48" rx="5" ry="7" fill="url(#luEye)" />
+      <circle cx="55.4" cy="45.4" r="1.6" fill="#fff" /><circle cx="71.4" cy="45.4" r="1.6" fill="#fff" />
+      <path d="M51 43 q4-2.5 8-1.5" stroke="#5a2f8a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      <path d="M71 43 q4-2.5 8-1.5" stroke="#5a2f8a" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      {/* smile */}
+      <path d="M59 58 q6 4 12 0" stroke="#b85ca8" strokeWidth="1.6" fill="none" strokeLinecap="round" />
 
       {/* neck */}
-      <rect x="58" y="98" width="14" height="10" rx="3" fill="#f1cad9" />
+      <rect x="60" y="64" width="10" height="9" rx="3" fill="#e7d6ff" />
 
-      {/* shoulders / suit */}
-      <path d="M30 132 Q30 112 56 108 L74 108 Q100 112 100 132 L100 168 L30 168 Z" fill="url(#cgSuit)" stroke="#9fd8f5" strokeWidth="1.4" />
-
-      {/* heart core on chest */}
-      <g transform="translate(65 138)">
-        <path d="M0 6 C -10 -6 -16 6 0 14 C 16 6 10 -6 0 6 Z" fill="url(#cgCore)" stroke="#ff5fa6" strokeWidth="1.2" />
+      {/* torso armor */}
+      <path d="M44 78 Q44 72 56 72 L74 72 Q86 72 86 78 L88 118 Q65 128 42 118 Z" fill="url(#luArmor)" stroke="#c9b3ff" strokeWidth="1" />
+      <circle cx="46" cy="84" r="3" fill="#d6a6ff" /><circle cx="84" cy="84" r="3" fill="#d6a6ff" />
+      {/* star core on chest */}
+      <g transform="translate(65 96)">
+        <path d="M0 -7.5 l2.2 4.8 5.3 .4 -4 3.6 1.2 5.2 -4.7 -2.8 -4.7 2.8 1.2 -5.2 -4 -3.6 5.3 -.4 z" fill="url(#luCore)" stroke="#fff" strokeWidth=".6" />
       </g>
 
-      {/* shoulder pauldron lights */}
-      <circle cx="36" cy="126" r="3" fill="#ff5fa6" />
-      <circle cx="94" cy="126" r="3" fill="#ff5fa6" />
+      {/* arms (mechanical, idol gesture) */}
+      <path d="M44 80 Q30 92 25 120" stroke="#cdbaff" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+      <circle cx="25" cy="122" r="4" fill="#fff" stroke="#b483ff" strokeWidth="1.4" />
+      <path d="M86 80 Q97 96 92 116" stroke="#cdbaff" strokeWidth="5.5" fill="none" strokeLinecap="round" />
+      <circle cx="92" cy="118" r="4" fill="#fff" stroke="#b483ff" strokeWidth="1.4" />
 
-      {/* arm hints (ribbons) */}
-      <path d="M30 132 Q22 152 26 168" stroke="#ff8cc6" strokeWidth="2.4" fill="none" />
-      <path d="M100 132 Q108 152 104 168" stroke="#ff8cc6" strokeWidth="2.4" fill="none" />
+      {/* waist gem */}
+      <path d="M60 116 l5 0 -2.5 7 z" fill="url(#luCore)" />
 
-      {/* hair side tails */}
-      <path d="M22 88 Q12 110 18 132 Q22 116 28 100 Z" fill="url(#cgHair)" />
-      <path d="M108 88 Q118 110 112 132 Q108 116 102 100 Z" fill="url(#cgHair)" />
+      {/* crystalline holographic skirt */}
+      <g>
+        <path d="M42 118 L88 118 L104 170 L26 170 Z" fill="url(#luSkirt)" stroke="#c9b3ff" strokeWidth=".8" />
+        <path d="M49 121 L81 121 L93 160 L37 160 Z" fill="#ece0ff" opacity=".45" />
+        <path d="M65 120 L65 170 M53 122 L41 168 M77 122 L89 168" stroke="#fff" strokeWidth=".5" opacity=".6" />
+      </g>
+
+      {/* legs (mechanical, glowing knees) */}
+      <path d="M56 168 q-3 40 -2 78 l9 0 q1 -38 2 -78 z" fill="url(#luArmor)" stroke="#c9b3ff" strokeWidth=".8" />
+      <path d="M68 168 q1 40 2 78 l9 0 q-1 -38 2 -78 z" fill="url(#luArmor)" stroke="#c9b3ff" strokeWidth=".8" />
+      <circle cx="58" cy="206" r="3.4" fill="#d6a6ff" /><circle cx="74" cy="206" r="3.4" fill="#d6a6ff" />
+
+      {/* crystalline boots */}
+      <path d="M51 244 l13 0 4 13 -21 0 z" fill="url(#luSkirt)" stroke="#c9b3ff" strokeWidth=".8" />
+      <path d="M68 244 l13 0 4 13 -21 0 z" fill="url(#luSkirt)" stroke="#c9b3ff" strokeWidth=".8" />
 
       {/* sparkles */}
       <g fill="#fff">
-        <circle cx="20" cy="40" r="1.3" /><circle cx="112" cy="46" r="1.6" /><circle cx="118" cy="22" r="1.2" />
-        <circle cx="14" cy="20" r="1.6" />
+        <circle cx="18" cy="40" r="1.4" /><circle cx="112" cy="64" r="1.6" /><circle cx="118" cy="34" r="1.2" />
+        <path d="M20 150 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" />
+        <path d="M106 138 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" />
       </g>
     </svg>
   );
