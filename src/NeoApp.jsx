@@ -510,7 +510,7 @@ function Concierge({ t, lang, g, onClose, onOpenStore }) {
   // taste-based pick (refreshes when scanned set changes — i.e. taste was updated)
   const [tick, setTick] = useState(0);
   const { product: pick, hasHistory } = useMemo(() => tastePick([]), [tick, g.scannedIds.length]);
-  const greet = L("こんにちは、Lumina だよ☆ あなた専属のアイドル・コンシェルジュ！", "Hi, I'm Lumina ☆ your personal idol concierge!");
+  const greet = L("こんにちは、案内係の Remi だよ♪ お買い物、ナビゲートするね！", "Hi, I'm Remi, your guide ♪ Let me navigate your shopping!");
   const recoLine = hasHistory
     ? L(`今日のおすすめは、この「${pick.name}」よ！ ${pick.rarity} ✨`, `Today's pick for you: "${pick.name}"! ${pick.rarity} ✨`)
     : L(`まずは「${pick.name}」(${pick.price}) はどうかな？ ✨`, `How about "${pick.name}" (${pick.price})? ✨`);
@@ -590,7 +590,7 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
   }, [messages.length]);
   function next() { setI((v) => (v + 1) % messages.length); setTick((x) => x + 1); }
   function pickIt() {
-    g.toast(`✨ Lumina: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
+    g.toast(`✨ Remi: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
     // count this as taste data too
     tasteTrack(r, 0.4);
   }
@@ -621,7 +621,7 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
         </div>
         <div className="dcPortrait">
           <ConciergeGirl size={150} className="dcGirl" />
-          <span className="dcName">LUMINA <em>★</em></span>
+          <span className="dcName">Remi <em>♪</em></span>
         </div>
       </div>
     </aside>
@@ -677,7 +677,7 @@ function ConciergeGirl({ size = 180, className = "" }) {
   const src = asset("assets/generated/concierge.png");
   if (useImg) {
     return (
-      <img className={"conciergeImg " + className} src={src} alt="Lumina"
+      <img className={"conciergeImg " + className} src={src} alt="Remi"
         style={{ width: size, height: "auto" }} onError={() => setUseImg(false)} />
     );
   }

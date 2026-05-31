@@ -183,7 +183,7 @@
   right: max(6px, env(safe-area-inset-right));
   top: 104px;               /* below the treasure button; clears the bottom move pad */
   z-index: 355;
-  width: min(400px, 46vw);
+  width: min(440px, 48vw);
   pointer-events: none;
   animation: dcSlideInR .34s ease-out;
 }
@@ -197,7 +197,7 @@
 }
 .dcPortrait {
   position: relative;
-  width: 150px;
+  width: 190px;
   flex: none;
   transform-origin: bottom center;
   filter: drop-shadow(0 18px 30px rgba(0,0,0,.55)) drop-shadow(0 0 22px rgba(170,123,255,.45));
