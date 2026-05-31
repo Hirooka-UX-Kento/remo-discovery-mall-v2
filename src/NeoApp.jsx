@@ -50,6 +50,30 @@ function rareNodeFor(storeId) {
   return NODES[h % NODES.length].id;
 }
 
+// Player taste (local, on-device "learning"): each scan/capture/cart-add bumps the
+// scores for that product's group + rarity. The concierge uses this to recommend.
+const TASTE_KEY = "rdm_taste_v1";
+function loadTaste() { try { return JSON.parse(localStorage.getItem(TASTE_KEY) || "{}") || {}; } catch { return {}; } }
+function saveTaste(t) { try { localStorage.setItem(TASTE_KEY, JSON.stringify(t)); } catch { /* ignore */ } }
+function tasteTrack(product, weight = 1) {
+  if (!product) return;
+  const t = loadTaste();
+  t.group = t.group || {}; t.rarity = t.rarity || {}; t.products = t.products || {}; t.events = (t.events || 0) + 1;
+  t.group[product.group] = (t.group[product.group] || 0) + weight;
+  t.rarity[product.rarity] = (t.rarity[product.rarity] || 0) + weight;
+  t.products[product.id] = (t.products[product.id] || 0) + weight;
+  saveTaste(t);
+}
+function tastePick(excludeIds = []) {
+  const t = loadTaste();
+  const gs = t.group || {}, rs = t.rarity || {}, ps = t.products || {};
+  const events = t.events || 0;
+  const list = PRODUCTS.filter((p) => !excludeIds.includes(p.id))
+    .map((p) => ({ p, s: (gs[p.group] || 0) * 2 + (rs[p.rarity] || 0) * 1 - (ps[p.id] || 0) * 0.5 + Math.random() * 0.4 }))
+    .sort((a, b) => b.s - a.s);
+  return { product: list[0]?.p || PRODUCTS[0], hasHistory: events >= 3 };
+}
+
 // FF-style save point persistence (per store).
 const SAVE_KEY = "rdm_savept";
 function loadSaveFor(storeId) { try { return (JSON.parse(localStorage.getItem(SAVE_KEY) || "{}"))[storeId] || null; } catch { return null; } }
@@ -216,9 +240,9 @@ export default function NeoApp() {
   }
   function openToio() { if (g.spendXp(TOIO_COST, lang === "ja" ? "TOIOコーナー" : "TOIO corner")) setScreen("toio"); }
   function startPossess() { setPossessMode("external"); syncDoneRef.current = false; setScreen("sync"); Sound.sfx("dive"); }
-  function request(p) { g.requestPurchase(p); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
+  function request(p) { g.requestPurchase(p); tasteTrack(p, 3); setReqlog((l) => [`${local(p.name, lang)} · ${t.request}`, ...l].slice(0, 4)); }
   function moveTo(id) { setNodeId(id); setHp((v) => Math.max(0, v - 13)); g.move(); const n = nodeById(id); const fp = n.products.map((x) => PRODUCTS.find((p) => p.id === x))[0]; if (fp) setProduct(fp); }
-  function scan(p) { setProduct(p); g.scan(p); Sound.sfx("scan"); }
+  function scan(p) { setProduct(p); g.scan(p); tasteTrack(p, 1); Sound.sfx("scan"); }
   function saveAt() { setHp(100); writeSaveFor(store.id, nodeId); Sound.sfx("save"); g.toast(t.saved, "ok"); }
   function warpStore(id) { const s = storeById(id); if (!s) return; setStore(s); setNodeId("entrance"); setProduct(PRODUCTS[0]); setHp((v) => Math.max(20, v - 6)); if (uiPrefs.storeTheme && s.theme) g.setTone(s.theme); g.warp(); g.toast(local({ ja: `${s.name} ツインへワープ`, en: `Warped to ${s.name}` }, lang), "ok"); }
 
@@ -245,6 +269,7 @@ export default function NeoApp() {
           product={product} onScan={scan} onMove={moveTo}
           onRequest={request} onExit={() => setScreen("shop")} onWarp={warpStore}
           saveNode={f.save && SAVE_NODES.includes(node.id)} onSave={saveAt} onDisplay={() => setDispOpen(true)}
+          conciergeOn={conciergeOn} onConcierge={toggleConcierge}
           onUpgrade={() => { window.location.href = EXPLORE_URL; }} />
         {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
         <Toasts toasts={g.toasts} />
@@ -477,23 +502,29 @@ function MissionsPanel({ t, lang, g }) {
   );
 }
 
-// Floating concierge mascot — rotating greetings + quick actions (script-based; not a chat AI)
+// Floating concierge — global (home/list). Uses Remi (cute girl android) and
+// taste-based recommendations. Script-based (not a chat LLM).
 function Concierge({ t, lang, g, onClose, onOpenStore }) {
   const L = (ja, en) => (lang === "ja" ? ja : en);
   const saleStores = useMemo(() => STORES.filter((s) => s.hot), []);
-  const pick = useMemo(() => PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)], []);
+  // taste-based pick (refreshes when scanned set changes — i.e. taste was updated)
+  const [tick, setTick] = useState(0);
+  const { product: pick, hasHistory } = useMemo(() => tastePick([]), [tick, g.scannedIds.length]);
+  const greet = L("こんにちは、Remi だよ♪ あなた専属のコンシェルジュ！", "Hi, I'm Remi ♪ Your personal concierge!");
+  const recoLine = hasHistory
+    ? L(`今日のおすすめは、この「${pick.name}」よ！ ${pick.rarity} ✨`, `Today's pick for you: "${pick.name}"! ${pick.rarity} ✨`)
+    : L(`まずは「${pick.name}」(${pick.price}) はどうかな？ ✨`, `How about "${pick.name}" (${pick.price})? ✨`);
   const lines = useMemo(() => [
-    L("こんにちは！ お薦め商品紹介するよ〜。何でも聞いてね♪", "Hi! I'll recommend goodies — ask me anything ♪"),
-    L(`今日のおすすめは「${pick.name}」(${pick.price}) ✨`, `Today's pick: "${pick.name}" (${pick.price}) ✨`),
-    L(`今 🔥 ${saleStores.length} 店舗でセール中だよ！下のリストをチェック！`, `🔥 ${saleStores.length} stores ON SALE — check the list below!`),
+    greet,
+    recoLine,
+    L(`今 🔥 ${saleStores.length} 店舗でセール中だよ！チェックしてね！`, `🔥 ${saleStores.length} stores ON SALE — check them out!`),
     L("店舗ロボに「憑依（DIVE）」して、店内を歩き回ってみよう！", "DIVE into a store robot and walk the aisles!"),
-    L("商品のQRを長押しすると、商品情報が重畳するよ。", "Long-press a product QR to see its info overlay."),
-    L("ランクは累計EXPで上がる称号。買い物だけで下がらないから安心♪", "Rank is your lifetime-EXP title — it never drops, even after spending."),
-    L("テーマはヘッダー「テーマ」からいつでも変えられるよ！", "Change the theme any time from 'Theme' in the header!"),
-  ], [pick, saleStores.length, lang]);
+    L("商品をスキャンするほど、おすすめがあなた好みに育つよ♪", "The more you scan, the more I learn your taste ♪"),
+    L("ランクは累計EXPで上がる称号。買い物しても下がらないから安心♪", "Rank is your lifetime-EXP title — it never drops."),
+  ], [pick.id, saleStores.length, lang, hasHistory]);
   const [i, setI] = useState(0);
-  useEffect(() => { const id = setInterval(() => setI((v) => (v + 1) % lines.length), 5200); return () => clearInterval(id); }, [lines.length]);
-  function next() { setI((v) => (v + 1) % lines.length); }
+  useEffect(() => { const id = setInterval(() => setI((v) => (v + 1) % lines.length), 5400); return () => clearInterval(id); }, [lines.length]);
+  function next() { setI((v) => (v + 1) % lines.length); setTick((x) => x + 1); }
   function gotoSale() { const s = saleStores[0]; if (s) onOpenStore(s); }
   function showPick() { g.toast(`✨ ${L("今日のおすすめ", "Today's pick")}: ${pick.name} (${pick.price})`, "ok"); }
   return (
@@ -507,8 +538,93 @@ function Concierge({ t, lang, g, onClose, onOpenStore }) {
         </div>
         <button className="ccClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
       </div>
-      <div className="ccMascot"><MascotRobot size={86} /></div>
+      <div className="ccMascot"><ConciergeGirl size={108} /></div>
     </div>
+  );
+}
+
+// Big in-explore concierge (Monster Farm-style portrait + bubble). Placed bottom-left,
+// clear of the dock/pad/treasure. Toggleable on/off from the explore top bar.
+function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
+  const L = (ja, en) => (lang === "ja" ? ja : en);
+  // recommend an item the player will like — prefer something on THIS node
+  const shelf = (node?.products || []).map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
+  const [tick, setTick] = useState(0);
+  const reco = useMemo(() => {
+    const t = loadTaste();
+    const gs = t.group || {}, rs = t.rarity || {}, ps = t.products || {};
+    const list = shelf.length ? shelf : PRODUCTS;
+    const ranked = list
+      .map((p) => ({ p, s: (gs[p.group] || 0) * 2 + (rs[p.rarity] || 0) - (ps[p.id] || 0) * 0.5 + Math.random() * 0.4 }))
+      .sort((a, b) => b.s - a.s);
+    return { product: ranked[0]?.p || list[0], hasHistory: (t.events || 0) >= 3, onShelf: shelf.length > 0 };
+  }, [tick, node?.id, g.scannedIds.length, store?.id]);
+  const r = reco.product;
+  const onShelfNow = shelf.some((p) => p.id === r.id);
+
+  const messages = useMemo(() => {
+    const arr = [
+      L(`ここは「${local(node?.label, lang)}」ね。気になるもの、見つけた？`,
+        `We're at "${local(node?.label, lang)}". Found anything you like?`),
+      onShelfNow
+        ? L(`今日のおすすめは、この「${r.name}」よ！ ${r.rarity} ✨ 棚にあるよ♪`,
+            `Today's pick: "${r.name}"! ${r.rarity} ✨ It's right on this shelf ♪`)
+        : L(`「${r.name}」(${r.price})、あなたに似合いそう！ 探しに行こ♪`,
+            `"${r.name}" (${r.price}) seems perfect for you — let's go find it ♪`),
+      reco.hasHistory
+        ? L("あなたの好みが分かってきたよ♪ もっとスキャンしてね！", "I'm learning your taste ♪ Keep scanning!")
+        : L("商品をスキャンすればするほど、私はあなた専属になるよ♪", "The more you scan, the more personal I become ♪"),
+      productHere && productHere.id !== r.id
+        ? L(`今見てる「${productHere.name}」もイイ感じ！ ${productHere.rarity}`,
+            `That "${productHere.name}" looks great too! ${productHere.rarity}`)
+        : L("棚の前で長押し＝詳細、タップ＝キャプチャ♪", "Long-press shelf items for details, tap to capture ♪"),
+    ];
+    return arr;
+  }, [r.id, node?.id, lang, onShelfNow, productHere?.id, reco.hasHistory]);
+
+  const [i, setI] = useState(0);
+  useEffect(() => { setI(0); }, [node?.id]);
+  useEffect(() => {
+    const id = setInterval(() => setI((v) => (v + 1) % messages.length), 6200);
+    return () => clearInterval(id);
+  }, [messages.length]);
+  function next() { setI((v) => (v + 1) % messages.length); setTick((x) => x + 1); }
+  function pickIt() {
+    g.toast(`✨ Remi: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
+    // count this as taste data too
+    tasteTrack(r, 0.4);
+  }
+  function scanReco() {
+    if (onShelfNow && onScan) { onScan(r); }
+    else { g.toast(L(`「${r.name}」は別の棚にあるよ！`, `"${r.name}" is on another shelf!`), "info"); }
+  }
+
+  return (
+    <aside className="neoDiveConcierge" role="dialog" aria-live="polite">
+      <div className="dcFrame">
+        <div className="dcPortrait">
+          <ConciergeGirl size={160} className="dcGirl" />
+          <span className="dcName">Remi <em>♡</em></span>
+        </div>
+        <div className="dcBubble" onClick={next} title={L("次のメッセージへ", "Next")}>
+          <p>{messages[i]}</p>
+          <div className="dcReco">
+            <img src={r.image} alt="" />
+            <div>
+              <span className="rar">{r.rarity}</span>
+              <b>{r.name}</b>
+              <small>{r.price}{onShelfNow ? L(" · ここの棚", " · on this shelf") : ""}</small>
+            </div>
+          </div>
+          <div className="dcChips">
+            <button onClick={(e) => { e.stopPropagation(); pickIt(); }}>✨ {L("おすすめ", "Pick")}</button>
+            <button onClick={(e) => { e.stopPropagation(); scanReco(); }} disabled={!onShelfNow}>📸 {L("これスキャン", "Scan it")}</button>
+            <button onClick={(e) => { e.stopPropagation(); next(); }}>💬 {L("次へ", "Next")}</button>
+          </div>
+          <button className="dcClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -550,6 +666,127 @@ function MascotRobot({ size = 140, className = "" }) {
       <rect x="67" y="36" width="9" height="17" rx="4.5" fill="url(#meye)" />
       {/* smile */}
       <path d="M48 58q12 9 24 0" stroke="url(#meye)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+// Cute girl-android "Remi" — the otaku-friendly concierge. Tries to use a
+// provided image at public/assets/generated/concierge.png; falls back to inline SVG.
+function ConciergeGirl({ size = 180, mood = "smile", className = "" }) {
+  const [useImg, setUseImg] = useState(true);
+  const src = asset("assets/generated/concierge.png");
+  if (useImg) {
+    return (
+      <img className={"conciergeImg " + className} src={src} alt="Remi"
+        style={{ width: size, height: "auto" }} onError={() => setUseImg(false)} />
+    );
+  }
+  // SVG fallback: kawaii anime-style girl android — twin antennae, pastel pink/teal,
+  // huge sparkly eyes, blush, side-tail "hair", chest core, smile.
+  const w = size, h = size * 1.42;
+  const mouth = mood === "happy"
+    ? "M52 86q12 12 26 0"
+    : mood === "wink"
+      ? "M54 86q10 8 22 0"
+      : "M54 86q10 6 22 0";
+  return (
+    <svg className={"conciergeSvg " + className} width={w} height={h} viewBox="0 0 130 184" role="img" aria-label="Remi">
+      <defs>
+        <linearGradient id="cgHair" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffd1e6" /><stop offset="1" stopColor="#ff8cc6" />
+        </linearGradient>
+        <linearGradient id="cgFace" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff8fb" /><stop offset="1" stopColor="#ffe1ee" />
+        </linearGradient>
+        <linearGradient id="cgSuit" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#bfeaff" />
+        </linearGradient>
+        <radialGradient id="cgEye" cx="40%" cy="35%" r="70%">
+          <stop offset="0" stopColor="#9aeaff" />
+          <stop offset=".55" stopColor="#3aa6ff" />
+          <stop offset="1" stopColor="#1454c8" />
+        </radialGradient>
+        <radialGradient id="cgCore" cx="50%" cy="50%" r="60%">
+          <stop offset="0" stopColor="#ffe9a3" /><stop offset=".6" stopColor="#ff9bd1" /><stop offset="1" stopColor="#7a3aa6" />
+        </radialGradient>
+      </defs>
+
+      {/* twin antennae with little hearts */}
+      <g stroke="#ff5fa6" strokeWidth="2.2" strokeLinecap="round" fill="none">
+        <path d="M44 18 Q40 8 36 4" /><path d="M86 18 Q90 8 94 4" />
+      </g>
+      <path d="M33 4c2-3 6-3 6 1 0 3-3 4-3 4s-3-1-3-4z" fill="#ff5fa6" />
+      <path d="M91 4c2-3 6-3 6 1 0 3-3 4-3 4s-3-1-3-4z" fill="#ff5fa6" />
+
+      {/* back hair halo */}
+      <path d="M22 70 Q12 40 32 22 Q50 6 65 8 Q82 6 100 24 Q116 42 108 72 Q104 92 96 96 L34 96 Q26 92 22 70 Z" fill="url(#cgHair)" />
+
+      {/* side ear-pods (mechanical hair clips) */}
+      <circle cx="22" cy="78" r="10" fill="#fff" stroke="#ff8cc6" strokeWidth="2" />
+      <circle cx="22" cy="78" r="4" fill="#ff5fa6" />
+      <circle cx="108" cy="78" r="10" fill="#fff" stroke="#ff8cc6" strokeWidth="2" />
+      <circle cx="108" cy="78" r="4" fill="#ff5fa6" />
+
+      {/* face oval */}
+      <ellipse cx="65" cy="64" rx="33" ry="36" fill="url(#cgFace)" stroke="#f7b9d2" strokeWidth="1.4" />
+
+      {/* fringe */}
+      <path d="M34 56 Q40 30 56 28 Q56 44 50 56 Z" fill="url(#cgHair)" />
+      <path d="M96 56 Q90 30 74 28 Q74 44 80 56 Z" fill="url(#cgHair)" />
+      <path d="M52 30 Q65 24 78 30 Q72 42 65 42 Q58 42 52 30 Z" fill="url(#cgHair)" />
+
+      {/* visor seam (android hint) */}
+      <path d="M40 60 Q65 56 90 60" stroke="#f4a8c7" strokeWidth="1" fill="none" opacity=".6" />
+
+      {/* blush */}
+      <ellipse cx="46" cy="78" rx="6" ry="3" fill="#ffadc8" opacity=".75" />
+      <ellipse cx="84" cy="78" rx="6" ry="3" fill="#ffadc8" opacity=".75" />
+
+      {/* eyes — big sparkly anime */}
+      <g>
+        <ellipse cx="50" cy="70" rx="8" ry="10" fill="url(#cgEye)" />
+        <ellipse cx="80" cy="70" rx="8" ry="10" fill="url(#cgEye)" />
+        <circle cx="47" cy="66" r="2.6" fill="#fff" />
+        <circle cx="77" cy="66" r="2.6" fill="#fff" />
+        <circle cx="53" cy="74" r="1.2" fill="#fff" opacity=".9" />
+        <circle cx="83" cy="74" r="1.2" fill="#fff" opacity=".9" />
+      </g>
+
+      {/* eyelashes */}
+      <path d="M42 64 q4-3 9-2" stroke="#3a2547" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      <path d="M72 64 q4-3 9-2" stroke="#3a2547" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+
+      {/* mouth */}
+      <path d={mouth} stroke="#c44b85" strokeWidth="2.2" strokeLinecap="round" fill="none" />
+
+      {/* neck */}
+      <rect x="58" y="98" width="14" height="10" rx="3" fill="#f1cad9" />
+
+      {/* shoulders / suit */}
+      <path d="M30 132 Q30 112 56 108 L74 108 Q100 112 100 132 L100 168 L30 168 Z" fill="url(#cgSuit)" stroke="#9fd8f5" strokeWidth="1.4" />
+
+      {/* heart core on chest */}
+      <g transform="translate(65 138)">
+        <path d="M0 6 C -10 -6 -16 6 0 14 C 16 6 10 -6 0 6 Z" fill="url(#cgCore)" stroke="#ff5fa6" strokeWidth="1.2" />
+      </g>
+
+      {/* shoulder pauldron lights */}
+      <circle cx="36" cy="126" r="3" fill="#ff5fa6" />
+      <circle cx="94" cy="126" r="3" fill="#ff5fa6" />
+
+      {/* arm hints (ribbons) */}
+      <path d="M30 132 Q22 152 26 168" stroke="#ff8cc6" strokeWidth="2.4" fill="none" />
+      <path d="M100 132 Q108 152 104 168" stroke="#ff8cc6" strokeWidth="2.4" fill="none" />
+
+      {/* hair side tails */}
+      <path d="M22 88 Q12 110 18 132 Q22 116 28 100 Z" fill="url(#cgHair)" />
+      <path d="M108 88 Q118 110 112 132 Q108 116 102 100 Z" fill="url(#cgHair)" />
+
+      {/* sparkles */}
+      <g fill="#fff">
+        <circle cx="20" cy="40" r="1.3" /><circle cx="112" cy="46" r="1.6" /><circle cx="118" cy="22" r="1.2" />
+        <circle cx="14" cy="20" r="1.6" />
+      </g>
     </svg>
   );
 }
@@ -777,7 +1014,7 @@ function TentIcon({ size = 42, spin = true }) {
   );
 }
 
-function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave, onDisplay }) {
+function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, onMove, onRequest, onExit, onWarp, onUpgrade, saveNode, onSave, onDisplay, conciergeOn, onConcierge }) {
   const [warping, setWarping] = useState(false);
   const [warpTarget, setWarpTarget] = useState(null);
   const [pos, setPos] = useState(0);       // 0..steps-1 along the street-view sequence
@@ -873,6 +1110,11 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
         <span className="sp">⚡ {hp}</span>
         {f.rank && <span className="rk">{lang === "ja" ? "ランク" : "RANK"} {g.rank.rank.name} · {g.xp}XP</span>}
         <span className="ct">🛒 {g.cartCount}</span>
+        <button className={"ccX" + (conciergeOn ? " on" : "")} onClick={onConcierge}
+          title={conciergeOn ? t.conciergeOff : t.conciergeOn}
+          aria-label={conciergeOn ? t.conciergeOff : t.conciergeOn}>
+          💁{conciergeOn ? " ✓" : ""}
+        </button>
         <button className="dispX" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}>✕ {t.exit}</button>
       </header>
@@ -913,7 +1155,7 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
           {pickedScanned
             ? <button className="neoBtn solid block" onClick={() => onRequest(picked)}>{t.request}</button>
             : <button className="neoBtn solid block" onClick={() => onScan(picked)}>{t.scan}</button>}
-          <button className="neoBtn block cart" onClick={() => { g.addToCart(picked, 1); g.toast(`🛒 ${t.addedCart}: ${picked.name}`, "ok"); }}>🛒 {t.addCart}</button>
+          <button className="neoBtn block cart" onClick={() => { g.addToCart(picked, 1); tasteTrack(picked, 2); g.toast(`🛒 ${t.addedCart}: ${picked.name}`, "ok"); }}>🛒 {t.addCart}</button>
         </aside>
       )}
 
@@ -995,6 +1237,11 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
             <button className="neoBtn block" onClick={() => setSaving(false)}>{t.saveClose}</button>
           </div>
         </div>
+      )}
+
+      {conciergeOn && (
+        <DiveConcierge lang={lang} g={g} store={store} node={node} productHere={picked || product}
+          onScan={(p) => capture(p)} onClose={onConcierge} />
       )}
 
       {upsell && <UpsellModal lang={lang} g={g} discount={Math.min(1000, g.xp)} onUpgrade={onUpgrade} onClose={() => setUpsell(false)} />}
