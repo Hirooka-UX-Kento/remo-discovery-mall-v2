@@ -10,7 +10,7 @@ import {
 
 // User display preferences (show/hide explanatory UI). Default: everything ON.
 const UIPREF_KEY = "rdm_ui_prefs_v1";
-const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true, storeTheme: false };
+const UIPREF_DEFAULT = { hud: true, promos: true, onboarding: true, sound: true, storeTheme: false, conciergeStyle: "anime" };
 function loadUiPrefs() {
   try {
     const prefs = { ...UIPREF_DEFAULT, ...(JSON.parse(localStorage.getItem(UIPREF_KEY) || "{}")) };
@@ -111,7 +111,9 @@ const T = {
     prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ",
     prefSound: "サウンド（BGM・効果音）", prefSoundDesc: "エリア別BGMとワープ等の効果音",
     conciergeBtn: "コンシェルジェ", conciergeOn: "コンシェルジェ ON", conciergeOff: "コンシェルジェ OFF",
-    prefStoreTheme: "店舗ごとにテーマ自動切替", prefStoreThemeDesc: "店舗を移動するとトンマナ・BGMが変化"
+    prefStoreTheme: "店舗ごとにテーマ自動切替", prefStoreThemeDesc: "店舗を移動するとトンマナ・BGMが変化",
+    prefConcierge: "コンシェルジュの見た目", prefConciergeDesc: "案内役をアニメキャラ／リアルなスタッフから選択",
+    styleAnime: "アニメキャラ", styleStaff: "リアルなスタッフ"
   },
   en: {
     eyebrow: "DIVE! POSSESS A STORE ROBOT · ANIME GOODS", sub: "A new kind of EC: DIVE — possess store robots across Japan and walk the aisles from home to shop. Go on, DIVE in!",
@@ -142,7 +144,9 @@ const T = {
     prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus",
     prefSound: "Sound (BGM & SFX)", prefSoundDesc: "Per-area BGM and effects like warp",
     conciergeBtn: "Concierge", conciergeOn: "Concierge ON", conciergeOff: "Concierge OFF",
-    prefStoreTheme: "Auto theme per store", prefStoreThemeDesc: "Moving between stores changes theme & BGM"
+    prefStoreTheme: "Auto theme per store", prefStoreThemeDesc: "Moving between stores changes theme & BGM",
+    prefConcierge: "Concierge look", prefConciergeDesc: "Choose an anime character or a realistic staff guide",
+    styleAnime: "Anime character", styleStaff: "Realistic staff"
   }
 };
 
@@ -307,10 +311,50 @@ export default function NeoApp() {
       {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
       {themePicker && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
       {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
-      {conciergeOn && <Concierge t={t} lang={lang} g={g} onClose={toggleConcierge} onOpenStore={openStore} />}
+      {conciergeOn && <Concierge t={t} lang={lang} g={g} variant={uiPrefs.conciergeStyle} onClose={toggleConcierge} onOpenStore={openStore} />}
       <Toasts toasts={g.toasts} />
     </div>
   );
+}
+
+// Refined line-style icon set (replaces emoji in the UI chrome). Uses currentColor
+// so each icon inherits its button's text color and stays crisp at any size.
+function Icon({ name, size = 18, className = "" }) {
+  const p = {
+    width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+    stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round",
+    strokeLinejoin: "round", className: "icoSvg " + className, "aria-hidden": "true", focusable: "false"
+  };
+  switch (name) {
+    case "home":
+      return (<svg {...p}><path d="M3.5 11.2 12 4l8.5 7.2" /><path d="M5.5 9.8V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.8" /><path d="M9.5 20v-5.5h5V20" /></svg>);
+    case "concierge": // headset operator + sparkle
+      return (<svg {...p}><circle cx="12" cy="8" r="3.2" /><path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" /><path d="M5 9a7 7 0 0 1 14 0" /><path d="M4.6 9.2v2.4a1.4 1.4 0 0 0 2.8 0V9.2" /><path d="M19.4 9.2v2.4a1.4 1.4 0 0 1-2.8 0V9.2" /><path d="M16.6 12.6c0 1.2-1 2-2.3 2.2" /><path d="M20.5 4.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L18.7 6l1.3-.5z" fill="currentColor" stroke="none" /></svg>);
+    case "sliders":
+      return (<svg {...p}><path d="M5 8h9" /><path d="M18 8h1" /><circle cx="16" cy="8" r="2" /><path d="M5 16h1" /><path d="M10 16h9" /><circle cx="8" cy="16" r="2" /></svg>);
+    case "help":
+      return (<svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.6c0 1.7-2.5 2-2.5 3.6" /><circle cx="12" cy="16.6" r=".5" fill="currentColor" /></svg>);
+    case "gear":
+      return (<svg {...p}><circle cx="12" cy="12" r="3" /><path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9 5.3 5.3" /></svg>);
+    case "cart":
+      return (<svg {...p}><path d="M3 4h2l2.2 11.2a1.4 1.4 0 0 0 1.4 1.1h8.2a1.4 1.4 0 0 0 1.4-1.1L21 7H6.2" /><circle cx="9.5" cy="20" r="1.3" /><circle cx="17.5" cy="20" r="1.3" /></svg>);
+    case "gift":
+      return (<svg {...p}><path d="M4.5 10.5h15V20a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1z" /><path d="M3.5 7.5h17v3h-17z" /><path d="M12 7.5V21" /><path d="M12 7.5C10.8 4.5 7 4.8 7 7c0 .5.4.5 1 .5h4" /><path d="M12 7.5C13.2 4.5 17 4.8 17 7c0 .5-.4.5-1 .5h-4" /></svg>);
+    case "close":
+      return (<svg {...p}><path d="M6 6l12 12M18 6 6 18" /></svg>);
+    case "book":
+      return (<svg {...p}><path d="M5 4.5h9a3 3 0 0 1 3 3V20a2.5 2.5 0 0 0-2.5-2.5H5z" /><path d="M19 6.5V20" /></svg>);
+    case "dice":
+      return (<svg {...p}><rect x="4.5" y="4.5" width="15" height="15" rx="3" /><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none" /><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none" /></svg>);
+    case "pin":
+      return (<svg {...p}><path d="M12 21s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10z" /><circle cx="12" cy="11" r="2.3" /></svg>);
+    case "flame":
+      return (<svg {...p}><path d="M12 3c.5 3-2.5 4-2.5 7A2.5 2.5 0 0 0 12 12.5c0-1.5 1.5-2 1.5-2 .8 1 1.5 2.2 1.5 3.8a4.5 4.5 0 1 1-9 0c0-4 4-5.3 6-11.3z" /></svg>);
+    case "spark":
+      return (<svg {...p}><path d="M12 3l1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6z" fill="currentColor" stroke="none" /></svg>);
+    default:
+      return null;
+  }
 }
 
 function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome, conciergeOn, onConcierge }) {
@@ -329,19 +373,19 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome, conci
         </div>
       )}
       <div className="neoActions">
-        <button className="neoIcon home" onClick={onHome} title={homeHint}>🏠</button>
+        <button className="neoIcon home" onClick={onHome} title={homeHint}><Icon name="home" /></button>
         <button className={"neoBtn neoConciergeBtn" + (conciergeOn ? " on" : "")} onClick={onConcierge} title={t.conciergeBtn}>
-          💁 {t.conciergeBtn}{conciergeOn ? " ✓" : ""}
+          <Icon name="concierge" /> {t.conciergeBtn}{conciergeOn ? " ✓" : ""}
         </button>
-        <button className="neoIcon" onClick={onDisplay} title={t.display}>🎛</button>
-        <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
-        <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
+        <button className="neoIcon" onClick={onDisplay} title={t.display}><Icon name="sliders" /></button>
+        <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}><Icon name="help" /></button>
+        <a className="neoIcon" href="#/admin" title="体験機能管理"><Icon name="gear" /></a>
         <button className="neoBtn" onClick={() => g.setLang(g.lang === "ja" ? "en" : "ja")}>{g.lang === "ja" ? "EN" : "日本語"}</button>
         <button className="neoThemeBtn" onClick={onTheme} title={g.lang === "ja" ? "テーマを選ぶ" : "Choose theme"}>
           <span className="sw" />
           {g.lang === "ja" ? "テーマ" : "Theme"}
         </button>
-        <button className="neoBtn solid neoCartBtn" onClick={onCart}>🛒 {t.cart}{g.cartCount > 0 && <i>{g.cartCount}</i>}</button>
+        <button className="neoBtn solid neoCartBtn" onClick={onCart}><Icon name="cart" /> {t.cart}{g.cartCount > 0 && <i>{g.cartCount}</i>}</button>
       </div>
     </header>
   );
@@ -371,6 +415,18 @@ function DisplaySettings({ t, prefs, setPref, onClose }) {
               <span className="sw"><i /></span>
             </button>
           ))}
+          {/* concierge look: anime character vs realistic staff */}
+          <div className="dispRow pick">
+            <div className="txt"><b>{t.prefConcierge}</b><small>{t.prefConciergeDesc}</small></div>
+            <div className="segPick" role="radiogroup">
+              <button className={(prefs.conciergeStyle !== "staff" ? "on" : "")} onClick={() => setPref("conciergeStyle", "anime")} role="radio" aria-checked={prefs.conciergeStyle !== "staff"}>
+                <ConciergeGirl size={34} variant="anime" /><span>{t.styleAnime}</span>
+              </button>
+              <button className={(prefs.conciergeStyle === "staff" ? "on" : "")} onClick={() => setPref("conciergeStyle", "staff")} role="radio" aria-checked={prefs.conciergeStyle === "staff"}>
+                <ConciergeGirl size={34} variant="staff" /><span>{t.styleStaff}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </>
@@ -396,9 +452,9 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
 
       {(f.sugoroku || f.collection) && (
         <div className="neoTabs">
-          <button className="neoTab on">{t.map}</button>
-          {f.collection && <button className="neoTab" onClick={onCollection}>📘 {t.collection} {g.collectionPct}%</button>}
-          {f.sugoroku && <button className="neoTab" onClick={onSugoroku}>🎲 {t.sugoroku}</button>}
+          <button className="neoTab on"><Icon name="pin" size={15} /> {t.map}</button>
+          {f.collection && <button className="neoTab" onClick={onCollection}><Icon name="book" size={15} /> {t.collection} {g.collectionPct}%</button>}
+          {f.sugoroku && <button className="neoTab" onClick={onSugoroku}><Icon name="dice" size={15} /> {t.sugoroku}</button>}
         </div>
       )}
 
@@ -428,7 +484,7 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
           <div className="neoPanel neoSelected">
             <img src={store.image} alt="" />
             <div>
-              <p className="eyebrow">📍 {local(store.area, lang)}</p>
+              <p className="eyebrow"><Icon name="pin" size={13} /> {local(store.area, lang)}</p>
               <h2>{store.name}</h2>
               <p>{local(store.category, lang)}</p>
               <p className="twin">◈ {t.twin} {store.twinScan}%</p>
@@ -466,14 +522,14 @@ function Home({ t, lang, g, f, store, setStore, onOpenStore, onSugoroku, onColle
             <p className="eyebrow">REGISTERED STORES · {STORES.length}</p>
             <h2>{lang === "ja" ? "登録店舗一覧" : "All registered stores"}</h2>
           </div>
-          <span className="saleTotal">🔥 {lang === "ja" ? `${STORES.filter((s) => s.hot).length}店舗でセール中！` : `${STORES.filter((s) => s.hot).length} stores ON SALE!`}</span>
+          <span className="saleTotal"><Icon name="flame" size={15} /> {lang === "ja" ? `${STORES.filter((s) => s.hot).length}店舗でセール中！` : `${STORES.filter((s) => s.hot).length} stores ON SALE!`}</span>
         </div>
         <div className="neoStoresGrid">
           {STORES.map((s) => (
             <button key={s.id} className={"neoStore" + (s.hot ? " hot" : "") + (s.id === store.id ? " active" : "")}
               onClick={() => onOpenStore(s)} onMouseEnter={() => setHover(s.id)} onMouseLeave={() => setHover(null)}>
               <img src={s.image} alt="" />
-              <i>{s.hot ? "🔥 SALE" : "LIVE"}</i>
+              <i>{s.hot ? <><Icon name="flame" size={12} /> SALE</> : "LIVE"}</i>
               {s.hot && <span className="ribbon">{lang === "ja" ? "今だけ特価" : "LIMITED DEAL"}</span>}
               <b>{s.name}</b><small>{local(s.area, lang)}</small>
             </button>
@@ -504,7 +560,7 @@ function MissionsPanel({ t, lang, g }) {
 
 // Floating concierge — global (home/list). Uses Remi (cute girl android) and
 // taste-based recommendations. Script-based (not a chat LLM).
-function Concierge({ t, lang, g, onClose, onOpenStore }) {
+function Concierge({ t, lang, g, variant = "anime", onClose, onOpenStore }) {
   const L = (ja, en) => (lang === "ja" ? ja : en);
   const saleStores = useMemo(() => STORES.filter((s) => s.hot), []);
   // taste-based pick (refreshes when scanned set changes — i.e. taste was updated)
@@ -538,14 +594,14 @@ function Concierge({ t, lang, g, onClose, onOpenStore }) {
         </div>
         <button className="ccClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
       </div>
-      <div className="ccMascot"><ConciergeGirl size={108} /></div>
+      <div className="ccMascot"><ConciergeGirl size={108} variant={variant} /></div>
     </div>
   );
 }
 
 // Big in-explore concierge (Monster Farm-style portrait + bubble). Placed bottom-left,
 // clear of the dock/pad/treasure. Toggleable on/off from the explore top bar.
-function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
+function DiveConcierge({ lang, g, store, node, productHere, variant = "anime", onScan, onClose }) {
   const L = (ja, en) => (lang === "ja" ? ja : en);
   // recommend an item the player will like — prefer something on THIS node
   const shelf = (node?.products || []).map((id) => PRODUCTS.find((p) => p.id === id)).filter(Boolean);
@@ -590,7 +646,7 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
   }, [messages.length]);
   function next() { setI((v) => (v + 1) % messages.length); setTick((x) => x + 1); }
   function pickIt() {
-    g.toast(`✨ Remi: ${L("これがおすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
+    g.toast(`✨ ${L("おすすめ", "My pick")}: ${r.name} (${r.price})`, "ok");
     // count this as taste data too
     tasteTrack(r, 0.4);
   }
@@ -620,8 +676,8 @@ function DiveConcierge({ lang, g, store, node, productHere, onScan, onClose }) {
           <button className="dcClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
         </div>
         <div className="dcPortrait">
-          <ConciergeGirl size={150} className="dcGirl" />
-          <span className="dcName">Remi <em>♪</em></span>
+          <ConciergeGirl size={150} className="dcGirl" variant={variant} />
+          <span className="dcName">{variant === "staff" ? (lang === "ja" ? "案内係" : "Guide") : "Remi"} <em>{variant === "staff" ? "✦" : "♪"}</em></span>
         </div>
       </div>
     </aside>
@@ -672,17 +728,23 @@ function MascotRobot({ size = 140, className = "" }) {
 
 // "Lumina" (STELLA-07) — next-gen android idol concierge. Tries to use a provided
 // poster render at public/assets/generated/concierge.png; falls back to inline SVG.
-function ConciergeGirl({ size = 180, className = "" }) {
+function ConciergeGirl({ size = 180, className = "", variant = "anime" }) {
+  const staff = variant === "staff";
+  const src = asset(staff ? "assets/generated/concierge-staff.png" : "assets/generated/concierge.png");
   const [useImg, setUseImg] = useState(true);
-  const src = asset("assets/generated/concierge.png");
+  useEffect(() => { setUseImg(true); }, [src]); // re-try the image when the style changes
   if (useImg) {
     return (
-      <img className={"conciergeImg " + className} src={src} alt="Remi"
+      <img className={"conciergeImg " + className} src={src} alt={staff ? "Staff guide" : "Remi"}
         style={{ width: size, height: "auto" }} onError={() => setUseImg(false)} />
     );
   }
-  // SVG fallback: full-body lavender idol android — star crown, long flowing hair,
-  // big violet eyes, white/purple armor, crystalline holographic skirt, glowing joints.
+  return staff ? <StaffPortrait size={size} className={className} /> : <AnimePortrait size={size} className={className} />;
+}
+
+// Anime fallback: full-body lavender idol android — star crown, long flowing hair,
+// big violet eyes, white/purple armor, crystalline holographic skirt, glowing joints.
+function AnimePortrait({ size = 180, className = "" }) {
   const w = size, h = size * 2.0;
   return (
     <svg className={"conciergeSvg " + className} width={w} height={h} viewBox="0 0 130 260" role="img" aria-label="Lumina">
@@ -780,6 +842,69 @@ function ConciergeGirl({ size = 180, className = "" }) {
         <path d="M20 150 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" />
         <path d="M106 138 l1.4 3 3 1.4 -3 1.4 -1.4 3 -1.4 -3 -3 -1.4 3 -1.4 z" />
       </g>
+    </svg>
+  );
+}
+
+// Realistic-staff fallback: a clean, modern flat-illustration concierge — neat bob,
+// headset, navy blazer + lanyard name tag, holding a guide tablet. Tasteful, not emoji.
+function StaffPortrait({ size = 180, className = "" }) {
+  const w = size, h = size * 1.5;
+  return (
+    <svg className={"conciergeSvg staff " + className} width={w} height={h} viewBox="0 0 160 240" role="img" aria-label="Staff guide">
+      <defs>
+        <linearGradient id="stHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#5b4636" /><stop offset="1" stopColor="#3c2c20" /></linearGradient>
+        <linearGradient id="stSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffe2cf" /><stop offset="1" stopColor="#f6cdb2" /></linearGradient>
+        <linearGradient id="stSuit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2f3c57" /><stop offset="1" stopColor="#222c41" /></linearGradient>
+        <linearGradient id="stTablet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#bfe6ff" /><stop offset="1" stopColor="#6fb7ef" /></linearGradient>
+      </defs>
+
+      {/* shoulders / blazer */}
+      <path d="M26 240 V196 c0-26 20-42 44-46 h20 c24 4 44 20 44 46 V240 Z" fill="url(#stSuit)" />
+      {/* inner blouse + collar */}
+      <path d="M62 150 L80 178 L98 150 L98 240 L62 240 Z" fill="#f4f6fb" />
+      <path d="M62 150 L80 170 L70 150 Z" fill="#dfe6f0" /><path d="M98 150 L80 170 L90 150 Z" fill="#dfe6f0" />
+      {/* lapels */}
+      <path d="M62 150 L56 200 L70 168 Z" fill="#28324a" /><path d="M98 150 L104 200 L90 168 Z" fill="#28324a" />
+      {/* lanyard + name tag */}
+      <path d="M72 152 L80 184 L88 152" fill="none" stroke="#b8324a" strokeWidth="3" />
+      <rect x="86" y="182" width="22" height="14" rx="2.5" fill="#fff" stroke="#c9d2e0" />
+      <rect x="89" y="185" width="9" height="3" rx="1.5" fill="#8a96ab" /><rect x="89" y="190" width="14" height="2.4" rx="1.2" fill="#c2cad8" />
+
+      {/* neck */}
+      <path d="M70 138 h20 v16 c0 6-20 6-20 0 Z" fill="url(#stSkin)" />
+      {/* hair back */}
+      <path d="M44 96 c0-32 16-52 36-52 s36 20 36 52 c0 20-6 34-10 40 l-6-30 -8 20 -12-26 -12 26 -8-20 -6 30 c-4-6-10-20-10-40 Z" fill="url(#stHair)" />
+      {/* face */}
+      <ellipse cx="80" cy="98" rx="28" ry="31" fill="url(#stSkin)" />
+      {/* fringe */}
+      <path d="M52 92 c2-30 22-44 28-44 c-8 8-10 20-9 28 c-7-2-13 4-19 16 Z" fill="url(#stHair)" />
+      <path d="M108 92 c-2-30 -22-44 -28-44 c8 8 10 20 9 28 c7-2 13 4 19 16 Z" fill="url(#stHair)" />
+      {/* brows, eyes, smile */}
+      <path d="M64 90 q7-4 14 0" stroke="#5b4636" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M82 90 q7-4 14 0" stroke="#5b4636" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <ellipse cx="71" cy="99" rx="3.4" ry="4.2" fill="#42352b" /><ellipse cx="89" cy="99" rx="3.4" ry="4.2" fill="#42352b" />
+      <circle cx="70" cy="97.6" r="1" fill="#fff" /><circle cx="88" cy="97.6" r="1" fill="#fff" />
+      <ellipse cx="66" cy="108" rx="4" ry="2" fill="#ffb59b" opacity=".6" /><ellipse cx="94" cy="108" rx="4" ry="2" fill="#ffb59b" opacity=".6" />
+      <path d="M73 112 q7 5 14 0" stroke="#c4736a" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+
+      {/* headset */}
+      <path d="M50 96 a30 30 0 0 1 60 0" fill="none" stroke="#1f2636" strokeWidth="4" strokeLinecap="round" />
+      <rect x="44" y="92" width="10" height="16" rx="4" fill="#1f2636" />
+      <rect x="106" y="92" width="10" height="16" rx="4" fill="#1f2636" />
+      <path d="M50 104 q-8 10 0 22" fill="none" stroke="#1f2636" strokeWidth="3" />
+      <circle cx="50" cy="128" r="3.4" fill="#39d0a0" />
+
+      {/* arm + guide tablet */}
+      <path d="M118 200 c10-6 16-16 14-30 l-12 4 c-2 12-6 18-12 22 Z" fill="url(#stSkin)" />
+      <g transform="rotate(-14 44 196)">
+        <rect x="20" y="176" width="50" height="40" rx="5" fill="#27324a" />
+        <rect x="24" y="180" width="42" height="32" rx="3" fill="url(#stTablet)" />
+        <path d="M30 196 h30 M34 186 l8 8 8-6 8 6" stroke="#2b6fae" strokeWidth="1.6" fill="none" opacity=".7" />
+        <circle cx="46" cy="194" r="3" fill="#fff" stroke="#2b6fae" strokeWidth="1.4" />
+      </g>
+      {/* presenting hand */}
+      <ellipse cx="118" cy="172" rx="7" ry="5.4" fill="url(#stSkin)" transform="rotate(-18 118 172)" />
     </svg>
   );
 }
@@ -1106,15 +1231,15 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
         <button className={"ccX" + (conciergeOn ? " on" : "")} onClick={onConcierge}
           title={conciergeOn ? t.conciergeOff : t.conciergeOn}
           aria-label={conciergeOn ? t.conciergeOff : t.conciergeOn}>
-          💁{conciergeOn ? " ✓" : ""}
+          <Icon name="concierge" size={17} />
         </button>
-        <button className="dispX" onClick={onDisplay} title={t.display}>🎛</button>
-        <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}>✕ {t.exit}</button>
+        <button className="dispX" onClick={onDisplay} title={t.display}><Icon name="sliders" size={16} /></button>
+        <button className="exitX" onClick={() => setTimeout(onExit, 0)} title={t.exit}><Icon name="close" size={15} /> {t.exit}</button>
       </header>
 
       {prefs.promos && <ExplorePromo lang={lang} />}
 
-      {f.treasure && <button className="neoTreasureBtn" onClick={hunt}>🎁 {t.treasure}</button>}
+      {f.treasure && <button className="neoTreasureBtn" onClick={hunt}><Icon name="gift" size={17} /> {t.treasure}</button>}
 
       {/* FF-style save point — glowing marker you step on */}
       {saveNode && (
@@ -1234,7 +1359,7 @@ function Explore({ t, lang, g, f, prefs = {}, store, node, hp, product, onScan, 
 
       {conciergeOn && (
         <DiveConcierge lang={lang} g={g} store={store} node={node} productHere={picked || product}
-          onScan={(p) => capture(p)} onClose={onConcierge} />
+          variant={prefs.conciergeStyle} onScan={(p) => capture(p)} onClose={onConcierge} />
       )}
 
       {upsell && <UpsellModal lang={lang} g={g} discount={Math.min(1000, g.xp)} onUpgrade={onUpgrade} onClose={() => setUpsell(false)} />}

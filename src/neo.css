@@ -106,6 +106,12 @@
 .neoBtn.block { width: 100%; justify-content: center; }
 .neoBtn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; transform: none; }
 
+/* refined SVG icons (replace emoji) */
+.icoSvg { display: inline-block; vertical-align: middle; flex: none; }
+.neoConciergeBtn, .neoTab, .neoTreasureBtn, .neoExTop .exitX { display: inline-flex; align-items: center; gap: 6px; }
+.eyebrow .icoSvg { vertical-align: -2px; opacity: .85; }
+.neoStore i { display: inline-flex; align-items: center; gap: 4px; }
+
 /* =====================================================================
    Header
    ===================================================================== */
@@ -351,6 +357,18 @@
 .dispRow .sw i { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--muted); transition: transform .18s ease, background .15s ease; }
 .dispRow.on .sw { background: linear-gradient(120deg, var(--acc), var(--acc-2)); border-color: transparent; }
 .dispRow.on .sw i { transform: translateX(18px); background: var(--on); }
+/* concierge look picker (anime vs staff) */
+.dispRow.pick { cursor: default; align-items: stretch; flex-direction: column; gap: 10px; }
+.dispRow.pick:hover { border-color: var(--line); }
+.segPick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.segPick button {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--text);
+  font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; text-align: left;
+}
+.segPick button:hover { border-color: var(--acc); }
+.segPick button.on { border-color: transparent; background: linear-gradient(120deg, color-mix(in srgb, var(--acc), transparent 80%), color-mix(in srgb, var(--acc-2), transparent 80%)); box-shadow: 0 0 0 1px var(--acc-2) inset; }
+.segPick button .conciergeImg, .segPick button .conciergeSvg { width: 34px !important; height: auto !important; flex: none; border-radius: 6px; }
 
 .neoCartBtn { position: relative; display: inline-flex; align-items: center; gap: 7px; }
 .neoCartBtn i { display: inline-grid; place-items: center; min-width: 19px; height: 19px; padding: 0 5px; border-radius: var(--pill); font-style: normal; font-size: 11px; font-weight: 900; color: var(--on); background: linear-gradient(120deg, var(--acc), var(--acc-2)); }
