@@ -141,6 +141,25 @@
   cursor: pointer;
 }
 .neoThemeBtn { display: inline-flex; align-items: center; gap: 8px; font: inherit; font-size: 12px; font-weight: 700; color: var(--text); padding: 8px 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+/* Concierge header button */
+.neoConciergeBtn { font: inherit; font-size: 12px; font-weight: 800; color: var(--text); padding: 8px 14px; border-radius: var(--pill); border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+.neoConciergeBtn:hover { border-color: var(--acc); }
+.neoConciergeBtn.on { color: var(--on); background: linear-gradient(110deg, var(--acc), var(--acc-2)); border-color: transparent; box-shadow: 0 0 18px color-mix(in srgb, var(--acc), transparent 55%); }
+
+/* Floating concierge mascot + speech bubble */
+.neoConcierge { position: fixed; right: 18px; bottom: 18px; z-index: 360; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; max-width: min(360px, calc(100vw - 36px)); pointer-events: none; }
+.neoConcierge > * { pointer-events: auto; }
+.ccBubble { position: relative; padding: 12px 36px 12px 14px; border-radius: 16px 16px 4px 16px; background: var(--card); border: 1px solid var(--line); color: var(--text); box-shadow: 0 16px 40px rgba(0,0,0,.5); cursor: pointer; animation: ccPop .35s ease-out; }
+.ccBubble::after { content: ""; position: absolute; right: 14px; bottom: -8px; width: 14px; height: 14px; background: var(--card); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg); }
+.ccBubble p { font-size: 13px; line-height: 1.55; margin: 0 0 8px; }
+.ccBubble .ccChips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ccBubble .ccChips button { font: inherit; font-size: 11px; font-weight: 800; color: var(--text); padding: 5px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--acc-2), transparent 55%); background: color-mix(in srgb, var(--acc-2), transparent 88%); cursor: pointer; }
+.ccBubble .ccChips button:hover:not(:disabled) { border-color: var(--acc-2); color: var(--acc-2); }
+.ccBubble .ccChips button:disabled { opacity: .5; }
+.ccBubble .ccClose { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 14px; cursor: pointer; }
+.ccMascot { width: 86px; flex: none; animation: neoBreathe 3s ease-in-out infinite; filter: drop-shadow(0 10px 22px rgba(0,0,0,.5)); }
+@keyframes ccPop { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; transform: none; } }
+@media (max-width: 480px) { .neoConcierge { right: 8px; bottom: 8px; max-width: calc(100vw - 16px); } .ccMascot { width: 64px; } }
 .neoThemeBtn:hover { border-color: var(--acc); }
 .neoThemeBtn .sw { width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(120deg, var(--acc), var(--acc-2)); box-shadow: 0 0 8px color-mix(in srgb, var(--acc), transparent 50%); }
 

@@ -86,6 +86,7 @@ const T = {
     prefPromos: "広告・イベントバナー", prefPromosDesc: "探索中のプロモ/クーポン告知",
     prefOnboard: "チュート・入店ポップアップ", prefOnboardDesc: "初回チュートリアル／ウェルカム・ログボ",
     prefSound: "サウンド（BGM・効果音）", prefSoundDesc: "エリア別BGMとワープ等の効果音",
+    conciergeBtn: "コンシェルジェ", conciergeOn: "コンシェルジェ ON", conciergeOff: "コンシェルジェ OFF",
     prefStoreTheme: "店舗ごとにテーマ自動切替", prefStoreThemeDesc: "店舗を移動するとトンマナ・BGMが変化"
   },
   en: {
@@ -116,6 +117,7 @@ const T = {
     prefPromos: "Ads / event banners", prefPromosDesc: "Promo & coupon notices while exploring",
     prefOnboard: "Tutorial & entry popups", prefOnboardDesc: "First-run tutorial / welcome & login bonus",
     prefSound: "Sound (BGM & SFX)", prefSoundDesc: "Per-area BGM and effects like warp",
+    conciergeBtn: "Concierge", conciergeOn: "Concierge ON", conciergeOff: "Concierge OFF",
     prefStoreTheme: "Auto theme per store", prefStoreThemeDesc: "Moving between stores changes theme & BGM"
   }
 };
@@ -155,6 +157,8 @@ export default function NeoApp() {
   const [tutorial, setTutorial] = useState(false);
   const [themePicker, setThemePicker] = useState(false);
   const [dispOpen, setDispOpen] = useState(false);
+  const [conciergeOn, setConciergeOn] = useState(() => { try { return localStorage.getItem("rdm_concierge") === "1"; } catch { return false; } });
+  function toggleConcierge() { setConciergeOn((v) => { const n = !v; try { localStorage.setItem("rdm_concierge", n ? "1" : "0"); } catch { /* ignore */ } g.toast(n ? t.conciergeOn : t.conciergeOff, "ok"); return n; }); }
   const [uiPrefs, setUiPrefs] = useState(loadUiPrefs);
   const setPref = (k, v) => setUiPrefs((p) => { const n = { ...p, [k]: v }; saveUiPrefs(n); return n; });
   const [reqlog, setReqlog] = useState([]);
@@ -222,7 +226,7 @@ export default function NeoApp() {
   const themeClass = `neo tone-${tone || "cyber"}`;
 
   const header = (
-    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} onHome={() => setScreen("home")} />
+    <Header t={t} g={g} f={f} onCart={() => setCartOpen(true)} onTutorial={() => setTutorial(true)} onTheme={() => setThemePicker(true)} onDisplay={() => setDispOpen(true)} onHome={() => setScreen("home")} conciergeOn={conciergeOn} onConcierge={toggleConcierge} />
   );
 
   let body;
@@ -278,12 +282,13 @@ export default function NeoApp() {
       {tutorial && <TutorialModal t={t} lang={lang} f={f} onClose={closeTutorial} />}
       {themePicker && <ThemePicker lang={lang} g={g} onClose={() => setThemePicker(false)} />}
       {dispOpen && <DisplaySettings t={t} prefs={uiPrefs} setPref={setPref} onClose={() => setDispOpen(false)} />}
+      {conciergeOn && <Concierge t={t} lang={lang} g={g} onClose={toggleConcierge} onOpenStore={openStore} />}
       <Toasts toasts={g.toasts} />
     </div>
   );
 }
 
-function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome }) {
+function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome, conciergeOn, onConcierge }) {
   const homeHint = g.lang === "ja" ? "トップ（ホーム）へ" : "Back to top (home)";
   return (
     <header className="neoTop">
@@ -300,6 +305,9 @@ function Header({ t, g, f, onCart, onTutorial, onTheme, onDisplay, onHome }) {
       )}
       <div className="neoActions">
         <button className="neoIcon home" onClick={onHome} title={homeHint}>🏠</button>
+        <button className={"neoBtn neoConciergeBtn" + (conciergeOn ? " on" : "")} onClick={onConcierge} title={t.conciergeBtn}>
+          💁 {t.conciergeBtn}{conciergeOn ? " ✓" : ""}
+        </button>
         <button className="neoIcon" onClick={onDisplay} title={t.display}>🎛</button>
         <button className="neoIcon" onClick={onTutorial} title={g.lang === "ja" ? "使い方" : "How to play"}>?</button>
         <a className="neoIcon" href="#/admin" title="体験機能管理">⚙</a>
@@ -465,6 +473,41 @@ function MissionsPanel({ t, lang, g }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Floating concierge mascot — rotating greetings + quick actions (script-based; not a chat AI)
+function Concierge({ t, lang, g, onClose, onOpenStore }) {
+  const L = (ja, en) => (lang === "ja" ? ja : en);
+  const saleStores = useMemo(() => STORES.filter((s) => s.hot), []);
+  const pick = useMemo(() => PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)], []);
+  const lines = useMemo(() => [
+    L("こんにちは！ お薦め商品紹介するよ〜。何でも聞いてね♪", "Hi! I'll recommend goodies — ask me anything ♪"),
+    L(`今日のおすすめは「${pick.name}」(${pick.price}) ✨`, `Today's pick: "${pick.name}" (${pick.price}) ✨`),
+    L(`今 🔥 ${saleStores.length} 店舗でセール中だよ！下のリストをチェック！`, `🔥 ${saleStores.length} stores ON SALE — check the list below!`),
+    L("店舗ロボに「憑依（DIVE）」して、店内を歩き回ってみよう！", "DIVE into a store robot and walk the aisles!"),
+    L("商品のQRを長押しすると、商品情報が重畳するよ。", "Long-press a product QR to see its info overlay."),
+    L("ランクは累計EXPで上がる称号。買い物だけで下がらないから安心♪", "Rank is your lifetime-EXP title — it never drops, even after spending."),
+    L("テーマはヘッダー「テーマ」からいつでも変えられるよ！", "Change the theme any time from 'Theme' in the header!"),
+  ], [pick, saleStores.length, lang]);
+  const [i, setI] = useState(0);
+  useEffect(() => { const id = setInterval(() => setI((v) => (v + 1) % lines.length), 5200); return () => clearInterval(id); }, [lines.length]);
+  function next() { setI((v) => (v + 1) % lines.length); }
+  function gotoSale() { const s = saleStores[0]; if (s) onOpenStore(s); }
+  function showPick() { g.toast(`✨ ${L("今日のおすすめ", "Today's pick")}: ${pick.name} (${pick.price})`, "ok"); }
+  return (
+    <div className="neoConcierge" role="dialog" aria-live="polite">
+      <div className="ccBubble" onClick={next} title={L("次のメッセージへ", "Next message")}>
+        <p>{lines[i]}</p>
+        <div className="ccChips">
+          <button onClick={(e) => { e.stopPropagation(); showPick(); }}>✨ {L("おすすめ", "Pick")}</button>
+          <button onClick={(e) => { e.stopPropagation(); gotoSale(); }} disabled={!saleStores.length}>🔥 {L("セール店舗へ", "Sale store")}</button>
+          <button onClick={(e) => { e.stopPropagation(); next(); }}>💬 {L("次へ", "Next")}</button>
+        </div>
+        <button className="ccClose" onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="close">×</button>
+      </div>
+      <div className="ccMascot"><MascotRobot size={86} /></div>
     </div>
   );
 }
